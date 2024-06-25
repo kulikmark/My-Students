@@ -10,13 +10,51 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-
-
+    var navigationController: UINavigationController?
+//    var studentViewModel = StudentViewModel()
+    
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
+        
+        guard let windowScene = (scene as? UIWindowScene) else { return }
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        
+        window = UIWindow(windowScene: windowScene)
+        let studentsViewModel = appDelegate.studentViewModel
+        
+        let studentsTableViewController = StudentsCollectionViewController(viewModel: studentsViewModel)
+//        let accountingTableViewController = AccountingTableViewController()
+//        let homeWorkTableViewController = HomeWorkTableViewController()
+        
+        
+        let studentsNavController = UINavigationController(rootViewController: studentsTableViewController)
+//        let accountingNavController = UINavigationController(rootViewController: accountingTableViewController)
+//        let homeWorkNavController = UINavigationController(rootViewController: homeWorkTableViewController)
+        
+        
+        let tabBarController = UITabBarController()
+        tabBarController.viewControllers = [studentsNavController/*, accountingNavController, homeWorkNavController*/]
+        
+        
+        if let studentsIcon = UIImage(named: "student_icon")?.withRenderingMode(.alwaysOriginal) {
+            studentsNavController.tabBarItem = UITabBarItem(title: "Students", image: studentsIcon, tag: 0)
+        }
+        
+//        if let accountingIcon = UIImage(named: "accounting_icon")?.withRenderingMode(.alwaysOriginal) {
+//            accountingNavController.tabBarItem = UITabBarItem(title: "Accounting", image: accountingIcon, tag: 1)
+//        }
+//        
+//        if let homeworkIcon = UIImage(named: "homework_icon")?.withRenderingMode(.alwaysOriginal) {
+//            homeWorkNavController.tabBarItem = UITabBarItem(title: "Homework", image: homeworkIcon, tag: 1)
+//        }
+        
+        // Setting colors for the active and inactive state of the tabbar text
+        let appearance = UITabBarItem.appearance()
+        appearance.setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.gray], for: .normal)
+        appearance.setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.black], for: .selected)
+        
+        window?.rootViewController = tabBarController
+        window?.makeKeyAndVisible()
+        
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
