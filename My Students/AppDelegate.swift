@@ -8,117 +8,14 @@
 import UIKit
 import Combine
 import SwiftUI
+import RealmSwift
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    
     var window: UIWindow?
     var studentViewModel = StudentViewModel()
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        
-        // Создаем тестовое расписание для ученика
-        let testSchedule1 = [
-            Schedule(weekday: "MON", time: "15:00"),
-            Schedule(weekday: "TUE", time: "15:00"),
-            Schedule(weekday: "WED", time: "15:00"),
-            Schedule(weekday: "THU", time: "15:00"),
-            Schedule(weekday: "FRI", time: "15:00"),
-            Schedule(weekday: "SAT", time: "15:00"),
-            Schedule(weekday: "SUN", time: "17:00")
-        ]
-        
-        // Создаем тестовое расписание для ученика
-        let testSchedule2 = [
-            Schedule(weekday: "MON", time: "15:00"),
-            Schedule(weekday: "TUE", time: "15:00"),
-            Schedule(weekday: "WED", time: "15:00"),
-            Schedule(weekday: "THU", time: "15:00")
-        ]
-        
-        let lessonPrice = LessonPrice(price: 100.0, currency: "GBP")
-        
-        let months = [
-            Month(monthName: "June", monthYear: "2024", isPaid: false, lessonPrice: lessonPrice, lessons: []),
-            Month(monthName: "July", monthYear: "2024", isPaid: false, lessonPrice: lessonPrice, lessons: []),
-            Month(monthName: "August", monthYear: "2024", isPaid: false, lessonPrice: lessonPrice, lessons: []),
-            Month(monthName: "September", monthYear: "2024", isPaid: false, lessonPrice: lessonPrice, lessons: [])
-        ]
-        
-        // Создаем тестового ученика с этим расписанием
-        let testStudent = Student(
-            id: UUID(),
-            name: "Harry Potter",
-            parentName: "Lilly Potter",
-            phoneNumber: "+44-7871256566",
-            months: months,
-            lessons: [],
-            lessonPrice: lessonPrice,
-            schedule: testSchedule1,
-            type: .schoolchild,
-            image: UIImage(named: "harry")?.squareImage()
-        )
-        
-        // Создаем тестового ученика с этим расписанием
-        let testStudent2 = Student(
-            id: UUID(),
-            name: "Ron Weasley",
-            parentName: "Molly Weasley",
-            phoneNumber: "+44-7871234567",
-            months: [],
-            lessons: [],
-            lessonPrice: lessonPrice,
-            schedule: testSchedule2,
-            type: .schoolchild,
-            image: UIImage(named: "ron")?.squareImage()
-        )
-        
-        // Создаем тестового ученика с этим расписанием
-        let testStudent3 = Student(
-            id: UUID(),
-            name: "Hermione Granger",
-            parentName: "Monica Wilkins",
-            phoneNumber: "+44-7871234231",
-            months: [],
-            lessons: [],
-            lessonPrice: lessonPrice,
-            schedule: testSchedule1,
-            type: .schoolchild,
-            image: UIImage(named: "hermione")?.squareImage()
-        )
-        
-        let testStudent4 = Student(
-            id: UUID(),
-            name: "Neville Longbottom",
-            parentName: "Alice Longbottom",
-            phoneNumber: "+44-7871234533",
-            months: [],
-            lessons: [],
-            lessonPrice: lessonPrice,
-            schedule: testSchedule2,
-            type: .schoolchild,
-            image: UIImage(named: "neville")?.squareImage()
-        )
-        
-        let testStudent5 = Student(
-            id: UUID(),
-            name: "Myrtle Warren",
-            parentName: "Alice Longbottom",
-            phoneNumber: "+44-7871232122",
-            months: [],
-            lessons: [],
-            lessonPrice: lessonPrice,
-            schedule: [],
-            type: .schoolchild,
-            image: UIImage(named: "unknown_logo")?.squareImage()
-        )
-        
-        // Добавляем тестовых учеников в модель данных через StudentViewModel
-        studentViewModel.addStudent(testStudent)
-        studentViewModel.addStudent(testStudent2)
-        studentViewModel.addStudent(testStudent3)
-        studentViewModel.addStudent(testStudent4)
-        studentViewModel.addStudent(testStudent5)
         
         return true
     }

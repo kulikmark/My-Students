@@ -9,6 +9,7 @@ import UIKit
 import SwiftUI
 import Combine
 import Photos
+import RealmSwift
 
 protocol StudentCardDelegate: AnyObject {
     func didSaveStudent()
@@ -100,12 +101,12 @@ class StudentCardViewController: UIViewController {
         let saveButton = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveButtonTapped))
         navigationItem.rightBarButtonItem = saveButton
         
-//        // Добавляем жест для скрытия клавиатуры при тапе вне текстовых полей
-//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboardOnTap))
-//        view.addGestureRecognizer(tapGesture)
+        //        // Добавляем жест для скрытия клавиатуры при тапе вне текстовых полей
+        //        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboardOnTap))
+        //        view.addGestureRecognizer(tapGesture)
         
         // Добавляем обработчик изменений в UISegmentedControl
-            studentTypeSegmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
+        studentTypeSegmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
         
         // Повторно проверяем выбранный индекс и скрываем поля, если необходимо
         if studentTypeSegmentedControl.selectedSegmentIndex != 0 {
@@ -141,74 +142,101 @@ class StudentCardViewController: UIViewController {
         
         navigationController?.popViewController(animated: true)
         delegate?.didSaveStudent()
+        
+        viewModel.fetchStudents()
+        
     }
     
     private func saveStudent(_ existingStudent: Student?, mode: EditMode) {
-        let studentID = existingStudent?.id ?? UUID()
-        let studentTypeIndex = studentTypeSegmentedControl.selectedSegmentIndex
-        let studentType: StudentType = studentTypeIndex == 0 ? .schoolchild : .adult
-        
-        guard let studentName = studentNameTextField.text, !studentName.isEmpty else {
-            displayErrorAlert(message: "Student's name cannot be empty")
-            return
-        }
-        
-        guard let parentName = parentNameTextField.text, !parentName.isEmpty || studentTypeIndex == 1 else {
-            displayErrorAlert(message: "Parent's name cannot be empty for adult students")
-            return
-        }
-        
-        guard let phoneNumber = phoneTextField.text, !phoneNumber.isEmpty else {
-            displayErrorAlert(message: "Phone number cannot be empty")
-            return
-        }
-        
-        guard let lessonPriceText = lessonPriceTextField.text, !lessonPriceText.isEmpty else {
-            displayErrorAlert(message: "Please enter a valid lesson price")
-            return
-        }
-        
-        // Convert the lesson price text to a Double, replacing commas with dots if necessary
-        let formattedLessonPriceText = lessonPriceText.replacingOccurrences(of: ",", with: ".")
-        guard let lessonPriceValue = Double(formattedLessonPriceText) else {
-            displayErrorAlert(message: "Invalid lesson price")
-            return
-        }
-        
-        // Extract currency from currency text field, defaulting to nil if text field is empty
-        guard let currency = currencyTextField.text, !currency.isEmpty else {
-            displayErrorAlert(message: "Currency cannot be empty")
-            return
-        }
-        
-        let newLessonPrice = LessonPrice(price: lessonPriceValue, currency: currency)
-        
-        // Use selectedSchedules only in 'add' mode
-        let updatedSchedule: [Schedule] = mode == .add ? selectedSchedules.map { Schedule(weekday: $0.weekday, time: $0.time) } : existingStudent?.schedule ?? []
-        
-        let updatedLessons = existingStudent?.lessons ?? []
-        
-        // Добавление нового `PaidMonth` к студенту
-        let updatedMonths = existingStudent?.months ?? []
-        
-        let newStudent = Student(
-            id: studentID,
-            name: studentName,
-            parentName: parentName,
-            phoneNumber: phoneNumber,
-            months: updatedMonths,
-            lessons: updatedLessons,
-            lessonPrice: newLessonPrice,
-            schedule: updatedSchedule,
-            type: studentType,
-            image: selectedImage ?? existingStudent?.imageForCell
-        )
-        
-        switch mode {
-        case .add:
-            viewModel.addStudent(newStudent)
-        case .edit:
-            viewModel.updateStudent(newStudent)
+        do {
+            let realm = try Realm()
+            try realm.write {
+                let student: Student
+                if let existingStudent = existingStudent {
+                    student = existingStudent
+                } else {
+                    student = Student()
+                    student.id = UUID().uuidString // Set the primary key only for new objects
+                }
+                
+                let studentTypeIndex = studentTypeSegmentedControl.selectedSegmentIndex
+                let studentType: StudentType = studentTypeIndex == 0 ? .schoolchild : .adult
+                
+                guard let studentName = studentNameTextField.text, !studentName.isEmpty else {
+                    displayErrorAlert(message: "Student's name cannot be empty")
+                    return
+                }
+                
+                guard studentType == .adult || !parentNameTextField.text!.isEmpty else {
+                    displayErrorAlert(message: "Parent's name cannot be empty for schoolchildren")
+                    return
+                }
+                
+                let parentName = studentType == .adult ? "" : parentNameTextField.text!
+                
+                guard let phoneNumber = phoneTextField.text, !phoneNumber.isEmpty else {
+                    displayErrorAlert(message: "Phone number cannot be empty")
+                    return
+                }
+                
+                guard let lessonPriceText = lessonPriceTextField.text, !lessonPriceText.isEmpty else {
+                    displayErrorAlert(message: "Please enter a valid lesson price")
+                    return
+                }
+                
+                let formattedLessonPriceText = lessonPriceText.replacingOccurrences(of: ",", with: ".")
+                guard let lessonPriceValue = Double(formattedLessonPriceText) else {
+                    displayErrorAlert(message: "Invalid lesson price")
+                    return
+                }
+                
+                guard let currency = currencyTextField.text, !currency.isEmpty else {
+                    displayErrorAlert(message: "Currency cannot be empty")
+                    return
+                }
+                
+                let newLessonPrice = LessonPrice()
+                newLessonPrice.price = lessonPriceValue
+                newLessonPrice.currency = currency
+                
+                
+                // Handle schedules based on edit mode and student type
+                if mode == .edit {
+                    // Remove existing schedules only if switching from schoolchild to adult
+                    if existingStudent?.type == StudentType.schoolchild.rawValue && studentType == .adult {
+                        // Do nothing with schedules here, as we won't remove them
+                    }
+                } else {
+                    // Clear schedules for new student or when switching from adult to schoolchild
+                    student.schedule.removeAll()
+                }
+                
+                // Add new schedules if switching to schoolchild and there are selected schedules
+                if studentType == .schoolchild && !selectedSchedules.isEmpty {
+                    for (weekday, time) in selectedSchedules {
+                        let newSchedule = Schedule()
+                        newSchedule.weekday = weekday
+                        newSchedule.time = time
+                        student.schedule.append(newSchedule)
+                    }
+                }
+                
+                student.name = studentName
+                student.parentName = parentName
+                student.phoneNumber = phoneNumber
+                student.lessonPrice = newLessonPrice
+                student.type = studentType.rawValue
+                if let selectedImage = selectedImage {
+                    student.imageForCellData = selectedImage.pngData()
+                } else {
+                    student.imageForCellData = existingStudent?.imageForCellData
+                }
+                
+                // Add or update the student in the realm
+                realm.add(student, update: .modified)
+            }
+        } catch {
+            displayErrorAlert(message: "Failed to save student: \(error.localizedDescription)")
         }
     }
     
@@ -248,4 +276,3 @@ extension StudentCardViewController {
         return true
     }
 }
-

@@ -117,12 +117,27 @@ class StudentCollectionViewCell: UICollectionViewCell {
         showDeleteConfirmation?()
     }
     
-    func configure(with student: Student, image: UIImage?) {
+//    func configure(with student: Student, image: Data?) {
+//        self.student = student
+//        
+//        if let profileImage = image {
+//            profileImageView.image = profileImage
+//        } else if let studentImageData = student.imageForCellData, let studentImage = UIImage(data: studentImageData) {
+//            profileImageView.image = studentImage
+//        } else {
+//            profileImageView.image = UIImage(named: "unknown_logo")
+//        }
+//        
+//        studentNameLabel.text = student.name
+//        updateScheduleTextField()
+//    }
+    
+    func configure(with student: Student, image: Data?) {
         self.student = student
         
         if let profileImage = image {
-            profileImageView.image = profileImage
-        } else if let studentImage = student.imageForCell {
+            profileImageView.image = UIImage(data: profileImage)
+        } else if let studentImageData = student.imageForCellData, let studentImage = UIImage(data: studentImageData) {
             profileImageView.image = studentImage
         } else {
             profileImageView.image = UIImage(named: "unknown_logo")
@@ -131,16 +146,22 @@ class StudentCollectionViewCell: UICollectionViewCell {
         studentNameLabel.text = student.name
         updateScheduleTextField()
     }
+
+
     
     func updateScheduleTextField() {
         var scheduleStrings = [String]()
         
-        if let sortedSchedules = student?.schedule.sorted(by: { orderOfDay($0.weekday) < orderOfDay($1.weekday) }) {
+        // Проверяем, что у студента есть расписание и оно отсортировано по дням недели
+        if let student = student {
+            let sortedSchedules = student.schedule.sorted(by: { orderOfDay($0.weekday) < orderOfDay($1.weekday) })
             scheduleStrings = sortedSchedules.map { "\($0.weekday) \($0.time)" }
         }
         
+        // Формируем строку расписания
         let formattedSchedule = scheduleStrings.joined(separator: ", ")
         
+        // Обновляем текст метки в зависимости от наличия расписания
         if formattedSchedule.isEmpty {
             scheduleLabel.text = "Schedule not yet added"
         } else {

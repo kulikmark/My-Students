@@ -30,13 +30,13 @@ class StudentsCollectionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print("students viewDidLoad StudentsCollectionViewController \(viewModel.students)")
+//        print("students viewDidLoad StudentsCollectionViewController \(viewModel.students)")
         
         viewModel.$students
             .receive(on: RunLoop.main)
             .sink { [weak self] students in
                 self?.collectionView.reloadData()
-                print("students in StudentsCollectionViewController: \(students)")
+//                print("students in StudentsCollectionViewController: \(students)")
             }
             .store(in: &cancellables)
         
@@ -129,7 +129,7 @@ extension StudentsCollectionViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StudentCell", for: indexPath) as! StudentCollectionViewCell
         let student = viewModel.students[indexPath.item]
-        cell.configure(with: student, image: student.imageForCell)
+        cell.configure(with: student, image: student.imageForCellData)
         cell.isEditing = isEditingCells
         cell.showDeleteConfirmation = { [weak self] in
             self?.showDeleteConfirmation(at: indexPath)

@@ -61,20 +61,40 @@ extension StudentCardViewController {
         imageButton.contentMode = .scaleToFill
         imageButton.clipsToBounds = true
         
-        switch (selectedImage, student?.imageForCell) {
-        case (let selectedImageName?, _):
-            imageButton.setImage(selectedImageName.withRenderingMode(.alwaysOriginal), for: .normal)
-        case (_, let studentImageName?):
-            imageButton.setImage(studentImageName.withRenderingMode(.alwaysOriginal), for: .normal)
+//        switch (selectedImage, student?.imageForCell) {
+//        case (let selectedImageName?, _):
+//            imageButton.setImage(selectedImageName.withRenderingMode(.alwaysOriginal), for: .normal)
+//        case (_, let studentImageName?):
+//            imageButton.setImage(studentImageName.withRenderingMode(.alwaysOriginal), for: .normal)
+//        default:
+//            break
+//        }
+        
+        switch (selectedImage, student?.imageForCellData) {
+        case (let selectedImage?, _):
+            imageButton.setImage(selectedImage.withRenderingMode(.alwaysOriginal), for: .normal)
+        case (_, let studentImageData?):
+            if let studentImage = UIImage(data: studentImageData) {
+                imageButton.setImage(studentImage.withRenderingMode(.alwaysOriginal), for: .normal)
+            } else {
+                // Handle case where image data couldn't be converted to UIImage
+                imageButton.setImage(UIImage(named: "unknown_logo")?.withRenderingMode(.alwaysOriginal), for: .normal)
+            }
         default:
-            break
+            imageButton.setImage(UIImage(named: "unknown_logo")?.withRenderingMode(.alwaysOriginal), for: .normal)
         }
         
         // Student Type Segmented Control
-            stackView.addArrangedSubview(studentTypeSegmentedControl)
-            if let student = student {
-                studentTypeSegmentedControl.selectedSegmentIndex = student.type == .schoolchild ? 0 : 1
-            }
+//            stackView.addArrangedSubview(studentTypeSegmentedControl)
+//            if let student = student {
+//                studentTypeSegmentedControl.selectedSegmentIndex = student.type == .schoolchild ? 0 : 1
+//            }
+        
+        stackView.addArrangedSubview(studentTypeSegmentedControl)
+        if let student = student {
+            let type = StudentType(rawValue: student.type) ?? .schoolchild // Assuming .schoolchild as default
+            studentTypeSegmentedControl.selectedSegmentIndex = type == .schoolchild ? 0 : 1
+        }
         
         // Student Name Label
         stackView.addArrangedSubview(studentNameLabel)
@@ -132,7 +152,7 @@ extension StudentCardViewController {
         lessonPriceTextField.borderStyle = .roundedRect
         lessonPriceTextField.placeholder = "Price"
         lessonPriceTextField.keyboardType = .decimalPad
-        lessonPriceTextField.text = student != nil ? "\(student!.lessonPrice.price)" : ""
+        lessonPriceTextField.text = student != nil ? "\(student!.lessonPrice?.price ?? 0.0)" : ""
         
         // Currency Label
         stackView.addArrangedSubview(currencyLabel)
@@ -146,7 +166,7 @@ extension StudentCardViewController {
         }
         currencyTextField.borderStyle = .roundedRect
         currencyTextField.placeholder = "Currency"
-        currencyTextField.text = student != nil ? "\(student!.lessonPrice.currency)" : ""
+        currencyTextField.text = student != nil ? "\(student!.lessonPrice?.currency ?? "")" : ""
         
         // Schedule Label
         stackView.addArrangedSubview(scheduleLabel)

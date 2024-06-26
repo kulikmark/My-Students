@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		6D4293032C29437000B44ED1 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D4293022C29437000B44ED1 /* SnapKit */; };
+		6D4293042C2C24C400B44ED1 /* Pods_My_Students.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66B406D382489C82CE1E76F4 /* Pods_My_Students.framework */; settings = {ATTRIBUTES = (Required, ); }; };
+		6D4293052C2C24C400B44ED1 /* Pods_My_Students.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 66B406D382489C82CE1E76F4 /* Pods_My_Students.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6D6DCC3D2C2936D200BE983C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC3C2C2936D200BE983C /* AppDelegate.swift */; };
 		6D6DCC3F2C2936D200BE983C /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC3E2C2936D200BE983C /* SceneDelegate.swift */; };
 		6D6DCC442C2936D200BE983C /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 6D6DCC432C2936D200BE983C /* Base */; };
@@ -21,7 +23,6 @@
 		6D6DCC5B2C2939C500BE983C /* StudentCardSetupUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC5A2C2939C500BE983C /* StudentCardSetupUI.swift */; };
 		6D6DCC622C293A7300BE983C /* StartScreenLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC612C293A7300BE983C /* StartScreenLabel.swift */; };
 		6D6DCC642C293C7C00BE983C /* StudentCardScheduleSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC632C293C7C00BE983C /* StudentCardScheduleSelection.swift */; };
-		9999AC752C433A7E8212A8D1 /* Pods_My_Students.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66B406D382489C82CE1E76F4 /* Pods_My_Students.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -31,6 +32,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				6D4293052C2C24C400B44ED1 /* Pods_My_Students.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -63,8 +65,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6D4293042C2C24C400B44ED1 /* Pods_My_Students.framework in Frameworks */,
 				6D4293032C29437000B44ED1 /* SnapKit in Frameworks */,
-				9999AC752C433A7E8212A8D1 /* Pods_My_Students.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,7 +79,6 @@
 				03404CB6D2DE744CCDD146C7 /* Pods-My Students.debug.xcconfig */,
 				E652B4A416F8E32BFDEBD020 /* Pods-My Students.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -322,7 +323,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -385,7 +386,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
