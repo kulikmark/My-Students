@@ -9,12 +9,14 @@ import UIKit
 import SwiftUI
 import Combine
 import SnapKit
+import RealmSwift
 
 class StudentsCollectionViewController: UIViewController {
+     var realm: Realm!
     
     @ObservedObject var viewModel: StudentViewModel
     private var cancellables = Set<AnyCancellable>()
-    private var collectionView: UICollectionView!
+     var collectionView: UICollectionView!
     
     private var isEditingCells: Bool = false
     
@@ -27,16 +29,19 @@ class StudentsCollectionViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    
+    override func viewWillAppear(_ animated: Bool) {
+        updateStartScreenLabelVisibility(for: collectionView)
+        collectionView.reloadData()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-//        print("students viewDidLoad StudentsCollectionViewController \(viewModel.students)")
         
         viewModel.$students
             .receive(on: RunLoop.main)
             .sink { [weak self] students in
                 self?.collectionView.reloadData()
-//                print("students in StudentsCollectionViewController: \(students)")
             }
             .store(in: &cancellables)
         
@@ -49,6 +54,10 @@ class StudentsCollectionViewController: UIViewController {
         navigationItem.rightBarButtonItem = editButtonItem
         
         setupStartScreenLabel(with: "Add first student \n\n Tap + in the left corner of the screen")
+        
+      updateStartScreenLabelVisibility(for: collectionView)
+        
+        collectionView.reloadData()
     }
     
     func setupCollectionView() {
@@ -91,7 +100,7 @@ class StudentsCollectionViewController: UIViewController {
     }
     
     @objc func addNewStudent() {
-        let studentCardVC = StudentCardViewController(viewModel: viewModel, editMode: .add, delegate: self)
+        let studentCardVC = StudentCardViewController(viewModel: viewModel, editMode: .add)
         navigationController?.pushViewController(studentCardVC, animated: true)
     }
 }
@@ -101,7 +110,7 @@ extension StudentsCollectionViewController: UICollectionViewDelegate {
         if isEditingCells {
             return
         }
-        let studentCardVC = StudentCardViewController(viewModel: viewModel, editMode: .edit, delegate: self)
+        let studentCardVC = StudentCardViewController(viewModel: viewModel, editMode: .edit)
         let student = viewModel.students[indexPath.item]
         studentCardVC.student = student
         navigationController?.pushViewController(studentCardVC, animated: true)
@@ -129,21 +138,12 @@ extension StudentsCollectionViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StudentCell", for: indexPath) as! StudentCollectionViewCell
         let student = viewModel.students[indexPath.item]
-        cell.configure(with: student, image: student.imageForCellData)
+        cell.configure(with: student)
         cell.isEditing = isEditingCells
         cell.showDeleteConfirmation = { [weak self] in
             self?.showDeleteConfirmation(at: indexPath)
         }
         return cell
-    }
-}
-
-// MARK: - StudentCardDelegate
-
-extension StudentsCollectionViewController: StudentCardDelegate {
-    func didSaveStudent() {
-        collectionView.reloadData()
-        setupStartScreenLabel(with: "Add first student \n\n Tap + in the left corner of the screen")
     }
 }
 

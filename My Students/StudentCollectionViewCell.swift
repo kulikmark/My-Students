@@ -68,7 +68,6 @@ class StudentCollectionViewCell: UICollectionViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        profileImageView.layer.cornerRadius = profileImageView.frame.width / 2
         contentView.layer.cornerRadius = 10
     }
     
@@ -96,6 +95,7 @@ class StudentCollectionViewCell: UICollectionViewCell {
             make.centerX.equalToSuperview()
             make.width.height.equalTo(containerView.snp.width).inset(10)
         }
+        profileImageView.layer.cornerRadius = profileImageView.frame.size.width / 2
         
         studentNameLabel.snp.makeConstraints { make in
             make.top.equalTo(profileImageView.snp.bottom).offset(10)
@@ -117,38 +117,26 @@ class StudentCollectionViewCell: UICollectionViewCell {
         showDeleteConfirmation?()
     }
     
-//    func configure(with student: Student, image: Data?) {
-//        self.student = student
-//        
-//        if let profileImage = image {
-//            profileImageView.image = profileImage
-//        } else if let studentImageData = student.imageForCellData, let studentImage = UIImage(data: studentImageData) {
-//            profileImageView.image = studentImage
-//        } else {
-//            profileImageView.image = UIImage(named: "unknown_logo")
-//        }
-//        
-//        studentNameLabel.text = student.name
-//        updateScheduleTextField()
-//    }
-    
-    func configure(with student: Student, image: Data?) {
+    func configure(with student: Student) {
         self.student = student
         
-        if let profileImage = image {
-            profileImageView.image = UIImage(data: profileImage)
-        } else if let studentImageData = student.imageForCellData, let studentImage = UIImage(data: studentImageData) {
-            profileImageView.image = studentImage
-        } else {
-            profileImageView.image = UIImage(named: "unknown_logo")
-        }
-        
         studentNameLabel.text = student.name
+        
+        profileImageView.layer.cornerRadius = profileImageView.frame.width / 2
+        
+        if !student.studentImage.isEmpty {
+                  if let image = UIImage(contentsOfFile: student.studentImage) {
+                      profileImageView.image = image
+                  } else {
+                      profileImageView.image = UIImage(named: "defaultImage")
+                  }
+              } else {
+                  profileImageView.image = UIImage(named: "defaultImage")
+              }
+        
         updateScheduleTextField()
     }
 
-
-    
     func updateScheduleTextField() {
         var scheduleStrings = [String]()
         

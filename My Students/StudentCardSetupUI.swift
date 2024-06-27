@@ -11,6 +11,46 @@ import UIKit
 
 extension StudentCardViewController {
     
+    @objc private func selectImage() {
+        setImagePicker(source: .photoLibrary)
+    }
+    
+    func setImagePicker(source: UIImagePickerController.SourceType) {
+        let imagePicker = UIImagePickerController()
+        imagePicker.delegate = self
+        imagePicker.allowsEditing = true
+        imagePicker.sourceType = source
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            if let selectedImage = info[.originalImage] as? UIImage {
+                self.selectedImage = selectedImage
+                profileImageView.image = selectedImage
+            }
+            dismiss(animated: true, completion: nil)
+        }
+    
+    private func saveImageToDocumentsDirectory(image: UIImage) -> String {
+        guard let data = image.jpegData(compressionQuality: 0.8) else { return "" }
+        
+        let filename = UUID().uuidString + ".jpg"
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let fileURL = documentsDirectory.appendingPathComponent(filename)
+        
+        do {
+            try data.write(to: fileURL)
+            return fileURL.path
+        } catch {
+            print("Unable to save image to documents directory: \(error)")
+            return ""
+        }
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true, completion: nil)
+    }
+    
     func setupUI() {
         
         view.backgroundColor = UIColor.systemGroupedBackground
@@ -25,7 +65,7 @@ extension StudentCardViewController {
         scrollView.addSubview(contentView)
         contentView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
-            make.width.equalToSuperview()  // Ensure the content view width matches the scroll view width
+            make.width.equalToSuperview()
         }
         
         // Add a stack view to hold all the elements
@@ -39,56 +79,55 @@ extension StudentCardViewController {
             make.edges.equalToSuperview().inset(20)
         }
         
-        // Image Button Container
-        let imageButtonContainer = UIView()
-        stackView.addArrangedSubview(imageButtonContainer)
-        imageButtonContainer.snp.makeConstraints { make in
+        // Image View Container
+        let imageContainerView = UIView()
+        stackView.addArrangedSubview(imageContainerView)
+        imageContainerView.snp.makeConstraints { make in
             make.height.equalTo(200)
         }
         
-        // Add Image Button
-        imageButtonContainer.addSubview(imageButton)
-        imageButton.snp.makeConstraints { make in
-            make.center.equalToSuperview()
+        // Add Profile Image View
+        imageContainerView.addSubview(profileImageView)
+        profileImageView.snp.makeConstraints { make in
+            make.top.equalTo(imageContainerView.snp.top)
+            make.centerX.equalToSuperview()
             make.width.height.equalTo(200)
         }
-        imageButton.setTitle("Adding photo", for: .normal)
-        imageButton.titleLabel?.font = UIFont.systemFont(ofSize: 20)
-//        imageButton.addTarget(self, action: #selector(selectImage), for: .touchUpInside)
-        imageButton.layer.cornerRadius = 100
-        imageButton.layer.borderWidth = 1
-        imageButton.layer.borderColor = UIColor.systemBlue.cgColor
-        imageButton.contentMode = .scaleToFill
-        imageButton.clipsToBounds = true
+        profileImageView.image = UIImage(named: "defaultImage")
+        profileImageView.contentMode = .scaleAspectFill
+        profileImageView.clipsToBounds = true
+        profileImageView.layer.cornerRadius = 100
         
-//        switch (selectedImage, student?.imageForCell) {
-//        case (let selectedImageName?, _):
-//            imageButton.setImage(selectedImageName.withRenderingMode(.alwaysOriginal), for: .normal)
-//        case (_, let studentImageName?):
-//            imageButton.setImage(studentImageName.withRenderingMode(.alwaysOriginal), for: .normal)
-//        default:
-//            break
-//        }
-        
-        switch (selectedImage, student?.imageForCellData) {
-        case (let selectedImage?, _):
-            imageButton.setImage(selectedImage.withRenderingMode(.alwaysOriginal), for: .normal)
-        case (_, let studentImageData?):
-            if let studentImage = UIImage(data: studentImageData) {
-                imageButton.setImage(studentImage.withRenderingMode(.alwaysOriginal), for: .normal)
-            } else {
-                // Handle case where image data couldn't be converted to UIImage
-                imageButton.setImage(UIImage(named: "unknown_logo")?.withRenderingMode(.alwaysOriginal), for: .normal)
-            }
-        default:
-            imageButton.setImage(UIImage(named: "unknown_logo")?.withRenderingMode(.alwaysOriginal), for: .normal)
+        // Set Initial Image
+        if let selectedImage = selectedImage {
+            profileImageView.image = selectedImage
+        } else if let studentImageFilePath = student?.studentImage, let studentImage = UIImage(contentsOfFile: studentImageFilePath) {
+            profileImageView.image = studentImage
+        } else {
+            profileImageView.image = UIImage(named: "defaultImage")
         }
         
-        // Student Type Segmented Control
-//            stackView.addArrangedSubview(studentTypeSegmentedControl)
-//            if let student = student {
-//                studentTypeSegmentedControl.selectedSegmentIndex = student.type == .schoolchild ? 0 : 1
-//            }
+        // Add Image Button View Container
+        let buttonContainerView = UIView()
+        stackView.addArrangedSubview(buttonContainerView)
+        buttonContainerView.snp.makeConstraints { make in
+            make.height.equalTo(60)
+        }
+        
+        // Add Image Button
+        let addProfileImageButton = UIButton()
+        buttonContainerView.addSubview(addProfileImageButton)
+        addProfileImageButton.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.width.equalTo(200)
+            make.height.equalTo(40)
+        }
+        addProfileImageButton.backgroundColor = .systemBlue
+        addProfileImageButton.layer.cornerRadius = 10
+        addProfileImageButton.setTitle("Add photo", for: .normal)
+        addProfileImageButton.titleLabel?.font = UIFont.systemFont(ofSize: 14)
+        addProfileImageButton.setTitleColor(.white, for: .normal)
+        addProfileImageButton.addTarget(self, action: #selector(selectImage), for: .touchUpInside)
         
         stackView.addArrangedSubview(studentTypeSegmentedControl)
         if let student = student {
@@ -152,7 +191,7 @@ extension StudentCardViewController {
         lessonPriceTextField.borderStyle = .roundedRect
         lessonPriceTextField.placeholder = "Price"
         lessonPriceTextField.keyboardType = .decimalPad
-        lessonPriceTextField.text = student != nil ? "\(student!.lessonPrice?.price ?? 0.0)" : ""
+        lessonPriceTextField.text = student != nil ? "\(student!.lessonPrice?.price ?? 0)" : ""
         
         // Currency Label
         stackView.addArrangedSubview(currencyLabel)
@@ -187,13 +226,6 @@ extension StudentCardViewController {
         // Add tap gesture recognizer to schedule text field
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(selectSchedule))
         scheduleTextField.addGestureRecognizer(tapGesture)
-        
-//        studentNameTextField.delegate = self
-//        parentNameTextField.delegate = self
-//        phoneTextField.delegate = self
-//        lessonPriceTextField.delegate = self
-//        currencyTextField.delegate = self
     }
-    
-}
 
+}

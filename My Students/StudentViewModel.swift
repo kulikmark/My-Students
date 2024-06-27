@@ -10,31 +10,23 @@ import Combine
 import SwiftUI
 import RealmSwift
 
-//class StudentViewModel: ObservableObject {
-//    @Published var students: [Student] = []
-//    
-//    func addStudent(_ student: Student) {
-//        students.append(student)
-//    }
-//    
-//    func updateStudent(_ updatedStudent: Student) {
-//        if let index = students.firstIndex(where: { $0.id == updatedStudent.id }) {
-//            students[index] = updatedStudent
-//        }
-//    }
-//    
-//    func removeStudent(at index: Int) {
-//        students.remove(at: index)
-//    }
-//}
-
 class StudentViewModel: ObservableObject {
     @Published var students: [Student] = []
 
-    private var realm: Realm
+     var realm: Realm
 
     init() {
         do {
+            let config = Realm.Configuration(
+                schemaVersion: 2, // Увеличьте версию схемы
+                migrationBlock: { migration, oldSchemaVersion in
+                    if oldSchemaVersion < 2 {
+                        // Миграционные изменения, если они необходимы
+                    }
+                }
+            )
+            Realm.Configuration.defaultConfiguration = config
+
             realm = try Realm()
             fetchStudents()
         } catch let error as NSError {
@@ -80,4 +72,31 @@ class StudentViewModel: ObservableObject {
             print("Failed to remove student: \(error.localizedDescription)")
         }
     }
-}
+    
+    func updateStudentImage(student: Student, image: UIImage) -> String? {
+            guard let data = image.jpegData(compressionQuality: 0.8) else { return nil }
+            
+            let filename = UUID().uuidString + ".jpg"
+            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let fileURL = documentsDirectory.appendingPathComponent(filename)
+            
+            do {
+                try data.write(to: fileURL)
+                
+                do {
+                    try realm.write {
+                        student.studentImage = fileURL.path
+                    }
+                    fetchStudents()
+                } catch {
+                    print("Failed to update student image path in Realm: \(error.localizedDescription)")
+                    return nil
+                }
+                
+                return fileURL.path
+            } catch {
+                print("Unable to save image to documents directory: \(error)")
+                return nil
+            }
+        }
+    }

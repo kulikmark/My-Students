@@ -11,37 +11,28 @@ import Combine
 import Photos
 import RealmSwift
 
-protocol StudentCardDelegate: AnyObject {
-    func didSaveStudent()
-}
 
 enum EditMode {
     case add
     case edit
 }
 
-class StudentCardViewController: UIViewController {
+class StudentCardViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     @ObservedObject var viewModel: StudentViewModel
     var student: Student?
     var editMode: EditMode
-    weak var delegate: StudentCardDelegate?
     
-    // Настройка UI и переменных
-    
-    init(viewModel: StudentViewModel, editMode: EditMode, delegate: StudentCardDelegate?) {
+    init(viewModel: StudentViewModel, editMode: EditMode) {
         self.viewModel = viewModel
         self.editMode = editMode
         super.init(nibName: nil, bundle: nil)
-        self.delegate = delegate
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Properties
-    // Add a segmented control for student type
     let studentTypeSegmentedControl: UISegmentedControl = {
         let items = ["Schoolchild", "Adult"]
         let control = UISegmentedControl(items: items)
@@ -51,6 +42,7 @@ class StudentCardViewController: UIViewController {
     
     var selectedSchedules = [(weekday: String, time: String)]()
     var selectedImage: UIImage?
+    var imageIsChanged = false
     
     let scrollView = UIScrollView()
     let studentNameTextField = UITextField()
@@ -66,27 +58,19 @@ class StudentCardViewController: UIViewController {
     let scheduleTextField = UITextField()
     let scheduleLabel = UILabel()
     
-    var imageButton = UIButton(type: .system)
-    
-    let imagePicker = UIImagePickerController()
+    var profileImageView = UIImageView()
     
     var lessonPriceValue: Double?
     var enteredPrice: Double?
     var enteredCurrency: String?
     
-    // MARK: - View Lifecycle
-    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
         updateScheduleTextField()
-        
-        // Повторно проверяем выбранный индекс и скрываем поля, если необходимо
         if studentTypeSegmentedControl.selectedSegmentIndex != 0 {
             parentNameLabel.isHidden = true
             parentNameTextField.isHidden = true
         }
-        
     }
     
     override func viewDidLoad() {
@@ -94,31 +78,22 @@ class StudentCardViewController: UIViewController {
         setupUI()
         updateScheduleTextField()
         self.title = editMode == .add ? "Add Student" : "Edit Student"
-        //        // Заменяем кнопку "Back" на кастомную кнопку
-        //        let backButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(backButtonTapped))
-        //        navigationItem.leftBarButtonItem = backButton
-        
         let saveButton = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveButtonTapped))
         navigationItem.rightBarButtonItem = saveButton
-        
-        //        // Добавляем жест для скрытия клавиатуры при тапе вне текстовых полей
-        //        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboardOnTap))
-        //        view.addGestureRecognizer(tapGesture)
-        
-        // Добавляем обработчик изменений в UISegmentedControl
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboardOnTap))
+        view.addGestureRecognizer(tapGesture)
         studentTypeSegmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged(_:)), for: .valueChanged)
-        
-        // Повторно проверяем выбранный индекс и скрываем поля, если необходимо
         if studentTypeSegmentedControl.selectedSegmentIndex != 0 {
             parentNameLabel.isHidden = true
             parentNameTextField.isHidden = true
         }
-        
     }
     
-    // Метод для обработки изменений в UISegmentedControl
+    @objc private func hideKeyboardOnTap() {
+        view.endEditing(true)
+    }
+    
     @objc private func segmentedControlValueChanged(_ sender: UISegmentedControl) {
-        // Проверяем выбранный индекс и скрываем или отображаем соответствующие поля
         switch sender.selectedSegmentIndex {
         case 0:
             parentNameLabel.isHidden = false
@@ -131,9 +106,8 @@ class StudentCardViewController: UIViewController {
         }
     }
     
-    @objc internal func saveButtonTapped() {
+    @objc private func saveButtonTapped() {
         view.endEditing(true)
-        
         if let existingStudent = student {
             saveStudent(existingStudent, mode: .edit)
         } else {
@@ -141,106 +115,113 @@ class StudentCardViewController: UIViewController {
         }
         
         navigationController?.popViewController(animated: true)
-        delegate?.didSaveStudent()
-        
         viewModel.fetchStudents()
-        
     }
     
+    
     private func saveStudent(_ existingStudent: Student?, mode: EditMode) {
-        do {
-            let realm = try Realm()
-            try realm.write {
-                let student: Student
-                if let existingStudent = existingStudent {
-                    student = existingStudent
-                } else {
-                    student = Student()
-                    student.id = UUID().uuidString // Set the primary key only for new objects
-                }
-                
-                let studentTypeIndex = studentTypeSegmentedControl.selectedSegmentIndex
-                let studentType: StudentType = studentTypeIndex == 0 ? .schoolchild : .adult
-                
-                guard let studentName = studentNameTextField.text, !studentName.isEmpty else {
-                    displayErrorAlert(message: "Student's name cannot be empty")
-                    return
-                }
-                
-                guard studentType == .adult || !parentNameTextField.text!.isEmpty else {
-                    displayErrorAlert(message: "Parent's name cannot be empty for schoolchildren")
-                    return
-                }
-                
-                let parentName = studentType == .adult ? "" : parentNameTextField.text!
-                
-                guard let phoneNumber = phoneTextField.text, !phoneNumber.isEmpty else {
-                    displayErrorAlert(message: "Phone number cannot be empty")
-                    return
-                }
-                
-                guard let lessonPriceText = lessonPriceTextField.text, !lessonPriceText.isEmpty else {
-                    displayErrorAlert(message: "Please enter a valid lesson price")
-                    return
-                }
-                
-                let formattedLessonPriceText = lessonPriceText.replacingOccurrences(of: ",", with: ".")
-                guard let lessonPriceValue = Double(formattedLessonPriceText) else {
-                    displayErrorAlert(message: "Invalid lesson price")
-                    return
-                }
-                
-                guard let currency = currencyTextField.text, !currency.isEmpty else {
-                    displayErrorAlert(message: "Currency cannot be empty")
-                    return
-                }
-                
-                let newLessonPrice = LessonPrice()
-                newLessonPrice.price = lessonPriceValue
-                newLessonPrice.currency = currency
-                
-                
-                // Handle schedules based on edit mode and student type
-                if mode == .edit {
-                    // Remove existing schedules only if switching from schoolchild to adult
-                    if existingStudent?.type == StudentType.schoolchild.rawValue && studentType == .adult {
-                        // Do nothing with schedules here, as we won't remove them
-                    }
-                } else {
-                    // Clear schedules for new student or when switching from adult to schoolchild
-                    student.schedule.removeAll()
-                }
-                
-                // Add new schedules if switching to schoolchild and there are selected schedules
-                if studentType == .schoolchild && !selectedSchedules.isEmpty {
-                    for (weekday, time) in selectedSchedules {
-                        let newSchedule = Schedule()
-                        newSchedule.weekday = weekday
-                        newSchedule.time = time
-                        student.schedule.append(newSchedule)
-                    }
-                }
-                
-                student.name = studentName
-                student.parentName = parentName
-                student.phoneNumber = phoneNumber
-                student.lessonPrice = newLessonPrice
-                student.type = studentType.rawValue
-                if let selectedImage = selectedImage {
-                    student.imageForCellData = selectedImage.pngData()
-                } else {
-                    student.imageForCellData = existingStudent?.imageForCellData
-                }
-                
-                // Add or update the student in the realm
-                realm.add(student, update: .modified)
+        let studentID = existingStudent?.id ?? UUID().uuidString
+        
+        let studentTypeIndex = studentTypeSegmentedControl.selectedSegmentIndex
+        let studentType: StudentType = studentTypeIndex == 0 ? .schoolchild : .adult
+        
+        // Убираем проверку на пустое имя студента
+        let studentName = studentNameTextField.text ?? ""
+        
+        // Убираем проверку на пустое имя родителя для школьников
+        let parentName = studentType == .adult ? parentNameTextField.text ?? "" : (parentNameTextField.text ?? "")
+        
+        // Убираем проверку на пустой номер телефона
+        let phoneNumber = phoneTextField.text ?? ""
+        
+        // Убираем проверку на пустую цену урока
+        let lessonPriceText = lessonPriceTextField.text ?? "0"
+        let lessonPriceValue = Int(lessonPriceText) ?? 0
+        
+        // Убираем проверку на пустую валюту
+        let currency = currencyTextField.text ?? ""
+        
+        let newLessonPrice = LessonPrice()
+        newLessonPrice.price = lessonPriceValue
+        newLessonPrice.currency = currency
+        
+        let updatedLessons = existingStudent?.lessons ?? List<Lesson>()
+        let updatedMonths = existingStudent?.months ?? List<Month>()
+        
+        let updatedSchedule = existingStudent?.schedule ?? List<Schedule>()
+        
+//        if studentType == .schoolchild && !selectedSchedules.isEmpty {
+//            for (weekday, time) in selectedSchedules {
+//                let newSchedule = Schedule()
+//                newSchedule.weekday = weekday
+//                newSchedule.time = time
+//                updatedSchedule.append(newSchedule)
+//            }
+//        }
+        
+        if !selectedSchedules.isEmpty {
+            viewModel.realm.beginWrite()
+            for (weekday, time) in selectedSchedules {
+                let newSchedule = Schedule()
+                newSchedule.weekday = weekday
+                newSchedule.time = time
+                updatedSchedule.append(newSchedule)
             }
-        } catch {
-            displayErrorAlert(message: "Failed to save student: \(error.localizedDescription)")
+            do {
+                try viewModel.realm.commitWrite()
+            } catch {
+                print("Failed to commit write transaction: \(error)")
+            }
+        }
+        
+        // Сохранение изображения
+        var imagePath: String?
+        if let selectedImage = selectedImage {
+            imagePath = saveImageToDocumentsDirectory(image: selectedImage)
+        } else if let existingImage = existingStudent?.studentImage {
+            imagePath = existingImage
+        }
+        
+        
+        
+        let newStudent = Student(
+            id: UUID(uuidString: studentID) ?? UUID(),
+            name: studentName,
+            parentName: parentName,
+            phoneNumber: phoneNumber,
+            months: Array(updatedMonths),
+            lessons: Array(updatedLessons),
+            lessonPrice: newLessonPrice,
+            schedule: Array(updatedSchedule),
+            type: studentType,
+            studentImage: imagePath ?? ""
+        )
+        
+        switch mode {
+        case .add:
+            viewModel.addStudent(newStudent)
+        case .edit:
+            viewModel.updateStudent(newStudent)
         }
     }
     
-    private func displayErrorAlert(message: String) {
+    private func saveImageToDocumentsDirectory(image: UIImage) -> String {
+        guard let data = image.jpegData(compressionQuality: 0.8) else { return "" }
+        
+        let filename = UUID().uuidString + ".jpg"
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let fileURL = documentsDirectory.appendingPathComponent(filename)
+        
+        do {
+            try data.write(to: fileURL)
+            return fileURL.path
+        } catch {
+            print("Unable to save image to documents directory: \(error)")
+            return ""
+        }
+    }
+    
+    func displayErrorAlert(message: String) {
         let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         self.present(alert, animated: true, completion: nil)

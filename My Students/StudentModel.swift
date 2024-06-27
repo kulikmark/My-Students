@@ -17,7 +17,7 @@ class Student: Object {
     @objc dynamic var id: String = UUID().uuidString
     @objc dynamic var name: String = ""
     @objc dynamic var parentName: String = ""
-    @objc dynamic var imageForCellData: Data? = nil
+    @objc dynamic var studentImage: String = ""
     @objc dynamic var phoneNumber: String = ""
     @objc dynamic var lessonPrice: LessonPrice? = nil
     @objc dynamic var type: String = StudentType.schoolchild.rawValue
@@ -39,15 +39,13 @@ class Student: Object {
                      lessonPrice: LessonPrice,
                      schedule: [Schedule],
                      type: StudentType,
-                     image: UIImage? = nil,
+                     studentImage: String,
                      photoUrls: [URL] = []) {
         self.init()
         self.id = id.uuidString
         self.name = name
         self.parentName = parentName
-        if let image = image {
-            self.imageForCellData = image.pngData()
-        }
+        self.studentImage = studentImage
         self.phoneNumber = phoneNumber
         self.months.append(objectsIn: months)
         self.lessons.append(objectsIn: lessons)
@@ -72,7 +70,7 @@ class Month: Object {
 }
 
 class LessonPrice: Object {
-    @objc dynamic var price: Double = 0.0
+    @objc dynamic var price: Int = 0
     @objc dynamic var currency: String = ""
 }
 

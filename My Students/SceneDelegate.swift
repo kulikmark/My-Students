@@ -32,13 +32,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 //        let homeWorkNavController = UINavigationController(rootViewController: homeWorkTableViewController)
         
         
-        let tabBarController = UITabBarController()
-        tabBarController.viewControllers = [studentsNavController/*, accountingNavController, homeWorkNavController*/]
+//        let tabBarController = UITabBarController()
+//        tabBarController.viewControllers = [studentsNavController/*, accountingNavController, homeWorkNavController*/]
+//        
         
-        
-        if let studentsIcon = UIImage(named: "student_icon")?.withRenderingMode(.alwaysOriginal) {
-            studentsNavController.tabBarItem = UITabBarItem(title: "Students", image: studentsIcon, tag: 0)
-        }
+//        if let studentsIcon = UIImage(named: "student_icon")?.withRenderingMode(.alwaysOriginal) {
+//            studentsNavController.tabBarItem = UITabBarItem(title: "Students", image: studentsIcon, tag: 0)
+//        }
         
 //        if let accountingIcon = UIImage(named: "accounting_icon")?.withRenderingMode(.alwaysOriginal) {
 //            accountingNavController.tabBarItem = UITabBarItem(title: "Accounting", image: accountingIcon, tag: 1)
@@ -53,7 +53,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         appearance.setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.gray], for: .normal)
         appearance.setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.black], for: .selected)
         
-        window?.rootViewController = tabBarController
+        window?.rootViewController = studentsNavController
         window?.makeKeyAndVisible()
         
     }
