@@ -17,9 +17,11 @@ enum EditMode {
     case edit
 }
 
-class StudentCardViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class StudentCardViewController: UIViewController {
     
     @ObservedObject var viewModel: StudentViewModel
+    private var cancellables = Set<AnyCancellable>()
+    
     var student: Student?
     var editMode: EditMode
     
@@ -44,6 +46,14 @@ class StudentCardViewController: UIViewController, UIImagePickerControllerDelega
     var selectedImage: UIImage?
     var imageIsChanged = false
     
+    var scheduleItems: [Schedule] = []
+    
+    var scheduleCollectionView: UICollectionView!
+    let addScheduleButton = UIButton()
+    var weekdayTextField: UITextField!
+    var timeTextField: UITextField!
+    
+    
     let scrollView = UIScrollView()
     let studentNameTextField = UITextField()
     let studentNameLabel = UILabel()
@@ -64,19 +74,31 @@ class StudentCardViewController: UIViewController, UIImagePickerControllerDelega
     var enteredPrice: Double?
     var enteredCurrency: String?
     
+    
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        updateScheduleTextField()
+//        updateScheduleTextField()
         if studentTypeSegmentedControl.selectedSegmentIndex != 0 {
             parentNameLabel.isHidden = true
             parentNameTextField.isHidden = true
         }
+        scheduleCollectionView.reloadData()
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        viewModel.$students
+            .receive(on: RunLoop.main)
+            .sink { [weak self] students in
+                self?.scheduleCollectionView.reloadData()
+            }
+            .store(in: &cancellables)
+        
         setupUI()
-        updateScheduleTextField()
+        scheduleCollectionView.reloadData()
+//        updateScheduleTextField()
         self.title = editMode == .add ? "Add Student" : "Edit Student"
         let saveButton = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveButtonTapped))
         navigationItem.rightBarButtonItem = saveButton
@@ -87,6 +109,12 @@ class StudentCardViewController: UIViewController, UIImagePickerControllerDelega
             parentNameLabel.isHidden = true
             parentNameTextField.isHidden = true
         }
+        
+        // Инициализация scheduleItems данными из студента
+           if let student = student {
+               scheduleItems = Array(student.schedule)
+               scheduleCollectionView.reloadData()
+           }
     }
     
     @objc private func hideKeyboardOnTap() {
@@ -117,7 +145,6 @@ class StudentCardViewController: UIViewController, UIImagePickerControllerDelega
         navigationController?.popViewController(animated: true)
         viewModel.fetchStudents()
     }
-    
     
     private func saveStudent(_ existingStudent: Student?, mode: EditMode) {
         let studentID = existingStudent?.id ?? UUID().uuidString
@@ -150,29 +177,47 @@ class StudentCardViewController: UIViewController, UIImagePickerControllerDelega
         
         let updatedSchedule = existingStudent?.schedule ?? List<Schedule>()
         
-//        if studentType == .schoolchild && !selectedSchedules.isEmpty {
+//        if !selectedSchedules.isEmpty {
+//            viewModel.realm.beginWrite()
 //            for (weekday, time) in selectedSchedules {
 //                let newSchedule = Schedule()
 //                newSchedule.weekday = weekday
 //                newSchedule.time = time
 //                updatedSchedule.append(newSchedule)
 //            }
+//            do {
+//                try viewModel.realm.commitWrite()
+//            } catch {
+//                print("Failed to commit write transaction: \(error)")
+//            }
 //        }
         
-        if !selectedSchedules.isEmpty {
-            viewModel.realm.beginWrite()
-            for (weekday, time) in selectedSchedules {
-                let newSchedule = Schedule()
-                newSchedule.weekday = weekday
-                newSchedule.time = time
-                updatedSchedule.append(newSchedule)
+//        if !scheduleItems.isEmpty {
+//            viewModel.realm.beginWrite()
+//            let updatedSchedules = existingStudent?.schedule ?? List<Schedule>()
+//            updatedSchedules.removeAll()
+//            updatedSchedules.append(objectsIn: scheduleItems)
+//            do {
+//                            try viewModel.realm.commitWrite()
+//                        } catch {
+//                            print("Failed to commit write transaction: \(error)")
+//                        }
+//        }
+            
+            if !scheduleItems.isEmpty {
+                viewModel.realm.beginWrite()
+                for item in scheduleItems {
+                    let newSchedule = Schedule()
+                    newSchedule.weekday = item.weekday
+                    newSchedule.time = item.time
+                    updatedSchedule.append(newSchedule)
+                }
+                do {
+                    try viewModel.realm.commitWrite()
+                } catch {
+                    print("Failed to commit write transaction: \(error)")
+                }
             }
-            do {
-                try viewModel.realm.commitWrite()
-            } catch {
-                print("Failed to commit write transaction: \(error)")
-            }
-        }
         
         // Сохранение изображения
         var imagePath: String?
@@ -181,8 +226,6 @@ class StudentCardViewController: UIViewController, UIImagePickerControllerDelega
         } else if let existingImage = existingStudent?.studentImage {
             imagePath = existingImage
         }
-        
-        
         
         let newStudent = Student(
             id: UUID(uuidString: studentID) ?? UUID(),
@@ -229,31 +272,31 @@ class StudentCardViewController: UIViewController, UIImagePickerControllerDelega
 }
 
 extension StudentCardViewController {
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        switch textField {
-        case lessonPriceTextField:
-            let currentText = textField.text ?? ""
-            if currentText.contains(",") && string.contains(",") {
-                return false
-            }
-            let allowedCharacters = CharacterSet(charactersIn: "0123456789,")
-            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
-                return false
-            }
-        case studentNameTextField, parentNameTextField, currencyTextField:
-            let allowedCharacters = CharacterSet.letters
-            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
-                return false
-            }
-        case phoneTextField:
-            let allowedCharacters = CharacterSet(charactersIn: "+0123456789")
-            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
-                return false
-            }
-        default:
-            break
-        }
-        
-        return true
-    }
+//    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+//        switch textField {
+//        case lessonPriceTextField:
+//            let currentText = textField.text ?? ""
+//            if currentText.contains(",") && string.contains(",") {
+//                return false
+//            }
+//            let allowedCharacters = CharacterSet(charactersIn: "0123456789,")
+//            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
+//                return false
+//            }
+//        case studentNameTextField, parentNameTextField, currencyTextField:
+//            let allowedCharacters = CharacterSet.letters
+//            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
+//                return false
+//            }
+//        case phoneTextField:
+//            let allowedCharacters = CharacterSet(charactersIn: "+0123456789")
+//            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
+//                return false
+//            }
+//        default:
+//            break
+//        }
+//        
+//        return true
+//    }
 }

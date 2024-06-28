@@ -12,11 +12,11 @@ import SnapKit
 import RealmSwift
 
 class StudentsCollectionViewController: UIViewController {
-     var realm: Realm!
+    var realm: Realm!
     
     @ObservedObject var viewModel: StudentViewModel
     private var cancellables = Set<AnyCancellable>()
-     var collectionView: UICollectionView!
+    var collectionView: UICollectionView!
     
     private var isEditingCells: Bool = false
     
@@ -55,13 +55,13 @@ class StudentsCollectionViewController: UIViewController {
         
         setupStartScreenLabel(with: "Add first student \n\n Tap + in the left corner of the screen")
         
-      updateStartScreenLabelVisibility(for: collectionView)
+        updateStartScreenLabelVisibility(for: collectionView)
         
         collectionView.reloadData()
     }
     
     func setupCollectionView() {
-        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createThreeColumnsFlowLayout())
+        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createTwoColumnsFlowLayout())
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.backgroundColor = .clear
@@ -73,7 +73,7 @@ class StudentsCollectionViewController: UIViewController {
         }
     }
     
-    func createThreeColumnsFlowLayout() -> UICollectionViewFlowLayout {
+    func createTwoColumnsFlowLayout() -> UICollectionViewFlowLayout {
         let width = view.bounds.width
         let padding: CGFloat = 10
         let minimumItemSpacing: CGFloat = 15
@@ -115,7 +115,7 @@ extension StudentsCollectionViewController: UICollectionViewDelegate {
         studentCardVC.student = student
         navigationController?.pushViewController(studentCardVC, animated: true)
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
             let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash.fill"), attributes: .destructive) { _ in

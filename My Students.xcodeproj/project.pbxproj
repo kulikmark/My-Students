@@ -12,6 +12,7 @@
 		6D4293052C2C24C400B44ED1 /* Pods_My_Students.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 66B406D382489C82CE1E76F4 /* Pods_My_Students.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6D4293072C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293062C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift */; };
 		6D4293092C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293082C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift */; };
+		6D42930B2C2EF1E800B44ED1 /* ScheduleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D42930A2C2EF1E800B44ED1 /* ScheduleCell.swift */; };
 		6D6DCC3D2C2936D200BE983C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC3C2C2936D200BE983C /* AppDelegate.swift */; };
 		6D6DCC3F2C2936D200BE983C /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC3E2C2936D200BE983C /* SceneDelegate.swift */; };
 		6D6DCC442C2936D200BE983C /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 6D6DCC432C2936D200BE983C /* Base */; };
@@ -46,6 +47,7 @@
 		66B406D382489C82CE1E76F4 /* Pods_My_Students.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_My_Students.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D4293062C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentCardPhotoChoosingPermission.swift; sourceTree = "<group>"; };
 		6D4293082C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImagePickerControllerDelegate.swift; sourceTree = "<group>"; };
+		6D42930A2C2EF1E800B44ED1 /* ScheduleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleCell.swift; sourceTree = "<group>"; };
 		6D6DCC392C2936D100BE983C /* My Students.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "My Students.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D6DCC3C2C2936D200BE983C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6D6DCC3E2C2936D200BE983C /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -119,6 +121,7 @@
 				6D6DCC582C29398E00BE983C /* StudentCollectionViewCell.swift */,
 				6D6DCC562C29389300BE983C /* StudentCardViewController.swift */,
 				6D6DCC5A2C2939C500BE983C /* StudentCardSetupUI.swift */,
+				6D42930A2C2EF1E800B44ED1 /* ScheduleCell.swift */,
 				6D4293062C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift */,
 				6D4293082C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift */,
 				6D6DCC632C293C7C00BE983C /* StudentCardScheduleSelection.swift */,
@@ -260,6 +263,7 @@
 				6D6DCC512C29376D00BE983C /* StudentModel.swift in Sources */,
 				6D6DCC572C29389300BE983C /* StudentCardViewController.swift in Sources */,
 				6D4293092C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift in Sources */,
+				6D42930B2C2EF1E800B44ED1 /* ScheduleCell.swift in Sources */,
 				6D6DCC642C293C7C00BE983C /* StudentCardScheduleSelection.swift in Sources */,
 				6D6DCC3D2C2936D200BE983C /* AppDelegate.swift in Sources */,
 				6D6DCC552C2937E400BE983C /* StudentsCollectionViewController.swift in Sources */,
