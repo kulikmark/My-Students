@@ -233,48 +233,63 @@ extension StudentCardViewController {
             displayErrorAlert(message: "Please enter both weekday and time.")
             return
         }
-        
+
         let validWeekdays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
         let uppercaseWeekday = weekday.uppercased()
-        
-        // Проверка на валидность введенного дня недели
+
+        // Check for valid weekday input
         if !validWeekdays.contains(uppercaseWeekday) {
             displayErrorAlert(message: "Please enter a valid weekday abbreviation without any spaces or signs (e.g., MON, TUE, WED, etc.).")
             return
         }
-        
-        // Проверка на уже добавленный день недели
+
+        // Check for already added weekday
         if scheduleItems.contains(where: { $0.weekday == uppercaseWeekday }) {
             displayErrorAlert(message: "You can only add one day of the week.")
             return
         }
-        
+
         var formattedTimes: [String] = []
+
+        // Split the time input based on comma, and handle each part
+        let timeRanges = timeInput.components(separatedBy: ",")
         
-        // Разделение введенного времени по разделителю '-' или ','
-        let timeComponents = timeInput.components(separatedBy: CharacterSet(charactersIn: "-,"))
-        
-        for component in timeComponents {
-            guard let formattedTime = formatTime(component.trimmingCharacters(in: .whitespaces)) else {
-                displayErrorAlert(message: "Please enter a valid time or time range (e.g., 15, 17 or 15-17).")
-                return
+        for timeRange in timeRanges {
+            if timeRange.contains("-") {
+                // Handle time range (e.g., 15-17)
+                let timeComponents = timeRange.split(separator: "-")
+                if timeComponents.count == 2,
+                   let formattedStartTime = formatTime(String(timeComponents[0]).trimmingCharacters(in: .whitespaces)),
+                   let formattedEndTime = formatTime(String(timeComponents[1]).trimmingCharacters(in: .whitespaces)) {
+                    formattedTimes.append("\(formattedStartTime)-\(formattedEndTime)")
+                } else {
+                    displayErrorAlert(message: "Please enter a valid time range (e.g., 15:00-17:00).")
+                    return
+                }
+            } else {
+                // Handle single time (e.g., 15)
+                if let formattedTime = formatTime(timeRange.trimmingCharacters(in: .whitespaces)) {
+                    formattedTimes.append(formattedTime)
+                } else {
+                    displayErrorAlert(message: "Please enter a valid time (e.g., 15:00).")
+                    return
+                }
             }
-            formattedTimes.append(formattedTime)
         }
-        
-        // Создание нового элемента расписания и добавление его в коллекцию
+
+        // Create new schedule item and add it to the collection
         let newScheduleItem = Schedule()
         newScheduleItem.weekday = uppercaseWeekday
-        newScheduleItem.time = formattedTimes.joined(separator: ", ") // объединяем форматированные времена через запятую
-        
+        newScheduleItem.time = formattedTimes.joined(separator: ", ")
+
         scheduleItems.append(newScheduleItem)
-        
-        // Сортировка элементов расписания
+
+        // Sort schedule items
         scheduleItems.sort { orderOfDay($0.weekday) < orderOfDay($1.weekday) }
-        
+
         scheduleCollectionView.reloadData()
-        
-        // Очистка текстовых полей после добавления
+
+        // Clear text fields after adding
         weekdayTextField?.text = ""
         timeTextField?.text = ""
     }

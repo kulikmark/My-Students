@@ -176,33 +176,6 @@ class StudentCardViewController: UIViewController {
         let updatedMonths = existingStudent?.months ?? List<Month>()
         
         let updatedSchedule = existingStudent?.schedule ?? List<Schedule>()
-        
-//        if !selectedSchedules.isEmpty {
-//            viewModel.realm.beginWrite()
-//            for (weekday, time) in selectedSchedules {
-//                let newSchedule = Schedule()
-//                newSchedule.weekday = weekday
-//                newSchedule.time = time
-//                updatedSchedule.append(newSchedule)
-//            }
-//            do {
-//                try viewModel.realm.commitWrite()
-//            } catch {
-//                print("Failed to commit write transaction: \(error)")
-//            }
-//        }
-        
-//        if !scheduleItems.isEmpty {
-//            viewModel.realm.beginWrite()
-//            let updatedSchedules = existingStudent?.schedule ?? List<Schedule>()
-//            updatedSchedules.removeAll()
-//            updatedSchedules.append(objectsIn: scheduleItems)
-//            do {
-//                            try viewModel.realm.commitWrite()
-//                        } catch {
-//                            print("Failed to commit write transaction: \(error)")
-//                        }
-//        }
             
             if !scheduleItems.isEmpty {
                 viewModel.realm.beginWrite()
@@ -210,7 +183,8 @@ class StudentCardViewController: UIViewController {
                     let newSchedule = Schedule()
                     newSchedule.weekday = item.weekday
                     newSchedule.time = item.time
-                    updatedSchedule.append(newSchedule)
+                    updatedSchedule.removeAll()
+                    updatedSchedule.append(objectsIn: scheduleItems)
                 }
                 do {
                     try viewModel.realm.commitWrite()
