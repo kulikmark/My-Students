@@ -13,6 +13,10 @@
 		6D4293072C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293062C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift */; };
 		6D4293092C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293082C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift */; };
 		6D42930B2C2EF1E800B44ED1 /* ScheduleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D42930A2C2EF1E800B44ED1 /* ScheduleCell.swift */; };
+		6D42930D2C3087A700B44ED1 /* MonthsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D42930C2C3087A700B44ED1 /* MonthsTableViewController.swift */; };
+		6D42930F2C317C2F00B44ED1 /* SearchHistoryCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D42930E2C317C2F00B44ED1 /* SearchHistoryCollectionViewCell.swift */; };
+		6D4293112C3297FF00B44ED1 /* StudentsSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293102C3297FF00B44ED1 /* StudentsSearchViewController.swift */; };
+		6D4293132C32A45400B44ED1 /* StudentTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293122C32A45400B44ED1 /* StudentTableViewCell.swift */; };
 		6D6DCC3D2C2936D200BE983C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC3C2C2936D200BE983C /* AppDelegate.swift */; };
 		6D6DCC3F2C2936D200BE983C /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC3E2C2936D200BE983C /* SceneDelegate.swift */; };
 		6D6DCC442C2936D200BE983C /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 6D6DCC432C2936D200BE983C /* Base */; };
@@ -48,6 +52,10 @@
 		6D4293062C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentCardPhotoChoosingPermission.swift; sourceTree = "<group>"; };
 		6D4293082C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImagePickerControllerDelegate.swift; sourceTree = "<group>"; };
 		6D42930A2C2EF1E800B44ED1 /* ScheduleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleCell.swift; sourceTree = "<group>"; };
+		6D42930C2C3087A700B44ED1 /* MonthsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthsTableViewController.swift; sourceTree = "<group>"; };
+		6D42930E2C317C2F00B44ED1 /* SearchHistoryCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryCollectionViewCell.swift; sourceTree = "<group>"; };
+		6D4293102C3297FF00B44ED1 /* StudentsSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentsSearchViewController.swift; sourceTree = "<group>"; };
+		6D4293122C32A45400B44ED1 /* StudentTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentTableViewCell.swift; sourceTree = "<group>"; };
 		6D6DCC392C2936D100BE983C /* My Students.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "My Students.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D6DCC3C2C2936D200BE983C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6D6DCC3E2C2936D200BE983C /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -118,6 +126,10 @@
 				6D6DCC502C29376D00BE983C /* StudentModel.swift */,
 				6D6DCC522C29378E00BE983C /* StudentViewModel.swift */,
 				6D6DCC542C2937E400BE983C /* StudentsCollectionViewController.swift */,
+				6D4293102C3297FF00B44ED1 /* StudentsSearchViewController.swift */,
+				6D4293122C32A45400B44ED1 /* StudentTableViewCell.swift */,
+				6D42930E2C317C2F00B44ED1 /* SearchHistoryCollectionViewCell.swift */,
+				6D42930C2C3087A700B44ED1 /* MonthsTableViewController.swift */,
 				6D6DCC582C29398E00BE983C /* StudentCollectionViewCell.swift */,
 				6D6DCC562C29389300BE983C /* StudentCardViewController.swift */,
 				6D6DCC5A2C2939C500BE983C /* StudentCardSetupUI.swift */,
@@ -265,13 +277,17 @@
 				6D4293092C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift in Sources */,
 				6D42930B2C2EF1E800B44ED1 /* ScheduleCell.swift in Sources */,
 				6D6DCC642C293C7C00BE983C /* StudentCardScheduleSelection.swift in Sources */,
+				6D42930F2C317C2F00B44ED1 /* SearchHistoryCollectionViewCell.swift in Sources */,
 				6D6DCC3D2C2936D200BE983C /* AppDelegate.swift in Sources */,
 				6D6DCC552C2937E400BE983C /* StudentsCollectionViewController.swift in Sources */,
 				6D6DCC3F2C2936D200BE983C /* SceneDelegate.swift in Sources */,
+				6D4293112C3297FF00B44ED1 /* StudentsSearchViewController.swift in Sources */,
 				6D6DCC5B2C2939C500BE983C /* StudentCardSetupUI.swift in Sources */,
 				6D6DCC532C29378E00BE983C /* StudentViewModel.swift in Sources */,
 				6D4293072C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift in Sources */,
+				6D4293132C32A45400B44ED1 /* StudentTableViewCell.swift in Sources */,
 				6D6DCC592C29398E00BE983C /* StudentCollectionViewCell.swift in Sources */,
+				6D42930D2C3087A700B44ED1 /* MonthsTableViewController.swift in Sources */,
 				6D6DCC622C293A7300BE983C /* StartScreenLabel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

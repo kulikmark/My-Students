@@ -13,6 +13,7 @@ class StudentCollectionViewCell: UICollectionViewCell {
     var student: Student?
     var isEditing: Bool = false {
         didSet {
+            editButton.isHidden = !isEditing
             deleteButton.isHidden = !isEditing
             animateShake(isEditing: isEditing)
         }
@@ -35,16 +36,18 @@ class StudentCollectionViewCell: UICollectionViewCell {
     
     lazy var studentNameLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.boldSystemFont(ofSize: 18)
+        label.font = UIFont.boldSystemFont(ofSize: 16)
         label.textColor = .black
         label.adjustsFontSizeToFitWidth = true
-        label.numberOfLines = 1
+        label.lineBreakMode = .byWordWrapping
+        label.numberOfLines = 0
+        label.textAlignment = .center
         return label
     }()
     
     lazy var scheduleLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 11)
+        label.font = UIFont.systemFont(ofSize: 12)
         label.textColor = .darkGray
         label.adjustsFontSizeToFitWidth = true
         label.lineBreakMode = .byWordWrapping
@@ -53,6 +56,19 @@ class StudentCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
+    let editButton: UIButton = {
+            let button = UIButton(type: .system)
+        button.setTitle("Edit", for: .normal)
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 12)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .systemBlue
+        button.layer.cornerRadius = 10
+        button.isHidden = true
+       
+            return button
+        }()
+    
     lazy var deleteButton: UIButton = {
         let button = UIButton(type: .custom)
         let config = UIImage.SymbolConfiguration(pointSize: 25)
@@ -60,10 +76,10 @@ class StudentCollectionViewCell: UICollectionViewCell {
         button.setImage(image, for: .normal)
         button.tintColor = .red
         button.isHidden = true
-        button.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
         return button
     }()
     
+    var editAction: (() -> Void)?
     var showDeleteConfirmation: (() -> Void)?
     
     override func layoutSubviews() {
@@ -80,7 +96,11 @@ class StudentCollectionViewCell: UICollectionViewCell {
         containerView.addSubview(profileImageView)
         containerView.addSubview(studentNameLabel)
         containerView.addSubview(scheduleLabel)
+        containerView.addSubview(editButton)
         contentView.addSubview(deleteButton)
+        
+        editButton.addTarget(self, action: #selector(editButtonTapped), for: .touchUpInside)
+        deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
         
         setupConstraints()
     }
@@ -99,6 +119,7 @@ class StudentCollectionViewCell: UICollectionViewCell {
         
         studentNameLabel.snp.makeConstraints { make in
             make.top.equalTo(profileImageView.snp.bottom).offset(10)
+            make.width.equalTo(containerView.snp.width)
             make.centerX.equalToSuperview()
         }
         
@@ -107,11 +128,23 @@ class StudentCollectionViewCell: UICollectionViewCell {
             make.leading.trailing.equalTo(containerView).inset(5)
         }
         
+        editButton.snp.makeConstraints { make in
+//            make.top.equalTo(scheduleLabel.snp.bottom).offset(10)
+            make.bottom.equalTo(containerView.snp.bottom).offset(-10)
+            make.centerX.equalToSuperview()
+            make.width.equalTo(containerView.snp.width).inset(10)
+            make.height.equalTo(30)
+        }
+        
         deleteButton.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(-10)
             make.right.equalToSuperview().offset(5)
         }
     }
+    
+    @objc private func editButtonTapped() {
+            editAction?()
+        }
     
     @objc func deleteButtonTapped() {
         showDeleteConfirmation?()
