@@ -18,10 +18,7 @@ class StudentsCollectionViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
     var studentsCollectionView: UICollectionView!
   
-    
     private var isEditingCells: Bool = false
-    private var filteredStudents = [Student]()
-    private var searchHistory = [Student]()
     
     let searchController = UISearchController(searchResultsController: nil)
     
@@ -46,7 +43,6 @@ class StudentsCollectionViewController: UIViewController {
         viewModel.$students
             .receive(on: RunLoop.main)
             .sink { [weak self] students in
-                self?.filteredStudents = students
                 self?.studentsCollectionView.reloadData()
                 self?.updateStartScreenLabelVisibility(for: self?.studentsCollectionView)
             }
@@ -129,6 +125,8 @@ extension StudentsCollectionViewController: UISearchBarDelegate {
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         let studentsSearchVC = StudentsSearchViewController(viewModel: self.viewModel)
         self.navigationController?.pushViewController(studentsSearchVC, animated: true)
+//        present(studentsSearchVC, animated: true, completion: nil)
+        
     }
     
     func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {

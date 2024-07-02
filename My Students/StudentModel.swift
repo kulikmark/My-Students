@@ -80,3 +80,13 @@ class Lesson: Object {
     @objc dynamic var homework: String? = nil
     let photoUrls = List<String>()
 }
+
+class SearchHistoryItem: Object {
+    @objc dynamic var id: String = UUID().uuidString
+    @objc dynamic var studentId: String = ""
+    @objc dynamic var timestamp: Date = Date()
+
+    override static func primaryKey() -> String? {
+        return "id"
+    }
+}

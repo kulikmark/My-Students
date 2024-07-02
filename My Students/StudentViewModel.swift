@@ -12,6 +12,7 @@ import RealmSwift
 
 class StudentViewModel: ObservableObject {
     @Published var students: [Student] = []
+    @Published var searchHistory: [Student] = []
 
      var realm: Realm
 
@@ -39,6 +40,19 @@ class StudentViewModel: ObservableObject {
         let studentsResults = realm.objects(Student.self)
         students = Array(studentsResults)
     }
+    
+    func fetchSearchHistory() {
+        let historyResults = realm.objects(SearchHistoryItem.self).sorted(byKeyPath: "timestamp", ascending: false)
+        let studentIds = historyResults.map { $0.studentId }
+
+        // Убедимся, что studentIds является массивом строк
+        let studentIdsArray = Array(studentIds)
+
+        // Используем массив строк в фильтре
+        let studentsResults = realm.objects(Student.self).filter("id IN %@", studentIdsArray)
+        searchHistory = Array(studentsResults)
+    }
+
 
     func addStudent(_ student: Student) {
         do {
@@ -97,6 +111,31 @@ class StudentViewModel: ObservableObject {
             } catch {
                 print("Unable to save image to documents directory: \(error)")
                 return nil
+            }
+        }
+    
+    func addSearchHistoryItem(for student: Student) {
+        do {
+            let historyItem = SearchHistoryItem()
+            historyItem.studentId = student.id
+
+            try realm.write {
+                realm.add(historyItem)
+            }
+            fetchSearchHistory()
+        } catch {
+            print("Failed to add search history item: \(error.localizedDescription)")
+        }
+    }
+    
+    func clearSearchHistory() {
+            do {
+                try realm.write {
+                    realm.delete(realm.objects(SearchHistoryItem.self))
+                }
+                fetchSearchHistory()
+            } catch {
+                print("Failed to clear search history: \(error.localizedDescription)")
             }
         }
     }
