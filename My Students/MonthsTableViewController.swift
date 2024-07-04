@@ -11,6 +11,6 @@ class MonthsTableViewController: UITableViewController {
     var student: Student?
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .blue
+        view.backgroundColor = .systemBackground
     }
 }

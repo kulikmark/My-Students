@@ -5,26 +5,36 @@
 //  Created by Марк Кулик on 24.06.2024.
 //
 
+
 import UIKit
 import SwiftUI
 import Combine
 import SnapKit
 import RealmSwift
 
-class StudentsCollectionViewController: UIViewController {
+class StudentsCollectionViewController: UICollectionViewController {
     var realm: Realm!
     
     @ObservedObject var viewModel: StudentViewModel
     private var cancellables = Set<AnyCancellable>()
-    var studentsCollectionView: UICollectionView!
   
     private var isEditingCells: Bool = false
     
     let searchController = UISearchController(searchResultsController: nil)
     
+    // Properties for layout
+        private let padding: CGFloat = 10
+        private let minimumItemSpacing: CGFloat = 10
+        private var itemWidth: CGFloat {
+            let width = view.bounds.width
+            let availableWidth = width - (padding * 3) - minimumItemSpacing
+            return availableWidth / 2
+        }
+    
+    
     init(viewModel: StudentViewModel) {
         self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
+        super.init(collectionViewLayout: UICollectionViewFlowLayout()) // Initialize with a layout here
     }
     
     required init?(coder: NSCoder) {
@@ -33,8 +43,8 @@ class StudentsCollectionViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        updateStartScreenLabelVisibility(for: studentsCollectionView)
-        studentsCollectionView.reloadData()
+        updateStartScreenLabelVisibility(for: collectionView)
+        collectionView.reloadData()
     }
     
     override func viewDidLoad() {
@@ -42,9 +52,9 @@ class StudentsCollectionViewController: UIViewController {
         
         viewModel.$students
             .receive(on: RunLoop.main)
-            .sink { [weak self] students in
-                self?.studentsCollectionView.reloadData()
-                self?.updateStartScreenLabelVisibility(for: self?.studentsCollectionView)
+            .sink { [weak self] _ in
+                self?.collectionView.reloadData()
+                self?.updateStartScreenLabelVisibility(for: self?.collectionView)
             }
             .store(in: &cancellables)
         
@@ -58,7 +68,7 @@ class StudentsCollectionViewController: UIViewController {
         navigationItem.rightBarButtonItem = editButtonItem
         
         setupStartScreenLabel(with: "Add first student \n\n Tap + in the left corner of the screen")
-        updateStartScreenLabelVisibility(for: studentsCollectionView)
+        updateStartScreenLabelVisibility(for: collectionView)
     }
     
     func setupSearchController() {
@@ -72,37 +82,32 @@ class StudentsCollectionViewController: UIViewController {
     }
     
     func setupCollectionView() {
-        studentsCollectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createTwoColumnsFlowLayout())
-        studentsCollectionView.delegate = self
-        studentsCollectionView.dataSource = self
-        studentsCollectionView.backgroundColor = .clear
-        studentsCollectionView.register(StudentCollectionViewCell.self, forCellWithReuseIdentifier: "StudentCell")
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        collectionView.dragDelegate = self
+        collectionView.dropDelegate = self
+        collectionView.dragInteractionEnabled = true
+        collectionView.backgroundColor = .clear
+        collectionView.register(StudentCollectionViewCell.self, forCellWithReuseIdentifier: "StudentCell")
         
-        view.addSubview(studentsCollectionView)
-        studentsCollectionView.snp.makeConstraints { make in
+        // Set the layout if not initialized in the init
+        if let flowLayout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            flowLayout.itemSize = CGSize(width: itemWidth, height: itemWidth + 145)
+            flowLayout.sectionInset = UIEdgeInsets(top: padding, left: padding, bottom: padding, right: padding)
+            flowLayout.minimumInteritemSpacing = minimumItemSpacing
+            flowLayout.minimumLineSpacing = minimumItemSpacing
+        }
+        
+        view.addSubview(collectionView)
+        collectionView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-    }
-    
-    func createTwoColumnsFlowLayout() -> UICollectionViewFlowLayout {
-        let width = view.bounds.width
-        let padding: CGFloat = 10
-        let minimumItemSpacing: CGFloat = 10
-        let availableWidth = width - (padding * 3) - minimumItemSpacing
-        let itemWidth = availableWidth / 2
-        
-        let flowLayout = UICollectionViewFlowLayout()
-        flowLayout.itemSize = CGSize(width: itemWidth, height: itemWidth + 145)
-        flowLayout.sectionInset = UIEdgeInsets(top: padding, left: padding, bottom: padding, right: padding)
-        flowLayout.minimumInteritemSpacing = minimumItemSpacing
-        flowLayout.minimumLineSpacing = minimumItemSpacing
-        return flowLayout
     }
     
     override func setEditing(_ editing: Bool, animated: Bool) {
         super.setEditing(editing, animated: animated)
         isEditingCells = editing
-        studentsCollectionView.reloadData()
+        collectionView.reloadData()
     }
     
     @objc func addNewStudent() {
@@ -115,7 +120,7 @@ class StudentsCollectionViewController: UIViewController {
 
 extension StudentsCollectionViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-//        filterStudents(for: searchController.searchBar.text ?? "")
+        // Implement your search logic here
     }
 }
 
@@ -125,62 +130,88 @@ extension StudentsCollectionViewController: UISearchBarDelegate {
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         let studentsSearchVC = StudentsSearchViewController(viewModel: self.viewModel)
         self.navigationController?.pushViewController(studentsSearchVC, animated: true)
-//        present(studentsSearchVC, animated: true, completion: nil)
-        
     }
     
     func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
-      
-    }
-    
-}
-
-extension StudentsCollectionViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if isEditingCells {
-            return
-        }
-        let monthsVC = MonthsTableViewController()
-        let student = viewModel.students[indexPath.item]
-        monthsVC.student = student
-        navigationController?.pushViewController(monthsVC, animated: true)
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
-            let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash.fill"), attributes: .destructive) { _ in
-                self.showDeleteConfirmation(at: indexPath)
-            }
-            return UIMenu(title: "", children: [deleteAction])
-        }
-        return configuration
+        // Implement your logic here if needed
     }
 }
 
 // MARK: - UICollectionViewDataSource
 
-extension StudentsCollectionViewController: UICollectionViewDataSource {
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+extension StudentsCollectionViewController {
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return viewModel.students.count
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StudentCell", for: indexPath) as! StudentCollectionViewCell
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StudentCell", for: indexPath) as! StudentCollectionViewCell
         let student = viewModel.students[indexPath.item]
-            cell.configure(with: student)
-            cell.isEditing = isEditingCells
-            cell.showDeleteConfirmation = { [weak self] in
-                self?.showDeleteConfirmation(at: indexPath)
+        cell.configure(with: student)
+        cell.isEditing = isEditingCells
+        cell.showDeleteConfirmation = { [weak self] in
+            self?.showDeleteConfirmation(at: indexPath)
+        }
+        
+        cell.editAction = { [weak self] in
+            let studentCardVC = StudentCardViewController(viewModel: self!.viewModel, editMode: .edit)
+            studentCardVC.student = student
+            self?.isEditing = false
+            self?.navigationController?.pushViewController(studentCardVC, animated: true)
+        }
+        return cell
+    }
+    
+        override func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+            let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+                let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash.fill"), attributes: .destructive) { _ in
+                    self.showDeleteConfirmation(at: indexPath)
+                }
+                return UIMenu(title: "", children: [deleteAction])
             }
-            
-            cell.editAction = { [weak self] in
-                let studentCardVC = StudentCardViewController(viewModel: self!.viewModel, editMode: .edit)
-                studentCardVC.student = student
-         self?.isEditing = false
-                self?.navigationController?.pushViewController(studentCardVC, animated: true)
+            return configuration
+        }
+}
+
+// MARK: - UICollectionViewDragDelegate
+
+extension StudentsCollectionViewController: UICollectionViewDragDelegate {
+    func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        let student = viewModel.students[indexPath.item]
+        let itemProvider = NSItemProvider(object: student.name as NSString)
+        let dragItem = UIDragItem(itemProvider: itemProvider)
+        dragItem.localObject = student
+        collectionView.reloadData()
+        return [dragItem]
+    }
+}
+
+// MARK: - UICollectionViewDropDelegate
+
+extension StudentsCollectionViewController: UICollectionViewDropDelegate {
+    func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
+        let destinationIndexPath = coordinator.destinationIndexPath ?? IndexPath(item: 0, section: 0)
+        
+        coordinator.items.forEach { dropItem in
+            if let sourceIndexPath = dropItem.sourceIndexPath {
+                collectionView.performBatchUpdates {
+                    let student = viewModel.students.remove(at: sourceIndexPath.item)
+                    viewModel.students.insert(student, at: destinationIndexPath.item)
+                    collectionView.deleteItems(at: [sourceIndexPath])
+                    collectionView.insertItems(at: [destinationIndexPath])
+                }
+                coordinator.drop(dropItem.dragItem, toItemAt: destinationIndexPath)
             }
-            return cell
+        }
+        collectionView.reloadData()
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, canHandle session: UIDropSession) -> Bool {
+        return session.canLoadObjects(ofClass: NSString.self)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
+        return UICollectionViewDropProposal(operation: .move, intent: .insertAtDestinationIndexPath)
     }
 }
 
@@ -198,7 +229,7 @@ extension StudentsCollectionViewController {
     
     func deleteStudent(at indexPath: IndexPath) {
         viewModel.removeStudent(at: indexPath.item)
-        studentsCollectionView.deleteItems(at: [indexPath])
-        updateStartScreenLabelVisibility(for: studentsCollectionView)
+        collectionView.deleteItems(at: [indexPath])
+        updateStartScreenLabelVisibility(for: collectionView)
     }
 }

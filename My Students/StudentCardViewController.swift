@@ -78,7 +78,6 @@ class StudentCardViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-//        updateScheduleTextField()
         if studentTypeSegmentedControl.selectedSegmentIndex != 0 {
             parentNameLabel.isHidden = true
             parentNameTextField.isHidden = true
@@ -98,7 +97,6 @@ class StudentCardViewController: UIViewController {
         
         setupUI()
         scheduleCollectionView.reloadData()
-//        updateScheduleTextField()
         self.title = editMode == .add ? "Add Student" : "Edit Student"
         let saveButton = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveButtonTapped))
         navigationItem.rightBarButtonItem = saveButton
@@ -176,6 +174,11 @@ class StudentCardViewController: UIViewController {
         let updatedMonths = existingStudent?.months ?? List<Month>()
         
         let updatedSchedule = existingStudent?.schedule ?? List<Schedule>()
+        
+        // Удаляем старое расписание
+           try? viewModel.realm.write {
+               updatedSchedule.removeAll()
+           }
             
             if !scheduleItems.isEmpty {
                 viewModel.realm.beginWrite()
@@ -243,34 +246,4 @@ class StudentCardViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         self.present(alert, animated: true, completion: nil)
     }
-}
-
-extension StudentCardViewController {
-//    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-//        switch textField {
-//        case lessonPriceTextField:
-//            let currentText = textField.text ?? ""
-//            if currentText.contains(",") && string.contains(",") {
-//                return false
-//            }
-//            let allowedCharacters = CharacterSet(charactersIn: "0123456789,")
-//            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
-//                return false
-//            }
-//        case studentNameTextField, parentNameTextField, currencyTextField:
-//            let allowedCharacters = CharacterSet.letters
-//            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
-//                return false
-//            }
-//        case phoneTextField:
-//            let allowedCharacters = CharacterSet(charactersIn: "+0123456789")
-//            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
-//                return false
-//            }
-//        default:
-//            break
-//        }
-//        
-//        return true
-//    }
 }

@@ -13,7 +13,6 @@ import RealmSwift
 extension StudentCardViewController {
     
     func setupUI() {
-        
         view.backgroundColor = UIColor.systemGroupedBackground
         
         view.addSubview(scrollView)
@@ -21,7 +20,6 @@ extension StudentCardViewController {
             make.edges.equalTo(view.safeAreaLayoutGuide)
         }
         
-        // Add Content View inside Scroll View
         let contentView = UIView()
         scrollView.addSubview(contentView)
         contentView.snp.makeConstraints { make in
@@ -29,25 +27,22 @@ extension StudentCardViewController {
             make.width.equalToSuperview()
         }
         
-        // Add a stack view to hold all the elements
-        let stackView = UIStackView()
-        stackView.axis = .vertical
-        stackView.spacing = 20
-        stackView.alignment = .fill
-        stackView.distribution = .fill
-        contentView.addSubview(stackView)
-        stackView.snp.makeConstraints { make in
+        let mainStackView = UIStackView()
+        mainStackView.axis = .vertical
+        mainStackView.spacing = 20
+        mainStackView.alignment = .fill
+        mainStackView.distribution = .fill
+        contentView.addSubview(mainStackView)
+        mainStackView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(20)
         }
         
-        // Image View Container
         let imageContainerView = UIView()
-        stackView.addArrangedSubview(imageContainerView)
+        mainStackView.addArrangedSubview(imageContainerView)
         imageContainerView.snp.makeConstraints { make in
             make.height.equalTo(200)
         }
         
-        // Add Profile Image View
         imageContainerView.addSubview(profileImageView)
         profileImageView.snp.makeConstraints { make in
             make.top.equalTo(imageContainerView.snp.top)
@@ -58,8 +53,11 @@ extension StudentCardViewController {
         profileImageView.contentMode = .scaleAspectFill
         profileImageView.clipsToBounds = true
         profileImageView.layer.cornerRadius = 100
+        profileImageView.layer.shadowColor = UIColor.black.cgColor
+        profileImageView.layer.shadowOpacity = 0.5
+        profileImageView.layer.shadowOffset = CGSize(width: 0, height: 2)
+        profileImageView.layer.shadowRadius = 5
         
-        // Set Initial Image
         if let selectedImage = selectedImage {
             profileImageView.image = selectedImage
         } else if let studentImageFilePath = student?.studentImage, let studentImage = UIImage(contentsOfFile: studentImageFilePath) {
@@ -68,14 +66,12 @@ extension StudentCardViewController {
             profileImageView.image = UIImage(named: "defaultImage")
         }
         
-        // Add Image Button View Container
         let buttonContainerView = UIView()
-        stackView.addArrangedSubview(buttonContainerView)
+        mainStackView.addArrangedSubview(buttonContainerView)
         buttonContainerView.snp.makeConstraints { make in
-            make.height.equalTo(60)
+            make.height.equalTo(40)
         }
         
-        // Add Image Button
         let addProfileImageButton = UIButton()
         buttonContainerView.addSubview(addProfileImageButton)
         addProfileImageButton.snp.makeConstraints { make in
@@ -86,51 +82,61 @@ extension StudentCardViewController {
         addProfileImageButton.backgroundColor = .systemBlue
         addProfileImageButton.layer.cornerRadius = 10
         addProfileImageButton.setTitle("Add photo", for: .normal)
-        addProfileImageButton.titleLabel?.font = UIFont.systemFont(ofSize: 14)
+        addProfileImageButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         addProfileImageButton.setTitleColor(.white, for: .normal)
         addProfileImageButton.addTarget(self, action: #selector(selectImage), for: .touchUpInside)
         
-        stackView.addArrangedSubview(studentTypeSegmentedControl)
+        mainStackView.addArrangedSubview(studentTypeSegmentedControl)
+        mainStackView.setCustomSpacing(40, after: studentTypeSegmentedControl)
         if let student = student {
-            let type = StudentType(rawValue: student.type) ?? .schoolchild // Assuming .schoolchild as default
+            let type = StudentType(rawValue: student.type) ?? .schoolchild
             studentTypeSegmentedControl.selectedSegmentIndex = type == .schoolchild ? 0 : 1
         }
         
-        // Student Name Label
-        stackView.addArrangedSubview(studentNameLabel)
-        studentNameLabel.text = "Student's Name"
-        studentNameLabel.font = UIFont.systemFont(ofSize: 14)
+        let labelsTextFieldsStackView = UIStackView()
+        labelsTextFieldsStackView.axis = .vertical
+        labelsTextFieldsStackView.spacing = 10
+        labelsTextFieldsStackView.alignment = .fill
+        labelsTextFieldsStackView.distribution = .fill
+        mainStackView.addArrangedSubview(labelsTextFieldsStackView)
         
-        // Student Name TextField
-        stackView.addArrangedSubview(studentNameTextField)
+        labelsTextFieldsStackView.addArrangedSubview(studentNameLabel)
+        studentNameLabel.text = "Student's Name"
+        studentNameLabel.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        studentNameLabel.textColor = .darkGray
+        studentNameLabel.text = studentNameLabel.text?.uppercased()
+        
+        labelsTextFieldsStackView.addArrangedSubview(studentNameTextField)
         studentNameTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
         studentNameTextField.borderStyle = .roundedRect
         studentNameTextField.placeholder = "Enter student's name"
         studentNameTextField.text = student?.name ?? ""
+        studentNameTextField.clearButtonMode = .whileEditing
         
-        // Parent Name Label
-        stackView.addArrangedSubview(parentNameLabel)
+        labelsTextFieldsStackView.addArrangedSubview(parentNameLabel)
         parentNameLabel.text = "Parent's Name"
-        parentNameLabel.font = UIFont.systemFont(ofSize: 14)
+        parentNameLabel.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        parentNameLabel.textColor = .darkGray
+        parentNameLabel.text = parentNameLabel.text?.uppercased()
         
-        // Parent Name TextField
-        stackView.addArrangedSubview(parentNameTextField)
+        labelsTextFieldsStackView.addArrangedSubview(parentNameTextField)
         parentNameTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
         parentNameTextField.borderStyle = .roundedRect
         parentNameTextField.placeholder = "Enter parent's name"
         parentNameTextField.text = student?.parentName ?? ""
+        parentNameTextField.clearButtonMode = .whileEditing
         
-        // Phone Label
-        stackView.addArrangedSubview(phoneLabel)
+        labelsTextFieldsStackView.addArrangedSubview(phoneLabel)
         phoneLabel.text = "Phone Number"
-        phoneLabel.font = UIFont.systemFont(ofSize: 14)
+        phoneLabel.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        phoneLabel.textColor = .darkGray
+        phoneLabel.text = phoneLabel.text?.uppercased()
         
-        // Phone TextField
-        stackView.addArrangedSubview(phoneTextField)
+        labelsTextFieldsStackView.addArrangedSubview(phoneTextField)
         phoneTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
@@ -138,82 +144,95 @@ extension StudentCardViewController {
         phoneTextField.placeholder = "Enter phone number"
         phoneTextField.keyboardType = .phonePad
         phoneTextField.text = student?.phoneNumber ?? ""
+        phoneTextField.clearButtonMode = .whileEditing
         
-        // Lesson Price Label
-        stackView.addArrangedSubview(lessonPriceLabel)
+        labelsTextFieldsStackView.addArrangedSubview(lessonPriceLabel)
         lessonPriceLabel.text = "Lesson Price"
-        lessonPriceLabel.font = UIFont.systemFont(ofSize: 14)
+        lessonPriceLabel.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        lessonPriceLabel.textColor = .darkGray
+        lessonPriceLabel.text = lessonPriceLabel.text?.uppercased()
         
-        // Lesson Price TextField
-        stackView.addArrangedSubview(lessonPriceTextField)
+        labelsTextFieldsStackView.addArrangedSubview(lessonPriceTextField)
         lessonPriceTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
         lessonPriceTextField.borderStyle = .roundedRect
-        lessonPriceTextField.placeholder = "Price"
+        lessonPriceTextField.placeholder = "Enter Price"
         lessonPriceTextField.keyboardType = .decimalPad
         lessonPriceTextField.text = student != nil ? "\(student!.lessonPrice?.price ?? 0)" : ""
+        lessonPriceTextField.clearButtonMode = .whileEditing
         
-        // Currency Label
-        stackView.addArrangedSubview(currencyLabel)
+        labelsTextFieldsStackView.addArrangedSubview(currencyLabel)
         currencyLabel.text = "Currency"
-        currencyLabel.font = UIFont.systemFont(ofSize: 14)
+        currencyLabel.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        currencyLabel.textColor = .darkGray
+        currencyLabel.text = currencyLabel.text?.uppercased()
         
-        // Currenct TextField
-        stackView.addArrangedSubview(currencyTextField)
+        labelsTextFieldsStackView.addArrangedSubview(currencyTextField)
         currencyTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
         currencyTextField.borderStyle = .roundedRect
-        currencyTextField.placeholder = "Currency"
+        currencyTextField.placeholder = "Enter Currency name"
         currencyTextField.text = student != nil ? "\(student!.lessonPrice?.currency ?? "")" : ""
+        currencyTextField.clearButtonMode = .whileEditing
         
-        // Schedule Label
-        stackView.addArrangedSubview(scheduleLabel)
+        labelsTextFieldsStackView.addArrangedSubview(scheduleLabel)
         scheduleLabel.text = "Schedule"
-        scheduleLabel.font = UIFont.systemFont(ofSize: 14)
+        scheduleLabel.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+        scheduleLabel.textColor = .darkGray
+        scheduleLabel.text = scheduleLabel.text?.uppercased()
         
-        
-        //        // Initialize Collection view for displaying schedule items
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         scheduleCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         scheduleCollectionView.backgroundColor = .white
         scheduleCollectionView.layer.cornerRadius = 10
+        scheduleCollectionView.layer.shadowColor = UIColor.black.cgColor
+        scheduleCollectionView.layer.shadowOpacity = 0.2
+        scheduleCollectionView.layer.shadowOffset = CGSize(width: 0, height: 1)
+        scheduleCollectionView.layer.shadowRadius = 3
         scheduleCollectionView.delegate = self
         scheduleCollectionView.dataSource = self
         scheduleCollectionView.register(ScheduleCell.self, forCellWithReuseIdentifier: "ScheduleCell")
         
-        // Add schedule collection view
-        stackView.addArrangedSubview(scheduleCollectionView)
+        mainStackView.addArrangedSubview(scheduleCollectionView)
         scheduleCollectionView.snp.makeConstraints { make in
-            make.height.equalTo(150) // Adjust height as needed
+            make.height.equalTo(150)
         }
         
-        // Weekday TextField
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.minimumLineHeight = 10.0
+        paragraphStyle.maximumLineHeight = 18.0
+        
         let weekdayTextField = UITextField()
-        weekdayTextField.delegate = self // Set the delegate to restrict input
-        stackView.addArrangedSubview(weekdayTextField)
+        mainStackView.addArrangedSubview(weekdayTextField)
         weekdayTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
         weekdayTextField.borderStyle = .roundedRect
+        let weekdayAttributedPlaceholder = NSAttributedString(string: "Enter weekday (e.g., MON, TUE, WED, etc.)", attributes: [
+            NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        weekdayTextField.attributedPlaceholder = weekdayAttributedPlaceholder
         weekdayTextField.placeholder = "Enter weekday (e.g., MON, TUE, WED, etc.)"
+        weekdayTextField.clearButtonMode = .whileEditing
         
-        // Time TextField
         let timeTextField = UITextField()
-        stackView.addArrangedSubview(timeTextField)
+        mainStackView.addArrangedSubview(timeTextField)
         timeTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
         timeTextField.borderStyle = .roundedRect
-        timeTextField.placeholder = "Enter time (e.g., 15, 17 or 15-17)"
+        let timeAttributedPlaceholder = NSAttributedString(string: "Enter time for each weekday separated by ;", attributes: [
+            NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        timeTextField.attributedPlaceholder = timeAttributedPlaceholder
+        timeTextField.placeholder = "Enter time for each weekday separated by ;"
+        timeTextField.keyboardType = .numbersAndPunctuation
+        timeTextField.clearButtonMode = .whileEditing
         
-        // Store references to the text fields
         self.weekdayTextField = weekdayTextField
         self.timeTextField = timeTextField
         
-        // Add Schedule button
         let addScheduleButton = UIButton()
         addScheduleButton.setTitle("Add", for: .normal)
         addScheduleButton.setTitleColor(.white, for: .normal)
@@ -221,79 +240,100 @@ extension StudentCardViewController {
         addScheduleButton.layer.cornerRadius = 8
         addScheduleButton.addTarget(self, action: #selector(addSchedule), for: .touchUpInside)
         
-        stackView.addArrangedSubview(addScheduleButton)
+        mainStackView.addArrangedSubview(addScheduleButton)
         addScheduleButton.snp.makeConstraints { make in
             make.height.equalTo(40)
         }
+        
+        studentNameTextField.delegate = self
+        parentNameTextField.delegate = self
+        phoneTextField.delegate = self
+        lessonPriceTextField.delegate = self
+        currencyTextField.delegate = self
+        weekdayTextField.delegate = self
+        timeTextField.delegate = self
     }
+
     
     @objc private func addSchedule() {
-        guard let weekday = weekdayTextField?.text, !weekday.isEmpty,
-              let timeInput = timeTextField?.text, !timeInput.isEmpty else {
-            displayErrorAlert(message: "Please enter both weekday and time.")
+        guard let timeInput = timeTextField?.text, !timeInput.isEmpty else {
+            displayErrorAlert(message: "Please enter time.")
             return
         }
-
-        let validWeekdays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
-        let uppercaseWeekday = weekday.uppercased()
-
-        // Check for valid weekday input
-        if !validWeekdays.contains(uppercaseWeekday) {
-            displayErrorAlert(message: "Please enter a valid weekday abbreviation without any spaces or signs (e.g., MON, TUE, WED, etc.).")
-            return
-        }
-
-        // Check for already added weekday
-        if scheduleItems.contains(where: { $0.weekday == uppercaseWeekday }) {
-            displayErrorAlert(message: "You can only add one day of the week.")
-            return
-        }
-
-        var formattedTimes: [String] = []
-
-        // Split the time input based on comma, and handle each part
-        let timeRanges = timeInput.components(separatedBy: ",")
         
-        for timeRange in timeRanges {
-            if timeRange.contains("-") {
-                // Handle time range (e.g., 15-17)
-                let timeComponents = timeRange.split(separator: "-")
-                if timeComponents.count == 2,
-                   let formattedStartTime = formatTime(String(timeComponents[0]).trimmingCharacters(in: .whitespaces)),
-                   let formattedEndTime = formatTime(String(timeComponents[1]).trimmingCharacters(in: .whitespaces)) {
-                    formattedTimes.append("\(formattedStartTime)-\(formattedEndTime)")
+        var formattedTimes: [String] = []
+        
+        // Split the time input based on semicolon for days and comma for times
+        let timeGroups = timeInput.components(separatedBy: ";")
+        
+        let weekdays = weekdayTextField?.text?.components(separatedBy: ",") ?? []
+        for (index, weekday) in weekdays.enumerated() {
+            let uppercaseWeekday = weekday.trimmingCharacters(in: .whitespaces).uppercased()
+            let validWeekdays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+            
+            // Check for valid weekday input
+            if !validWeekdays.contains(uppercaseWeekday) {
+                displayErrorAlert(message: "Please enter valid weekday abbreviations separated by commas (e.g., MON, TUE, WED).")
+                return
+            }
+            
+            // Ensure corresponding time group exists
+            guard index < timeGroups.count else {
+                displayErrorAlert(message: "Please enter time for each specified weekday (e.g., 15; 15, 17; 15-17).")
+                return
+            }
+            
+            var formattedTimeItems: [String] = []
+            
+            // Split the time group based on comma, and handle each part
+            let timeRanges = timeGroups[index].components(separatedBy: ",")
+            for timeRange in timeRanges {
+                if timeRange.contains("-") {
+                    // Handle time range (e.g., 15-17)
+                    let timeComponents = timeRange.split(separator: "-")
+                    if timeComponents.count == 2,
+                       let formattedStartTime = formatTime(String(timeComponents[0]).trimmingCharacters(in: .whitespaces)),
+                       let formattedEndTime = formatTime(String(timeComponents[1]).trimmingCharacters(in: .whitespaces)) {
+                        formattedTimeItems.append("\(formattedStartTime)-\(formattedEndTime)")
+                    } else {
+                        displayErrorAlert(message: "Please enter a valid time range (e.g., 15:00-17:00).")
+                        return
+                    }
                 } else {
-                    displayErrorAlert(message: "Please enter a valid time range (e.g., 15:00-17:00).")
-                    return
-                }
-            } else {
-                // Handle single time (e.g., 15)
-                if let formattedTime = formatTime(timeRange.trimmingCharacters(in: .whitespaces)) {
-                    formattedTimes.append(formattedTime)
-                } else {
-                    displayErrorAlert(message: "Please enter a valid time (e.g., 15:00).")
-                    return
+                    // Handle single time (e.g., 15)
+                    if let formattedTime = formatTime(timeRange.trimmingCharacters(in: .whitespaces)) {
+                        formattedTimeItems.append(formattedTime)
+                    } else {
+                        displayErrorAlert(message: "Please enter a valid time separated by ; (e.g., 15; 15, 17; 15-17).")
+                        return
+                    }
                 }
             }
+            
+            formattedTimes.append("\(uppercaseWeekday) \(formattedTimeItems.joined(separator: ", "))")
         }
-
-        // Create new schedule item and add it to the collection
-        let newScheduleItem = Schedule()
-        newScheduleItem.weekday = uppercaseWeekday
-        newScheduleItem.time = formattedTimes.joined(separator: ", ")
-
-        scheduleItems.append(newScheduleItem)
-
+        
+        // Create new schedule items and add them to the collection
+        for formattedTime in formattedTimes {
+            let newScheduleItem = Schedule()
+            let components = formattedTime.split(separator: " ")
+            newScheduleItem.weekday = String(components[0])
+            newScheduleItem.time = String(components[1...].joined(separator: " "))
+            
+            scheduleItems.append(newScheduleItem)
+        }
+        
         // Sort schedule items
         scheduleItems.sort { orderOfDay($0.weekday) < orderOfDay($1.weekday) }
-
+        
         scheduleCollectionView.reloadData()
-
+        
         // Clear text fields after adding
         weekdayTextField?.text = ""
         timeTextField?.text = ""
     }
-
+    
+    
     // Метод для форматирования времени в "HH:mm"
     private func formatTime(_ time: String) -> String? {
         let timeComponents = time.split(separator: ":")
@@ -380,16 +420,44 @@ extension StudentCardViewController: UICollectionViewDataSource, UICollectionVie
     }
 }
 
-extension StudentCardViewController: UITextFieldDelegate {
+extension StudentCardViewController {
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        if textField == weekdayTextField {
-            // Запретить ввод цифр
+        
+        switch textField {
+        case lessonPriceTextField:
+            let currentText = textField.text ?? ""
+            if currentText.contains(",") && string.contains(",") {
+                return false
+            }
+            let allowedCharacters = CharacterSet(charactersIn: "0123456789,")
+            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
+                return false
+            }
+        case studentNameTextField, parentNameTextField, currencyTextField:
+            let allowedCharacters = CharacterSet.letters
+            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
+                return false
+            }
+        case phoneTextField:
+            let allowedCharacters = CharacterSet(charactersIn: "+0123456789")
+            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
+                return false
+            }
+        case weekdayTextField:
             let characterSet = CharacterSet.decimalDigits
             if string.rangeOfCharacter(from: characterSet) != nil {
                 return false
             }
+        case timeTextField:
+            let allowedCharacters = CharacterSet(charactersIn: "0123456789,-;")
+            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
+                return false
+            }
+        default:
+            break
         }
+        
         return true
     }
 }
@@ -409,7 +477,7 @@ extension StudentCardViewController: UIImagePickerControllerDelegate, UINavigati
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        if let selectedImage = info[.originalImage] as? UIImage {
+        if let selectedImage = info[.editedImage] as? UIImage {
             self.selectedImage = selectedImage
             profileImageView.image = selectedImage
         }

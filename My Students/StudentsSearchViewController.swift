@@ -24,11 +24,19 @@ class StudentsSearchViewController: UIViewController {
     init(viewModel: StudentViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
-        self.modalPresentationStyle = .fullScreen
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        DispatchQueue.main.async {
+            self.searchController.isActive = true
+            self.searchController.searchBar.becomeFirstResponder()
+        }
     }
     
     override func viewDidLoad() {
@@ -57,6 +65,7 @@ class StudentsSearchViewController: UIViewController {
         
         // Load initial search history
         viewModel.fetchSearchHistory()
+    
     }
     
     @objc func closeButtonTapped() {
@@ -68,6 +77,7 @@ class StudentsSearchViewController: UIViewController {
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.placeholder = "Search Students"
         searchController.hidesNavigationBarDuringPresentation = false
+        searchController.searchBar.searchBarStyle = .minimal
         navigationItem.searchController = searchController
         definesPresentationContext = true
         searchController.searchBar.delegate = self
@@ -83,8 +93,9 @@ class StudentsSearchViewController: UIViewController {
         view.addSubview(studentsTableView)
         
         studentsTableView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
-            make.left.right.bottom.equalToSuperview()
+//            make.edges.equalToSuperview()
+            make.top.equalTo(view.snp.top).offset(-20)
+                    make.leading.trailing.bottom.equalToSuperview()
         }
     }
 }
@@ -98,12 +109,13 @@ extension StudentsSearchViewController: UISearchResultsUpdating {
             searchHistory = viewModel.searchHistory
         } else {
             searchHistory = viewModel.students.filter { $0.name.lowercased().contains(searchText.lowercased()) }
-            if let foundStudent = searchHistory.first {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                   self.viewModel.addSearchHistoryItem(for: foundStudent)
-                                   self.studentsTableView.reloadData()
-                               }
-                           }
+            //Ша we want to save history search but it's not so cool
+//            if let foundStudent = searchHistory.first {
+//                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+//                                   self.viewModel.addSearchHistoryItem(for: foundStudent)
+//                                   self.studentsTableView.reloadData()
+//                               }
+//                           }
                        }
                        studentsTableView.reloadData()
                    }
@@ -160,7 +172,7 @@ extension StudentsSearchViewController: UITableViewDelegate, UITableViewDataSour
 
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 110 // Высота для хедера с коллекцией
+        return 140 // Высота для хедера с коллекцией
     }
 }
 
@@ -197,6 +209,9 @@ class SearchHistoryHeaderView: UITableViewHeaderFooterView, UICollectionViewDele
         let button = UIButton(type: .system)
         button.setTitle("Clear", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 12)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .systemBlue
+        button.layer.cornerRadius = 5
         return button
     }()
     
@@ -225,23 +240,26 @@ class SearchHistoryHeaderView: UITableViewHeaderFooterView, UICollectionViewDele
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.backgroundColor = .lightText
+        collectionView.backgroundColor = .systemGray6
+        collectionView.showsHorizontalScrollIndicator = false
         collectionView.register(StudentSearchCollectionViewCell.self, forCellWithReuseIdentifier: "SearchHistoryCell")
         contentView.addSubview(collectionView)
         
         collectionView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+//            make.edges.equalToSuperview()
+            make.top.trailing.leading.equalToSuperview()
+            make.height.equalTo(100)
+            
         }
     }
     
     private func setupClearButton() {
         contentView.addSubview(clearButton)
-        clearButton.addTarget(self, action: #selector(clearButtonTapped), for: .touchUpInside) // Corrected target to 'self'
+        clearButton.addTarget(self, action: #selector(clearButtonTapped), for: .touchUpInside)
         
         clearButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().offset(-8)
-            make.bottom.equalToSuperview().offset(-5)
-            make.width.equalTo(45)
+            make.bottom.trailing.equalToSuperview().inset(10)
+            make.width.equalTo(50)
             make.height.equalTo(20)
         }
         updateClearButtonVisibility()

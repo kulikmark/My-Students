@@ -124,12 +124,11 @@ class StudentCollectionViewCell: UICollectionViewCell {
         }
         
         scheduleLabel.snp.makeConstraints { make in
-            make.top.equalTo(studentNameLabel.snp.bottom).offset(5)
+            make.top.equalTo(studentNameLabel.snp.bottom).offset(10)
             make.leading.trailing.equalTo(containerView).inset(5)
         }
         
         editButton.snp.makeConstraints { make in
-//            make.top.equalTo(scheduleLabel.snp.bottom).offset(10)
             make.bottom.equalTo(containerView.snp.bottom).offset(-10)
             make.centerX.equalToSuperview()
             make.width.equalTo(containerView.snp.width).inset(10)
@@ -210,12 +209,12 @@ class StudentCollectionViewCell: UICollectionViewCell {
     private func animateShake(isEditing: Bool) {
         if isEditing {
             let animation = CABasicAnimation(keyPath: "transform.rotation")
-            let additionalRotation = CGFloat(0.5 * (.pi / 180.0)) // 1 degree in radians
+            let additionalRotation = CGFloat(0.1 * (.pi / 180.0))
             let shakeRotation = CGFloat(0.005)
             
             animation.fromValue = -shakeRotation - additionalRotation
             animation.toValue = shakeRotation + additionalRotation
-            animation.duration = 0.1
+            animation.duration = 0.15
             animation.repeatCount = .infinity
             animation.autoreverses = true
             

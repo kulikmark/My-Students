@@ -18,6 +18,7 @@
 		6D4293112C3297FF00B44ED1 /* StudentsSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293102C3297FF00B44ED1 /* StudentsSearchViewController.swift */; };
 		6D4293132C32A45400B44ED1 /* StudentTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293122C32A45400B44ED1 /* StudentTableViewCell.swift */; };
 		6D4293152C32B52600B44ED1 /* UIImageSquareMethodExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293142C32B52600B44ED1 /* UIImageSquareMethodExtension.swift */; };
+		6D4293182C3442F300B44ED1 /* KeyboardWorkExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293172C3442F200B44ED1 /* KeyboardWorkExtension.swift */; };
 		6D6DCC3D2C2936D200BE983C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC3C2C2936D200BE983C /* AppDelegate.swift */; };
 		6D6DCC3F2C2936D200BE983C /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC3E2C2936D200BE983C /* SceneDelegate.swift */; };
 		6D6DCC442C2936D200BE983C /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 6D6DCC432C2936D200BE983C /* Base */; };
@@ -58,6 +59,7 @@
 		6D4293102C3297FF00B44ED1 /* StudentsSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentsSearchViewController.swift; sourceTree = "<group>"; };
 		6D4293122C32A45400B44ED1 /* StudentTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentTableViewCell.swift; sourceTree = "<group>"; };
 		6D4293142C32B52600B44ED1 /* UIImageSquareMethodExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageSquareMethodExtension.swift; sourceTree = "<group>"; };
+		6D4293172C3442F200B44ED1 /* KeyboardWorkExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardWorkExtension.swift; sourceTree = "<group>"; };
 		6D6DCC392C2936D100BE983C /* My Students.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "My Students.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D6DCC3C2C2936D200BE983C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6D6DCC3E2C2936D200BE983C /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -103,6 +105,7 @@
 			children = (
 				6D4293142C32B52600B44ED1 /* UIImageSquareMethodExtension.swift */,
 				6D6DCC612C293A7300BE983C /* StartScreenLabelMethodExtension.swift */,
+				6D4293172C3442F200B44ED1 /* KeyboardWorkExtension.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -289,6 +292,7 @@
 				6D4293152C32B52600B44ED1 /* UIImageSquareMethodExtension.swift in Sources */,
 				6D42930B2C2EF1E800B44ED1 /* ScheduleCell.swift in Sources */,
 				6D6DCC642C293C7C00BE983C /* StudentCardScheduleSelection.swift in Sources */,
+				6D4293182C3442F300B44ED1 /* KeyboardWorkExtension.swift in Sources */,
 				6D42930F2C317C2F00B44ED1 /* SearchHistoryCollectionViewCell.swift in Sources */,
 				6D6DCC3D2C2936D200BE983C /* AppDelegate.swift in Sources */,
 				6D6DCC552C2937E400BE983C /* StudentsCollectionViewController.swift in Sources */,
