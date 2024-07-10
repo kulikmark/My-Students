@@ -5,88 +5,152 @@
 //  Created by Марк Кулик on 24.06.2024.
 //
 
-import UIKit
-import RealmSwift
+import Foundation
+import FirebaseFirestore
 
 enum StudentType: String, Codable {
     case schoolchild = "Schoolchild"
     case adult = "Adult"
 }
 
-class Student: Object {
-    @objc dynamic var id: String = UUID().uuidString
-    @objc dynamic var name: String = ""
-    @objc dynamic var parentName: String = ""
-    @objc dynamic var studentImage: String = ""
-    @objc dynamic var phoneNumber: String = ""
-    @objc dynamic var lessonPrice: LessonPrice? = nil
-    @objc dynamic var type: String = StudentType.schoolchild.rawValue
-    let months = List<Month>()
-    let lessons = List<Lesson>()
-    let schedule = List<Schedule>()
-    let photoUrls = List<String>()
+struct Student: Codable {
+    @DocumentID var id: String?
+    var studentImageURL: String? = nil
+    var type: StudentType = .schoolchild
+    var name: String = ""
+    var parentName: String = ""
+    var phoneNumber: String = ""
+    var lessonPrice: LessonPrice? = nil
+    var schedule: [Schedule] = []
+    
+    var months: [Month] = []
+    var lessons: [Lesson] = []
+    var photoUrls: [String] = []
+    
+    init(
+        studentImageURL: String? = nil,
+        type: StudentType = .schoolchild,
+        name: String = "",
+        parentName: String = "",
+        phoneNumber: String = "",
+        lessonPrice: LessonPrice? = nil,
+        schedule: [Schedule] = [],
+        
+        months: [Month] = [],
+        lessons: [Lesson] = [],
+        photoUrls: [URL] = []) {
+            
+            self.studentImageURL = studentImageURL
+            self.type = type
+            self.name = name
+            self.parentName = parentName
+            self.phoneNumber = phoneNumber
+            self.lessonPrice = lessonPrice
+            self.schedule = schedule
+            
+            self.months = months
+            self.lessons = lessons
+            self.photoUrls = photoUrls.map { $0.absoluteString }
+        }
+    
+    func toFirestoreData() -> [String: Any] {
+            var data: [String: Any] = [
+                "type": type.rawValue,
+                "name": name,
+                "parentName": parentName,
+                "phoneNumber": phoneNumber,
+                "lessonPrice": lessonPrice?.toFirestoreData() ?? NSNull(),
+                "schedule": schedule.map { $0.toFirestoreData() },
+                "months": months.map { $0.toFirestoreData() },
+                "lessons": lessons.map { $0.toFirestoreData() },
+                "photoUrls": photoUrls
+            ]
 
-    override static func primaryKey() -> String? {
-        return "id"
+            // Добавление URL изображения, если он доступен
+            if let imageUrl = studentImageURL {
+                data["studentImageURL"] = imageUrl
+            }
+
+            return data
+        }
     }
 
-    convenience init(id: UUID = UUID(),
-                     name: String,
-                     parentName: String,
-                     phoneNumber: String,
-                     months: [Month],
-                     lessons: [Lesson],
-                     lessonPrice: LessonPrice,
-                     schedule: [Schedule],
-                     type: StudentType,
-                     studentImage: String,
-                     photoUrls: [URL] = []) {
-        self.init()
-        self.id = id.uuidString
-        self.name = name
-        self.parentName = parentName
-        self.studentImage = studentImage
-        self.phoneNumber = phoneNumber
-        self.months.append(objectsIn: months)
-        self.lessons.append(objectsIn: lessons)
-        self.lessonPrice = lessonPrice
-        self.schedule.append(objectsIn: schedule)
-        self.type = type.rawValue
-        self.photoUrls.append(objectsIn: photoUrls.map { $0.absoluteString })
+struct Schedule: Codable {
+    var id: String = UUID().uuidString
+    var weekday: String = ""
+    var time: String = ""
+    
+    func toFirestoreData() -> [String: Any] {
+        return [
+            "id": id,
+            "weekday": weekday,
+            "time": time
+        ]
     }
 }
 
-class Schedule: Object {
-    @objc dynamic var weekday: String = ""
-    @objc dynamic var time: String = ""
+struct Month: Codable {
+    var id: String = UUID().uuidString
+    var monthName: String = ""
+    var monthYear: String = ""
+    var isPaid: Bool = false
+    var lessonPrice: LessonPrice? = nil
+    var lessons: [Lesson] = []
+    
+    func toFirestoreData() -> [String: Any] {
+        return [
+            "id": id,
+            "monthName": monthName,
+            "monthYear": monthYear,
+            "isPaid": isPaid,
+            "lessonPrice": lessonPrice?.toFirestoreData() ?? NSNull(),
+            "lessons": lessons.map { $0.toFirestoreData() }
+        ]
+    }
 }
 
-class Month: Object {
-    @objc dynamic var monthName: String = ""
-    @objc dynamic var monthYear: String = ""
-    @objc dynamic var isPaid: Bool = false
-    @objc dynamic var lessonPrice: LessonPrice? = nil
-    let lessons = List<Lesson>()
+struct LessonPrice: Codable {
+    var id: String = UUID().uuidString
+    var price: Int = 0
+    var currency: String = ""
+    
+    func toFirestoreData() -> [String: Any] {
+        return [
+            "id": id,
+            "price": price,
+            "currency": currency
+        ]
+    }
 }
 
-class LessonPrice: Object {
-    @objc dynamic var price: Int = 0
-    @objc dynamic var currency: String = ""
+struct Lesson: Codable {
+    var id: String = UUID().uuidString
+    var date: String = ""
+    var attended: Bool = false
+    var homework: String? = nil
+    var photoUrls: [String] = []
+    
+    func toFirestoreData() -> [String: Any] {
+        return [
+            "id": id,
+            "date": date,
+            "attended": attended,
+            "homework": homework ?? NSNull(),
+            "photoUrls": photoUrls
+        ]
+    }
 }
 
-class Lesson: Object {
-    @objc dynamic var date: String = ""
-    @objc dynamic var attended: Bool = false
-    @objc dynamic var homework: String? = nil
-    let photoUrls = List<String>()
-}
-
-class SearchHistoryItem: Object {
-    @objc dynamic var id: String = UUID().uuidString
-    @objc dynamic var studentId: String = ""
-    @objc dynamic var timestamp: Date = Date()
-
-    override static func primaryKey() -> String? {
-        return "id"
+struct SearchHistoryItem: Codable {
+    var id: String = UUID().uuidString
+    var studentId: String = ""
+    var timestamp: Date = Date()
+    
+    func toFirestoreData() -> [String: Any] {
+        return [
+            "id": id,
+            "studentId": studentId,
+            "timestamp": Timestamp(date: timestamp)
+        ]
     }
 }

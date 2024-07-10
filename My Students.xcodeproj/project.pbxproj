@@ -7,16 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6D2D55722C3C79D600D4CE8C /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 6D2D55712C3C79D600D4CE8C /* FirebaseAnalytics */; };
+		6D2D55742C3C79D600D4CE8C /* FirebaseAnalyticsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 6D2D55732C3C79D600D4CE8C /* FirebaseAnalyticsSwift */; };
+		6D2D55762C3C79D600D4CE8C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 6D2D55752C3C79D600D4CE8C /* FirebaseAuth */; };
+		6D2D55782C3C79D600D4CE8C /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 6D2D55772C3C79D600D4CE8C /* FirebaseDatabase */; };
+		6D2D557A2C3C79D600D4CE8C /* FirebaseDatabaseSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 6D2D55792C3C79D600D4CE8C /* FirebaseDatabaseSwift */; };
+		6D2D557C2C3C79D600D4CE8C /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 6D2D557B2C3C79D600D4CE8C /* FirebaseFirestore */; };
+		6D2D557E2C3C79D600D4CE8C /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 6D2D557D2C3C79D600D4CE8C /* FirebaseFirestoreSwift */; };
+		6D2D55802C3C79D600D4CE8C /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 6D2D557F2C3C79D600D4CE8C /* FirebaseStorage */; };
+		6D2D558A2C3DBDA600D4CE8C /* SearchHistoryHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2D55892C3DBDA600D4CE8C /* SearchHistoryHeaderView.swift */; };
+		6D2D558C2C3DC06500D4CE8C /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6D2D558B2C3DC06500D4CE8C /* GoogleService-Info.plist */; };
+		6D2D558E2C3EB8F500D4CE8C /* ForgotPasswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2D558D2C3EB8F500D4CE8C /* ForgotPasswordViewController.swift */; };
+		6D320D542C39C17000CF6194 /* FirebaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D320D532C39C17000CF6194 /* FirebaseManager.swift */; };
+		6D320D562C39C20300CF6194 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D320D552C39C20300CF6194 /* LoginViewController.swift */; };
+		6D320D672C39D58C00CF6194 /* StudentsCollectionViewControllerWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D320D662C39D58C00CF6194 /* StudentsCollectionViewControllerWrapper.swift */; };
+		6D320D692C39DEB700CF6194 /* LoginManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D320D682C39DEB700CF6194 /* LoginManager.swift */; };
 		6D4293032C29437000B44ED1 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6D4293022C29437000B44ED1 /* SnapKit */; };
-		6D4293042C2C24C400B44ED1 /* Pods_My_Students.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66B406D382489C82CE1E76F4 /* Pods_My_Students.framework */; settings = {ATTRIBUTES = (Required, ); }; };
-		6D4293052C2C24C400B44ED1 /* Pods_My_Students.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 66B406D382489C82CE1E76F4 /* Pods_My_Students.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6D4293072C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293062C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift */; };
 		6D4293092C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293082C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift */; };
 		6D42930B2C2EF1E800B44ED1 /* ScheduleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D42930A2C2EF1E800B44ED1 /* ScheduleCell.swift */; };
 		6D42930D2C3087A700B44ED1 /* MonthsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D42930C2C3087A700B44ED1 /* MonthsTableViewController.swift */; };
-		6D42930F2C317C2F00B44ED1 /* SearchHistoryCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D42930E2C317C2F00B44ED1 /* SearchHistoryCollectionViewCell.swift */; };
+		6D42930F2C317C2F00B44ED1 /* StudentSearchCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D42930E2C317C2F00B44ED1 /* StudentSearchCollectionViewCell.swift */; };
 		6D4293112C3297FF00B44ED1 /* StudentsSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293102C3297FF00B44ED1 /* StudentsSearchViewController.swift */; };
-		6D4293132C32A45400B44ED1 /* StudentTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293122C32A45400B44ED1 /* StudentTableViewCell.swift */; };
+		6D4293132C32A45400B44ED1 /* StudentSearchHistoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293122C32A45400B44ED1 /* StudentSearchHistoryTableViewCell.swift */; };
 		6D4293152C32B52600B44ED1 /* UIImageSquareMethodExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293142C32B52600B44ED1 /* UIImageSquareMethodExtension.swift */; };
 		6D4293182C3442F300B44ED1 /* KeyboardWorkExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4293172C3442F200B44ED1 /* KeyboardWorkExtension.swift */; };
 		6D6DCC3D2C2936D200BE983C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC3C2C2936D200BE983C /* AppDelegate.swift */; };
@@ -35,13 +48,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		6D6DCC662C29417A00BE983C /* Embed Frameworks */ = {
+		6D320D642C39CF5100CF6194 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				6D4293052C2C24C400B44ED1 /* Pods_My_Students.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -49,15 +61,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		03404CB6D2DE744CCDD146C7 /* Pods-My Students.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-My Students.debug.xcconfig"; path = "Target Support Files/Pods-My Students/Pods-My Students.debug.xcconfig"; sourceTree = "<group>"; };
-		66B406D382489C82CE1E76F4 /* Pods_My_Students.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_My_Students.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D2D55892C3DBDA600D4CE8C /* SearchHistoryHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryHeaderView.swift; sourceTree = "<group>"; };
+		6D2D558B2C3DC06500D4CE8C /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		6D2D558D2C3EB8F500D4CE8C /* ForgotPasswordViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordViewController.swift; sourceTree = "<group>"; };
+		6D320D532C39C17000CF6194 /* FirebaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseManager.swift; sourceTree = "<group>"; };
+		6D320D552C39C20300CF6194 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
+		6D320D662C39D58C00CF6194 /* StudentsCollectionViewControllerWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentsCollectionViewControllerWrapper.swift; sourceTree = "<group>"; };
+		6D320D682C39DEB700CF6194 /* LoginManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginManager.swift; sourceTree = "<group>"; };
 		6D4293062C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentCardPhotoChoosingPermission.swift; sourceTree = "<group>"; };
 		6D4293082C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImagePickerControllerDelegate.swift; sourceTree = "<group>"; };
 		6D42930A2C2EF1E800B44ED1 /* ScheduleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleCell.swift; sourceTree = "<group>"; };
 		6D42930C2C3087A700B44ED1 /* MonthsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthsTableViewController.swift; sourceTree = "<group>"; };
-		6D42930E2C317C2F00B44ED1 /* SearchHistoryCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHistoryCollectionViewCell.swift; sourceTree = "<group>"; };
+		6D42930E2C317C2F00B44ED1 /* StudentSearchCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentSearchCollectionViewCell.swift; sourceTree = "<group>"; };
 		6D4293102C3297FF00B44ED1 /* StudentsSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentsSearchViewController.swift; sourceTree = "<group>"; };
-		6D4293122C32A45400B44ED1 /* StudentTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentTableViewCell.swift; sourceTree = "<group>"; };
+		6D4293122C32A45400B44ED1 /* StudentSearchHistoryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentSearchHistoryTableViewCell.swift; sourceTree = "<group>"; };
 		6D4293142C32B52600B44ED1 /* UIImageSquareMethodExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageSquareMethodExtension.swift; sourceTree = "<group>"; };
 		6D4293172C3442F200B44ED1 /* KeyboardWorkExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardWorkExtension.swift; sourceTree = "<group>"; };
 		6D6DCC392C2936D100BE983C /* My Students.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "My Students.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,7 +92,6 @@
 		6D6DCC5A2C2939C500BE983C /* StudentCardSetupUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentCardSetupUI.swift; sourceTree = "<group>"; };
 		6D6DCC612C293A7300BE983C /* StartScreenLabelMethodExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartScreenLabelMethodExtension.swift; sourceTree = "<group>"; };
 		6D6DCC632C293C7C00BE983C /* StudentCardScheduleSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentCardScheduleSelection.swift; sourceTree = "<group>"; };
-		E652B4A416F8E32BFDEBD020 /* Pods-My Students.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-My Students.release.xcconfig"; path = "Target Support Files/Pods-My Students/Pods-My Students.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,26 +99,98 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6D4293042C2C24C400B44ED1 /* Pods_My_Students.framework in Frameworks */,
+				6D2D557A2C3C79D600D4CE8C /* FirebaseDatabaseSwift in Frameworks */,
+				6D2D55782C3C79D600D4CE8C /* FirebaseDatabase in Frameworks */,
+				6D2D55802C3C79D600D4CE8C /* FirebaseStorage in Frameworks */,
+				6D2D55742C3C79D600D4CE8C /* FirebaseAnalyticsSwift in Frameworks */,
+				6D2D55722C3C79D600D4CE8C /* FirebaseAnalytics in Frameworks */,
 				6D4293032C29437000B44ED1 /* SnapKit in Frameworks */,
+				6D2D55762C3C79D600D4CE8C /* FirebaseAuth in Frameworks */,
+				6D2D557C2C3C79D600D4CE8C /* FirebaseFirestore in Frameworks */,
+				6D2D557E2C3C79D600D4CE8C /* FirebaseFirestoreSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5D893975C528D68AF7F5EF76 /* Pods */ = {
+		6D2D55812C3DB9CC00D4CE8C /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				03404CB6D2DE744CCDD146C7 /* Pods-My Students.debug.xcconfig */,
-				E652B4A416F8E32BFDEBD020 /* Pods-My Students.release.xcconfig */,
+				6D6DCC502C29376D00BE983C /* StudentModel.swift */,
+				6D6DCC522C29378E00BE983C /* StudentViewModel.swift */,
+				6D320D532C39C17000CF6194 /* FirebaseManager.swift */,
 			);
-			path = Pods;
+			name = Model;
+			sourceTree = "<group>";
+		};
+		6D2D55822C3DB9F900D4CE8C /* Login Screen, Login Manager */ = {
+			isa = PBXGroup;
+			children = (
+				6D320D552C39C20300CF6194 /* LoginViewController.swift */,
+				6D2D558D2C3EB8F500D4CE8C /* ForgotPasswordViewController.swift */,
+				6D320D682C39DEB700CF6194 /* LoginManager.swift */,
+			);
+			path = "Login Screen, Login Manager";
+			sourceTree = "<group>";
+		};
+		6D2D55832C3DBA2B00D4CE8C /* StudentsCollectionViewController */ = {
+			isa = PBXGroup;
+			children = (
+				6D6DCC542C2937E400BE983C /* StudentsCollectionViewController.swift */,
+				6D6DCC582C29398E00BE983C /* StudentCollectionViewCell.swift */,
+			);
+			path = StudentsCollectionViewController;
+			sourceTree = "<group>";
+		};
+		6D2D55842C3DBA5100D4CE8C /* StudentCardViewController */ = {
+			isa = PBXGroup;
+			children = (
+				6D6DCC562C29389300BE983C /* StudentCardViewController.swift */,
+				6D6DCC5A2C2939C500BE983C /* StudentCardSetupUI.swift */,
+				6D42930A2C2EF1E800B44ED1 /* ScheduleCell.swift */,
+			);
+			path = StudentCardViewController;
+			sourceTree = "<group>";
+		};
+		6D2D55852C3DBAC300D4CE8C /* StudentsSearchViewController */ = {
+			isa = PBXGroup;
+			children = (
+				6D4293102C3297FF00B44ED1 /* StudentsSearchViewController.swift */,
+				6D2D55892C3DBDA600D4CE8C /* SearchHistoryHeaderView.swift */,
+				6D42930E2C317C2F00B44ED1 /* StudentSearchCollectionViewCell.swift */,
+				6D4293122C32A45400B44ED1 /* StudentSearchHistoryTableViewCell.swift */,
+			);
+			path = StudentsSearchViewController;
+			sourceTree = "<group>";
+		};
+		6D2D55862C3DBAFA00D4CE8C /* MonthsTableViewController */ = {
+			isa = PBXGroup;
+			children = (
+				6D42930C2C3087A700B44ED1 /* MonthsTableViewController.swift */,
+			);
+			path = MonthsTableViewController;
+			sourceTree = "<group>";
+		};
+		6D2D55872C3DBB2000D4CE8C /* Project Manager */ = {
+			isa = PBXGroup;
+			children = (
+				6D6DCC3C2C2936D200BE983C /* AppDelegate.swift */,
+				6D6DCC3E2C2936D200BE983C /* SceneDelegate.swift */,
+				6D320D662C39D58C00CF6194 /* StudentsCollectionViewControllerWrapper.swift */,
+				6D6DCC422C2936D200BE983C /* Main.storyboard */,
+				6D6DCC452C2936D400BE983C /* Assets.xcassets */,
+				6D6DCC472C2936D400BE983C /* LaunchScreen.storyboard */,
+			);
+			path = "Project Manager";
 			sourceTree = "<group>";
 		};
 		6D4293162C32B54400B44ED1 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				6D6DCC632C293C7C00BE983C /* StudentCardScheduleSelection.swift */,
+				6D4293082C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift */,
+				6D4293062C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift */,
 				6D4293142C32B52600B44ED1 /* UIImageSquareMethodExtension.swift */,
 				6D6DCC612C293A7300BE983C /* StartScreenLabelMethodExtension.swift */,
 				6D4293172C3442F200B44ED1 /* KeyboardWorkExtension.swift */,
@@ -115,8 +203,6 @@
 			children = (
 				6D6DCC3B2C2936D100BE983C /* My Students */,
 				6D6DCC3A2C2936D100BE983C /* Products */,
-				5D893975C528D68AF7F5EF76 /* Pods */,
-				DFEC0AEF9B11BD35A6E49FD4 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -131,37 +217,18 @@
 		6D6DCC3B2C2936D100BE983C /* My Students */ = {
 			isa = PBXGroup;
 			children = (
-				6D6DCC3C2C2936D200BE983C /* AppDelegate.swift */,
-				6D6DCC3E2C2936D200BE983C /* SceneDelegate.swift */,
-				6D6DCC422C2936D200BE983C /* Main.storyboard */,
-				6D6DCC452C2936D400BE983C /* Assets.xcassets */,
-				6D6DCC472C2936D400BE983C /* LaunchScreen.storyboard */,
+				6D2D55872C3DBB2000D4CE8C /* Project Manager */,
 				6D6DCC4A2C2936D400BE983C /* Info.plist */,
-				6D6DCC502C29376D00BE983C /* StudentModel.swift */,
-				6D6DCC522C29378E00BE983C /* StudentViewModel.swift */,
-				6D6DCC542C2937E400BE983C /* StudentsCollectionViewController.swift */,
-				6D6DCC582C29398E00BE983C /* StudentCollectionViewCell.swift */,
-				6D4293102C3297FF00B44ED1 /* StudentsSearchViewController.swift */,
-				6D42930E2C317C2F00B44ED1 /* SearchHistoryCollectionViewCell.swift */,
-				6D4293122C32A45400B44ED1 /* StudentTableViewCell.swift */,
-				6D42930C2C3087A700B44ED1 /* MonthsTableViewController.swift */,
-				6D6DCC562C29389300BE983C /* StudentCardViewController.swift */,
-				6D6DCC5A2C2939C500BE983C /* StudentCardSetupUI.swift */,
-				6D42930A2C2EF1E800B44ED1 /* ScheduleCell.swift */,
-				6D4293062C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift */,
-				6D4293082C2CB3CB00B44ED1 /* UIImagePickerControllerDelegate.swift */,
-				6D6DCC632C293C7C00BE983C /* StudentCardScheduleSelection.swift */,
+				6D2D558B2C3DC06500D4CE8C /* GoogleService-Info.plist */,
+				6D2D55812C3DB9CC00D4CE8C /* Model */,
+				6D2D55822C3DB9F900D4CE8C /* Login Screen, Login Manager */,
+				6D2D55832C3DBA2B00D4CE8C /* StudentsCollectionViewController */,
+				6D2D55842C3DBA5100D4CE8C /* StudentCardViewController */,
+				6D2D55852C3DBAC300D4CE8C /* StudentsSearchViewController */,
+				6D2D55862C3DBAFA00D4CE8C /* MonthsTableViewController */,
 				6D4293162C32B54400B44ED1 /* Extensions */,
 			);
 			path = "My Students";
-			sourceTree = "<group>";
-		};
-		DFEC0AEF9B11BD35A6E49FD4 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				66B406D382489C82CE1E76F4 /* Pods_My_Students.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -171,12 +238,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6D6DCC4D2C2936D400BE983C /* Build configuration list for PBXNativeTarget "My Students" */;
 			buildPhases = (
-				6E3AB5B8E65A1F905FF0DDF5 /* [CP] Check Pods Manifest.lock */,
 				6D6DCC352C2936D100BE983C /* Sources */,
 				6D6DCC362C2936D100BE983C /* Frameworks */,
 				6D6DCC372C2936D100BE983C /* Resources */,
-				6D6DCC662C29417A00BE983C /* Embed Frameworks */,
-				FFF1077E54523C932E141C90 /* [CP] Embed Pods Frameworks */,
+				6D320D642C39CF5100CF6194 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -185,6 +250,14 @@
 			name = "My Students";
 			packageProductDependencies = (
 				6D4293022C29437000B44ED1 /* SnapKit */,
+				6D2D55712C3C79D600D4CE8C /* FirebaseAnalytics */,
+				6D2D55732C3C79D600D4CE8C /* FirebaseAnalyticsSwift */,
+				6D2D55752C3C79D600D4CE8C /* FirebaseAuth */,
+				6D2D55772C3C79D600D4CE8C /* FirebaseDatabase */,
+				6D2D55792C3C79D600D4CE8C /* FirebaseDatabaseSwift */,
+				6D2D557B2C3C79D600D4CE8C /* FirebaseFirestore */,
+				6D2D557D2C3C79D600D4CE8C /* FirebaseFirestoreSwift */,
+				6D2D557F2C3C79D600D4CE8C /* FirebaseStorage */,
 			);
 			productName = "My Students";
 			productReference = 6D6DCC392C2936D100BE983C /* My Students.app */;
@@ -216,6 +289,7 @@
 			mainGroup = 6D6DCC302C2936D100BE983C;
 			packageReferences = (
 				6D4293012C29437000B44ED1 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				6D2D55702C3C776200D4CE8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			productRefGroup = 6D6DCC3A2C2936D100BE983C /* Products */;
 			projectDirPath = "";
@@ -232,54 +306,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				6D6DCC462C2936D400BE983C /* Assets.xcassets in Resources */,
+				6D2D558C2C3DC06500D4CE8C /* GoogleService-Info.plist in Resources */,
 				6D6DCC492C2936D400BE983C /* Base in Resources */,
 				6D6DCC442C2936D200BE983C /* Base in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		6E3AB5B8E65A1F905FF0DDF5 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-My Students-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		FFF1077E54523C932E141C90 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-My Students/Pods-My Students-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-My Students/Pods-My Students-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-My Students/Pods-My Students-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		6D6DCC352C2936D100BE983C /* Sources */ = {
@@ -292,17 +325,23 @@
 				6D4293152C32B52600B44ED1 /* UIImageSquareMethodExtension.swift in Sources */,
 				6D42930B2C2EF1E800B44ED1 /* ScheduleCell.swift in Sources */,
 				6D6DCC642C293C7C00BE983C /* StudentCardScheduleSelection.swift in Sources */,
+				6D320D562C39C20300CF6194 /* LoginViewController.swift in Sources */,
 				6D4293182C3442F300B44ED1 /* KeyboardWorkExtension.swift in Sources */,
-				6D42930F2C317C2F00B44ED1 /* SearchHistoryCollectionViewCell.swift in Sources */,
+				6D42930F2C317C2F00B44ED1 /* StudentSearchCollectionViewCell.swift in Sources */,
 				6D6DCC3D2C2936D200BE983C /* AppDelegate.swift in Sources */,
 				6D6DCC552C2937E400BE983C /* StudentsCollectionViewController.swift in Sources */,
+				6D2D558E2C3EB8F500D4CE8C /* ForgotPasswordViewController.swift in Sources */,
 				6D6DCC3F2C2936D200BE983C /* SceneDelegate.swift in Sources */,
+				6D320D672C39D58C00CF6194 /* StudentsCollectionViewControllerWrapper.swift in Sources */,
+				6D320D692C39DEB700CF6194 /* LoginManager.swift in Sources */,
 				6D4293112C3297FF00B44ED1 /* StudentsSearchViewController.swift in Sources */,
 				6D6DCC5B2C2939C500BE983C /* StudentCardSetupUI.swift in Sources */,
 				6D6DCC532C29378E00BE983C /* StudentViewModel.swift in Sources */,
 				6D4293072C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift in Sources */,
-				6D4293132C32A45400B44ED1 /* StudentTableViewCell.swift in Sources */,
+				6D4293132C32A45400B44ED1 /* StudentSearchHistoryTableViewCell.swift in Sources */,
 				6D6DCC592C29398E00BE983C /* StudentCollectionViewCell.swift in Sources */,
+				6D2D558A2C3DBDA600D4CE8C /* SearchHistoryHeaderView.swift in Sources */,
+				6D320D542C39C17000CF6194 /* FirebaseManager.swift in Sources */,
 				6D42930D2C3087A700B44ED1 /* MonthsTableViewController.swift in Sources */,
 				6D6DCC622C293A7300BE983C /* StartScreenLabelMethodExtension.swift in Sources */,
 			);
@@ -382,7 +421,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -439,7 +478,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -451,7 +490,6 @@
 		};
 		6D6DCC4E2C2936D400BE983C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 03404CB6D2DE744CCDD146C7 /* Pods-My Students.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -479,7 +517,6 @@
 		};
 		6D6DCC4F2C2936D400BE983C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E652B4A416F8E32BFDEBD020 /* Pods-My Students.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -529,6 +566,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		6D2D55702C3C776200D4CE8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.29.0;
+			};
+		};
 		6D4293012C29437000B44ED1 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit";
@@ -540,6 +585,46 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		6D2D55712C3C79D600D4CE8C /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D2D55702C3C776200D4CE8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		6D2D55732C3C79D600D4CE8C /* FirebaseAnalyticsSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D2D55702C3C776200D4CE8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsSwift;
+		};
+		6D2D55752C3C79D600D4CE8C /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D2D55702C3C776200D4CE8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		6D2D55772C3C79D600D4CE8C /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D2D55702C3C776200D4CE8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		6D2D55792C3C79D600D4CE8C /* FirebaseDatabaseSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D2D55702C3C776200D4CE8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabaseSwift;
+		};
+		6D2D557B2C3C79D600D4CE8C /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D2D55702C3C776200D4CE8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		6D2D557D2C3C79D600D4CE8C /* FirebaseFirestoreSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D2D55702C3C776200D4CE8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestoreSwift;
+		};
+		6D2D557F2C3C79D600D4CE8C /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D2D55702C3C776200D4CE8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
 		6D4293022C29437000B44ED1 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 6D4293012C29437000B44ED1 /* XCRemoteSwiftPackageReference "SnapKit" */;

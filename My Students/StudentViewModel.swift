@@ -1,141 +1,91 @@
-//
 //  StudentStore.swift
 //  My Students
 //
 //  Created by Марк Кулик on 24.06.2024.
 //
 
-import UIKit
+import Foundation
+import Firebase
+import FirebaseFirestore
 import Combine
-import SwiftUI
-import RealmSwift
 
 class StudentViewModel: ObservableObject {
     @Published var students: [Student] = []
-    @Published var searchHistory: [Student] = []
-
-     var realm: Realm
-
+    @Published var searchHistory: [SearchHistoryItem] = []
+    
+    private var db = Firestore.firestore()
+    private var listener: ListenerRegistration?
+    
     init() {
-        do {
-            let config = Realm.Configuration(
-                schemaVersion: 2, // Увеличьте версию схемы
-                migrationBlock: { migration, oldSchemaVersion in
-                    if oldSchemaVersion < 2 {
-                        // Миграционные изменения, если они необходимы
-                    }
-                }
-            )
-            Realm.Configuration.defaultConfiguration = config
-
-            realm = try Realm()
-            fetchStudents()
-        } catch let error as NSError {
-            print("Failed to initialize Realm: \(error.localizedDescription)")
-            realm = try! Realm(configuration: .defaultConfiguration)
-        }
+        fetchStudents()
+        fetchSearchHistory()
     }
-
+    
+    deinit {
+        listener?.remove()
+    }
+    
     func fetchStudents() {
-        let studentsResults = realm.objects(Student.self)
-        students = Array(studentsResults)
+        listener = db.collection("students").addSnapshotListener { [weak self] (querySnapshot, error) in
+            guard let documents = querySnapshot?.documents else {
+                print("Error fetching documents: \(error!)")
+                return
+            }
+            
+            self?.students = documents.compactMap { queryDocumentSnapshot in
+                try? queryDocumentSnapshot.data(as: Student.self)
+            }
+        }
     }
     
     func fetchSearchHistory() {
-        let historyResults = realm.objects(SearchHistoryItem.self).sorted(byKeyPath: "timestamp", ascending: false)
-        let studentIds = historyResults.map { $0.studentId }
-
-        // Убедимся, что studentIds является массивом строк
-        let studentIdsArray = Array(studentIds)
-
-        // Используем массив строк в фильтре
-        let studentsResults = realm.objects(Student.self).filter("id IN %@", studentIdsArray)
-        searchHistory = Array(studentsResults)
-    }
-
-
-    func addStudent(_ student: Student) {
-        do {
-            try realm.write {
-                realm.add(student)
+        db.collection("searchHistory").order(by: "timestamp", descending: true).getDocuments { [weak self] (querySnapshot, error) in
+            if let error = error {
+                print("Error fetching search history: \(error)")
+                return
             }
-            fetchStudents()
-        } catch {
-            print("Failed to add student: \(error.localizedDescription)")
-        }
-    }
-
-    func updateStudent(_ updatedStudent: Student) {
-        do {
-            try realm.write {
-                realm.add(updatedStudent, update: .modified)
-            }
-            fetchStudents()
-        } catch {
-            print("Failed to update student: \(error.localizedDescription)")
-        }
-    }
-
-    func removeStudent(at index: Int) {
-        do {
-            try realm.write {
-                realm.delete(students[index])
-            }
-            fetchStudents()
-        } catch {
-            print("Failed to remove student: \(error.localizedDescription)")
-        }
-    }
-    
-    func updateStudentImage(student: Student, image: UIImage) -> String? {
-            guard let data = image.jpegData(compressionQuality: 0.8) else { return nil }
             
-            let filename = UUID().uuidString + ".jpg"
-            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let fileURL = documentsDirectory.appendingPathComponent(filename)
+            guard let documents = querySnapshot?.documents else { return }
             
-            do {
-                try data.write(to: fileURL)
-                
-                do {
-                    try realm.write {
-                        student.studentImage = fileURL.path
-                    }
-                    fetchStudents()
-                } catch {
-                    print("Failed to update student image path in Realm: \(error.localizedDescription)")
-                    return nil
-                }
-                
-                return fileURL.path
-            } catch {
-                print("Unable to save image to documents directory: \(error)")
-                return nil
+            self?.searchHistory = documents.compactMap { queryDocumentSnapshot in
+                try? queryDocumentSnapshot.data(as: SearchHistoryItem.self)
             }
         }
+    }
     
     func addSearchHistoryItem(for student: Student) {
-        do {
-            let historyItem = SearchHistoryItem()
-            historyItem.studentId = student.id
-
-            try realm.write {
-                realm.add(historyItem)
+        let searchHistoryItem = SearchHistoryItem(studentId: student.id ?? "")
+        db.collection("searchHistory").addDocument(data: searchHistoryItem.toFirestoreData()) { [weak self] error in
+            if let error = error {
+                print("Error adding search history item: \(error)")
+            } else {
+                self?.searchHistory.insert(searchHistoryItem, at: 0)
             }
-            fetchSearchHistory()
-        } catch {
-            print("Failed to add search history item: \(error.localizedDescription)")
         }
     }
     
     func clearSearchHistory() {
-            do {
-                try realm.write {
-                    realm.delete(realm.objects(SearchHistoryItem.self))
+        db.collection("searchHistory").getDocuments { [weak self] (querySnapshot, error) in
+            if let error = error {
+                print("Error fetching search history for deletion: \(error)")
+                return
+            }
+            
+            guard let documents = querySnapshot?.documents else { return }
+            
+            let batch = self?.db.batch()
+            for document in documents {
+                batch?.deleteDocument(document.reference)
+            }
+            batch?.commit { error in
+                if let error = error {
+                    print("Error clearing search history: \(error)")
+                } else {
+                    DispatchQueue.main.async {
+                        self?.searchHistory.removeAll()
+                    }
                 }
-                fetchSearchHistory()
-            } catch {
-                print("Failed to clear search history: \(error.localizedDescription)")
             }
         }
     }
+}
