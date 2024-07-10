@@ -114,16 +114,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		6D2D55812C3DB9CC00D4CE8C /* Model */ = {
-			isa = PBXGroup;
-			children = (
-				6D6DCC502C29376D00BE983C /* StudentModel.swift */,
-				6D6DCC522C29378E00BE983C /* StudentViewModel.swift */,
-				6D320D532C39C17000CF6194 /* FirebaseManager.swift */,
-			);
-			name = Model;
-			sourceTree = "<group>";
-		};
 		6D2D55822C3DB9F900D4CE8C /* Login Screen, Login Manager */ = {
 			isa = PBXGroup;
 			children = (
@@ -185,6 +175,16 @@
 			path = "Project Manager";
 			sourceTree = "<group>";
 		};
+		6D2D558F2C3ED68600D4CE8C /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				6D6DCC502C29376D00BE983C /* StudentModel.swift */,
+				6D6DCC522C29378E00BE983C /* StudentViewModel.swift */,
+				6D320D532C39C17000CF6194 /* FirebaseManager.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
 		6D4293162C32B54400B44ED1 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
@@ -220,7 +220,7 @@
 				6D2D55872C3DBB2000D4CE8C /* Project Manager */,
 				6D6DCC4A2C2936D400BE983C /* Info.plist */,
 				6D2D558B2C3DC06500D4CE8C /* GoogleService-Info.plist */,
-				6D2D55812C3DB9CC00D4CE8C /* Model */,
+				6D2D558F2C3ED68600D4CE8C /* Model */,
 				6D2D55822C3DB9F900D4CE8C /* Login Screen, Login Manager */,
 				6D2D55832C3DBA2B00D4CE8C /* StudentsCollectionViewController */,
 				6D2D55842C3DBA5100D4CE8C /* StudentCardViewController */,
