@@ -4,6 +4,9 @@ import FirebaseAuth
 
 class LoginViewController: UIViewController {
     
+    private var isLoggedIn: Bool = false
+    private var viewModel: StudentViewModel
+    
     private var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsVerticalScrollIndicator = false
@@ -17,7 +20,7 @@ class LoginViewController: UIViewController {
     
     private let welcomeLabel: UILabel = {
         let label = UILabel()
-        label.text = "Welcome to My Stydents!"
+        label.text = "Welcome to My Students!"
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         label.textColor = .darkGray
@@ -79,9 +82,6 @@ class LoginViewController: UIViewController {
         button.titleLabel?.font = UIFont.systemFont(ofSize: 14)
         return button
     }()
-    
-    private var isLoggedIn: Bool = false
-    private var viewModel: StudentViewModel
     
     init(viewModel: StudentViewModel) {
         self.viewModel = viewModel
@@ -201,10 +201,6 @@ class LoginViewController: UIViewController {
             LoginManager.shared.isLoggedIn = true
             self.showMainScreen()
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    self.emailTextField.text = ""
-                    self.passwordTextField.text = ""
-                }
     }
     
     @objc private func loginButtonTapped(_ sender: UIButton) {
@@ -225,16 +221,23 @@ class LoginViewController: UIViewController {
             LoginManager.shared.isLoggedIn = true
             self.showMainScreen()
         }
-        // Очистка полей после перехода на следующий экран
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    self.emailTextField.text = ""
-                    self.passwordTextField.text = ""
-                }
     }
     
     private func showMainScreen() {
-        let studentsVC = StudentsCollectionViewController(viewModel: viewModel)
-        navigationController?.pushViewController(studentsVC, animated: true)
+        
+        let containerVC = ContainerViewController(viewModel: viewModel)
+            let navController = UINavigationController(rootViewController: containerVC)
+//            navController.isNavigationBarHidden = true // Ensure the navigation bar is hidden
+            UIApplication.shared.windows.first?.rootViewController = navController
+            UIApplication.shared.windows.first?.makeKeyAndVisible()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    self.resignFirstResponder()
+                    self.emailTextField.text = ""
+                    self.passwordTextField.text = ""
+                    self.dismissKeyboard()
+                    
+                }
     }
     
     @objc private func forgotPasswordButtonTapped(_ sender: UIButton) {

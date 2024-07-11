@@ -13,7 +13,7 @@ import SnapKit
 
 class StudentsCollectionViewController: UICollectionViewController {
     
-    @ObservedObject var studentViewModel: StudentViewModel
+    @ObservedObject var viewModel: StudentViewModel
     private var cancellables = Set<AnyCancellable>()
     
     private var isEditingCells: Bool = false
@@ -33,21 +33,23 @@ class StudentsCollectionViewController: UICollectionViewController {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "plus"), for: .normal)
         button.tintColor = .white
-        button.backgroundColor = .systemBlue
+        button.backgroundColor = .systemGreen
         button.layer.cornerRadius = 25 // половина ширины
         return button
     }()
     
-    private let logoutButton: UIButton = {
+    private lazy var editStudentButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Log out", for: .normal)
-        button.setTitleColor(.systemBlue, for: .normal)
+        button.setImage(UIImage(systemName: "pencil"), for: .normal)
+        button.tintColor = .white
+        button.backgroundColor = .systemBlue
+        button.layer.cornerRadius = 25
+        button.isHidden = true
         return button
     }()
     
-    
     init(viewModel: StudentViewModel) {
-        self.studentViewModel = viewModel
+        self.viewModel = viewModel
         super.init(collectionViewLayout: UICollectionViewFlowLayout())
     }
     
@@ -55,46 +57,91 @@ class StudentsCollectionViewController: UICollectionViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Life cycle
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        studentViewModel.fetchStudents()
-        self.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: self.studentViewModel.students.isEmpty, collectionView: self.collectionView ?? UICollectionView())
+        viewModel.fetchStudents()
+        self.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: self.viewModel.students.isEmpty, collectionView: self.collectionView ?? UICollectionView())
         collectionView.reloadData()
         
+        updateButtonsVisibility()
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        studentViewModel.$students
+        viewModel.$students
             .receive(on: RunLoop.main)
             .sink { [weak self] students in
                 self?.collectionView.reloadData()
                 self?.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: students.isEmpty, collectionView: self?.collectionView ?? UICollectionView())
+                self?.updateButtonsVisibility()
             }
             .store(in: &cancellables)
         
         view.backgroundColor = UIColor.systemGroupedBackground
-        self.title = "Students List"
+        //        self.title = "Students List"
         
         setupSearchController()
         setupCollectionView()
-        setupAddButton()
         
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Log Out", style: .plain, target: self, action: #selector(logoutButtonTapped))
-//        navigationItem.backButtonTitle = nil
-        navigationItem.rightBarButtonItem = editButtonItem
+        setupAddButton()
+        setupEditButton()
+        
+        navigationItem.backButtonTitle = nil
         
         setupStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen")
-        
     }
     
-    @objc private func logoutButtonTapped() {
-        LoginManager.shared.isLoggedIn = false
-        let loginVC = LoginViewController(viewModel: studentViewModel)
-        let navigationController = UINavigationController(rootViewController: loginVC)
-        UIApplication.shared.windows.first?.rootViewController = navigationController
-        UIApplication.shared.windows.first?.makeKeyAndVisible()
+    // MARK: - Student Add / Edit Methods
+    
+    func setupAddButton() {
+        view.addSubview(addStudentButton)
+        addStudentButton.snp.makeConstraints { make in
+            make.width.height.equalTo(50)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-20)
+            make.trailing.equalTo(view.safeAreaLayoutGuide.snp.trailing).offset(-20)
+        }
+        addStudentButton.addTarget(self, action: #selector(addNewStudent), for: .touchUpInside)
+    }
+    
+    @objc func addNewStudent() {
+        let studentCardVC = StudentCardViewController(viewModel: viewModel, editMode: .add)
+        navigationController?.pushViewController(studentCardVC, animated: true)
+    }
+    
+    func setupEditButton() {
+        view.addSubview(editStudentButton)
+        editStudentButton.snp.makeConstraints { make in
+            make.width.equalTo(50)
+            make.height.equalTo(50)
+            make.trailing.equalTo(view.safeAreaLayoutGuide.snp.trailing).offset(-20)
+            make.bottom.equalTo(addStudentButton.snp.top).offset(-20)
+        }
+        editStudentButton.addTarget(self, action: #selector(editButtonTapped), for: .touchUpInside)
+    }
+    
+    @objc func editButtonTapped() {
+        isEditingCells.toggle() // Переключаем значение флага редактирования
+        
+        // Устанавливаем изображение кнопки в зависимости от режима редактирования
+        let buttonImageName = isEditingCells ? "checkmark" : "pencil"
+        let buttonImage = UIImage(systemName: buttonImageName)
+        editStudentButton.setImage(buttonImage, for: .normal)
+        
+        // Выполняем анимацию изменения
+        UIView.animate(withDuration: 0.3) {
+            self.collectionView.reloadData() // Перезагружаем коллекцию для отображения изменений
+        }
+    }
+
+    private func updateButtonsVisibility() {
+        if viewModel.students.isEmpty {
+            editStudentButton.isHidden = true
+        } else {
+            editStudentButton.isHidden = false
+        }
     }
     
     func setupSearchController() {
@@ -129,27 +176,6 @@ class StudentsCollectionViewController: UICollectionViewController {
             make.edges.equalToSuperview()
         }
     }
-    
-    func setupAddButton() {
-        view.addSubview(addStudentButton)
-        addStudentButton.snp.makeConstraints { make in
-            make.width.height.equalTo(50)
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-20)
-            make.trailing.equalTo(view.safeAreaLayoutGuide.snp.trailing).offset(-20)
-        }
-        addStudentButton.addTarget(self, action: #selector(addNewStudent), for: .touchUpInside)
-    }
-    
-    @objc func addNewStudent() {
-        let studentCardVC = StudentCardViewController(viewModel: studentViewModel, editMode: .add)
-        navigationController?.pushViewController(studentCardVC, animated: true)
-    }
-   
-    override func setEditing(_ editing: Bool, animated: Bool) {
-        super.setEditing(editing, animated: animated)
-        isEditingCells = editing
-        collectionView.reloadData()
-    }
 }
 
 // MARK: - UISearchResultsUpdating
@@ -164,7 +190,7 @@ extension StudentsCollectionViewController: UISearchResultsUpdating {
 
 extension StudentsCollectionViewController: UISearchBarDelegate {
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-        let studentsSearchVC = StudentsSearchViewController(viewModel: self.studentViewModel)
+        let studentsSearchVC = StudentsSearchViewController(viewModel: self.viewModel)
         self.navigationController?.pushViewController(studentsSearchVC, animated: true)
     }
     
@@ -177,12 +203,12 @@ extension StudentsCollectionViewController: UISearchBarDelegate {
 
 extension StudentsCollectionViewController {
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return studentViewModel.students.count
+        return viewModel.students.count
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StudentCell", for: indexPath) as! StudentCollectionViewCell
-        let student = studentViewModel.students[indexPath.item]
+        let student = viewModel.students[indexPath.item]
         cell.configure(with: student)
         cell.isEditing = isEditingCells
         cell.showDeleteConfirmation = { [weak self] in
@@ -190,11 +216,11 @@ extension StudentsCollectionViewController {
         }
         
         cell.editAction = { [weak self] in
-            print("Edit action tapped for student:", student)
-            let studentCardVC = StudentCardViewController(viewModel: self!.studentViewModel, editMode: .edit)
+            let studentCardVC = StudentCardViewController(viewModel: self!.viewModel, editMode: .edit)
             studentCardVC.student = student
-            self?.isEditing = false
             self?.navigationController?.pushViewController(studentCardVC, animated: true)
+            self?.isEditingCells.toggle()
+            self?.editStudentButton.setImage(UIImage(systemName: "pencil"), for: .normal)
         }
         return cell
     }
@@ -214,7 +240,7 @@ extension StudentsCollectionViewController {
 
 extension StudentsCollectionViewController: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        let student = studentViewModel.students[indexPath.item]
+        let student = viewModel.students[indexPath.item]
         let itemProvider = NSItemProvider(object: student.name as NSString)
         let dragItem = UIDragItem(itemProvider: itemProvider)
         dragItem.localObject = student
@@ -232,8 +258,8 @@ extension StudentsCollectionViewController: UICollectionViewDropDelegate {
         coordinator.items.forEach { dropItem in
             if let sourceIndexPath = dropItem.sourceIndexPath {
                 collectionView.performBatchUpdates {
-                    let student = studentViewModel.students.remove(at: sourceIndexPath.item)
-                    studentViewModel.students.insert(student, at: destinationIndexPath.item)
+                    let student = viewModel.students.remove(at: sourceIndexPath.item)
+                    viewModel.students.insert(student, at: destinationIndexPath.item)
                     collectionView.deleteItems(at: [sourceIndexPath])
                     collectionView.insertItems(at: [destinationIndexPath])
                 }
@@ -265,20 +291,26 @@ extension StudentsCollectionViewController {
     }
     
     func deleteStudent(at indexPath: IndexPath) {
-        let student = studentViewModel.students[indexPath.item]
-        FirebaseManager.shared.deleteStudent(student, completion: { error in
-            if let error = error {
-                let errorMessage = "Cannot delete the student"
-                self.showAlert(title: "Error", message: errorMessage)
-                return
-            }
-        })
+        guard indexPath.item < viewModel.students.count else {
+            print("Invalid index path")
+            return
+        }
+        
+        // Remove the student from the local array and update collection view
+        let studentToDelete = viewModel.students.remove(at: indexPath.item)
         collectionView.deleteItems(at: [indexPath])
-        // После удаления студента, обновляем стартовую метку
-        DispatchQueue.main.async {
-            self.updateStartScreenLabel(with: "Add first student \n\n Tap + in the left corner of the screen", isEmpty: self.studentViewModel.students.isEmpty, collectionView: self.collectionView)
+        
+        // Delete from Firebase
+        FirebaseManager.shared.deleteStudent(studentToDelete) { error in
+            if let error = error {
+                print("Ошибка при удалении студента из Firebase: \(error.localizedDescription)")
+                // Можно добавить дополнительную логику обработки ошибки или уведомления пользователей здесь
+            } else {
+                print("Студент успешно удален из Firebase")
+            }
         }
     }
+    
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))

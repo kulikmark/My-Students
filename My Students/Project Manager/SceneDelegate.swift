@@ -12,28 +12,34 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
     var navigationController: UINavigationController?
-    var studentViewModel = StudentViewModel()
+    var containerViewController: ContainerViewController?
+    var viewModel = StudentViewModel()
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        
-        guard let windowScene = (scene as? UIWindowScene) else { return }
-        
-        window = UIWindow(windowScene: windowScene)
-       
-        let initialViewController: UIViewController
-                
-        if LoginManager.shared.isLoggedIn {
-            let studentsVC = StudentsCollectionViewController(viewModel: studentViewModel)
-            initialViewController = UINavigationController(rootViewController: studentsVC)
            
-        } else {
-            let loginVC = LoginViewController(viewModel: studentViewModel)
-            initialViewController = UINavigationController(rootViewController: loginVC)
-        }
+           guard let windowScene = (scene as? UIWindowScene) else { return }
+           
+           window = UIWindow(windowScene: windowScene)
+           
+           // Check dark mode setting from UserDefaults
+           let isDarkMode = UserDefaults.standard.bool(forKey: "isDarkMode")
+           window?.overrideUserInterfaceStyle = isDarkMode ? .dark : .light
+           
+           // Initialize ContainerViewController
+        containerViewController = ContainerViewController(viewModel: viewModel)
         
-        window?.rootViewController = initialViewController
-        window?.makeKeyAndVisible()
-    }
+        // Determine initial content based on login state
+              if LoginManager.shared.isLoggedIn {
+                  let containerVC = ContainerViewController(viewModel: viewModel)
+                  navigationController = UINavigationController(rootViewController: containerVC)
+              } else {
+                  let loginVC = LoginViewController(viewModel: viewModel)
+                  navigationController = UINavigationController(rootViewController: loginVC)
+              }
+           
+           window?.rootViewController = navigationController
+           window?.makeKeyAndVisible()
+       }
 
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.
@@ -65,6 +71,35 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
 }
+
+// ьфшт сщву
+//    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+//
+//        guard let windowScene = (scene as? UIWindowScene) else { return }
+//
+//        window = UIWindow(windowScene: windowScene)
+//
+//        let isDarkMode = UserDefaults.standard.bool(forKey: "isDarkMode")
+//                window?.overrideUserInterfaceStyle = isDarkMode ? .dark : .light
+//
+//        let initialViewController: UIViewController
+//
+//        if LoginManager.shared.isLoggedIn {
+//            let studentsVC = StudentsCollectionViewController(viewModel: studentViewModel)
+//            initialViewController = UINavigationController(rootViewController: studentsVC)
+//
+//        } else {
+//            let loginVC = LoginViewController(viewModel: studentViewModel)
+//            initialViewController = UINavigationController(rootViewController: loginVC)
+//        }
+//
+//        window?.rootViewController = initialViewController
+//        window?.makeKeyAndVisible()
+//    }
+
+
+
+
 
 
 //        let studentsCollectionViewController = StudentsCollectionViewController(viewModel: studentsViewModel)
