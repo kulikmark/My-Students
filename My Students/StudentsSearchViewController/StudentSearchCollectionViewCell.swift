@@ -6,29 +6,30 @@
 //
 
 import UIKit
+import Kingfisher
 
 class StudentSearchCollectionViewCell: UICollectionViewCell {
-    let imageView = UIImageView()
-    let nameLabel = UILabel()
+    let profileImageView = UIImageView()
+    let studentNameLabel = UILabel()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        imageView.contentMode = .scaleAspectFill
-        imageView.layer.cornerRadius = 35
-        imageView.layer.masksToBounds = true
-        contentView.addSubview(imageView)
-        imageView.snp.makeConstraints { make in
+        profileImageView.contentMode = .scaleAspectFill
+        profileImageView.layer.cornerRadius = 35
+        profileImageView.layer.masksToBounds = true
+        contentView.addSubview(profileImageView)
+        profileImageView.snp.makeConstraints { make in
             make.width.height.equalTo(70)
             make.centerX.equalToSuperview()
             make.top.equalToSuperview()
         }
 
-        nameLabel.textAlignment = .center
-        nameLabel.font = UIFont.systemFont(ofSize: 10)
-        contentView.addSubview(nameLabel)
-        nameLabel.snp.makeConstraints { make in
-            make.top.equalTo(imageView.snp.bottom).offset(5)
+        studentNameLabel.textAlignment = .center
+        studentNameLabel.font = UIFont.systemFont(ofSize: 10)
+        contentView.addSubview(studentNameLabel)
+        studentNameLabel.snp.makeConstraints { make in
+            make.top.equalTo(profileImageView.snp.bottom).offset(5)
             make.left.right.equalToSuperview()
         }
     }
@@ -37,7 +38,7 @@ class StudentSearchCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func configure(with student: Student) {
+//    func configure(with student: Student) {
 //        if let imageData = student.studentImageData {
 //               if let image = UIImage(data: imageData) {
 //                   imageView.image = image
@@ -48,5 +49,15 @@ class StudentSearchCollectionViewCell: UICollectionViewCell {
 //               imageView.image = UIImage(named: "defaultImage")
 //           }
 //        nameLabel.text = student.name
-    }
+//    }
+    
+    func configure(with student: Student) {
+           studentNameLabel.text = student.name
+
+           if let imageUrlString = student.studentImageURL, let imageUrl = URL(string: imageUrlString) {
+               profileImageView.kf.setImage(with: imageUrl, placeholder: UIImage(named: "defaultImage"))
+           } else {
+               profileImageView.image = UIImage(named: "defaultImage")
+           }
+       }
 }

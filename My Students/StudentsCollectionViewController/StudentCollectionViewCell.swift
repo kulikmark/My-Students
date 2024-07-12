@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Kingfisher
 
 class StudentCollectionViewCell: UICollectionViewCell {
     
@@ -140,26 +141,64 @@ class StudentCollectionViewCell: UICollectionViewCell {
         showDeleteConfirmation?()
     }
     
+//    func configure(with student: Student) {
+//        self.student = student
+//        
+//        studentNameLabel.text = student.name
+//        
+//        if let imageUrl = student.studentImageURL {
+//            // Здесь загружаем изображение по URL, предполагая, что у вас есть метод для загрузки изображения по URL
+//            // В данном примере используется метод `loadImageFromURL` для загрузки изображения с URL
+//            FirebaseManager.shared.loadImageFromURL(imageUrl) { image in
+//                DispatchQueue.main.async {
+//                    if let image = image {
+//                        self.profileImageView.image = image
+//                        self.profileImageView.layer.cornerRadius = self.profileImageView.bounds.width / 2
+//                    } else {
+//                        self.profileImageView.image = UIImage(named: "defaultImage")
+//                    }
+//                }
+//            }
+//        } else {
+//            self.profileImageView.image = UIImage(named: "defaultImage")
+//        }
+//        
+//        updateScheduleTextField()
+//    }
+    
+//    func configure(with student: Student) {
+//        self.student = student
+//        studentNameLabel.text = student.name
+//
+//        if let imageUrlString = student.studentImageURL, let imageUrl = URL(string: imageUrlString) {
+//            // Используем Kingfisher для загрузки и кэширования изображения
+//            profileImageView.kf.setImage(with: imageUrl, placeholder: UIImage(named: "defaultImage"))
+//        } else {
+//            profileImageView.image = UIImage(named: "defaultImage")
+//        }
+//        
+//        updateScheduleTextField()
+//    }
+    
     func configure(with student: Student) {
         self.student = student
-        
         studentNameLabel.text = student.name
-        
-        if let imageUrl = student.studentImageURL {
-            // Здесь загружаем изображение по URL, предполагая, что у вас есть метод для загрузки изображения по URL
-            // В данном примере используется метод `loadImageFromURL` для загрузки изображения с URL
-            FirebaseManager.shared.loadImageFromURL(imageUrl) { image in
-                DispatchQueue.main.async {
-                    if let image = image {
-                        self.profileImageView.image = image
-                        self.profileImageView.layer.cornerRadius = self.profileImageView.bounds.width / 2
-                    } else {
-                        self.profileImageView.image = UIImage(named: "defaultImage")
-                    }
+
+        if let imageUrlString = student.studentImageURL, let imageUrl = URL(string: imageUrlString) {
+            // Используем Kingfisher для загрузки и кэширования изображения
+            profileImageView.kf.setImage(with: imageUrl, placeholder: UIImage(named: "defaultImage")) { result in
+                switch result {
+                case .success(let value):
+                    self.profileImageView.image = value.image
+                    self.profileImageView.layer.cornerRadius = self.profileImageView.bounds.width / 2
+                case .failure:
+                    self.profileImageView.image = UIImage(named: "defaultImage")
+                    self.profileImageView.layer.cornerRadius = self.profileImageView.bounds.width / 2
                 }
             }
         } else {
-            self.profileImageView.image = UIImage(named: "defaultImage")
+            profileImageView.image = UIImage(named: "defaultImage")
+            profileImageView.layer.cornerRadius = profileImageView.bounds.width / 2
         }
         
         updateScheduleTextField()

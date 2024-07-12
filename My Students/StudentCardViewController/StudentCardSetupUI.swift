@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 // MARK: - UI Setup
 
@@ -247,34 +248,54 @@ extension StudentCardViewController {
         timeTextField.delegate = self
     }
     
+//    func setupProfileImageView() {
+//            let placeholderImage = UIImage(named: "defaultImage")
+//            
+//            if let imageUrlString = student?.studentImageURL, !imageUrlString.isEmpty {
+//                let activityIndicator = UIActivityIndicatorView(style: .medium)
+//                activityIndicator.center = profileImageView.center
+//                profileImageView.addSubview(activityIndicator)
+//                activityIndicator.startAnimating()
+//                
+//                    FirebaseManager.shared.loadImageFromURL(imageUrlString) { [weak self] image in
+//                        DispatchQueue.main.async {
+//                            activityIndicator.stopAnimating()
+//                            activityIndicator.removeFromSuperview()
+//                            if let image = image {
+//                                print("Loaded image from Firebase Storage for URL: \(imageUrlString)")
+//                                self?.profileImageView.image = image
+//                                self?.profileImageView.layer.cornerRadius = self?.profileImageView.bounds.width ?? 0 / 2
+//                            } else {
+//                                print("Failed to load image for URL: \(imageUrlString)")
+//                                self?.profileImageView.image = placeholderImage
+//                            }
+//                        }
+//                    }
+//                
+//            } else {
+//                profileImageView.image = placeholderImage
+//            }
+//        }
+    
     func setupProfileImageView() {
-        let placeholderImage = UIImage(named: "defaultImage")
-        
-        if let imageUrlString = student?.studentImageURL, !imageUrlString.isEmpty {
-            let activityIndicator = UIActivityIndicatorView(style: .medium)
-            activityIndicator.center = profileImageView.center
-            profileImageView.addSubview(activityIndicator)
-            activityIndicator.startAnimating()
-            
-            if let selectedImage = selectedImage {
-                profileImageView.image = selectedImage
-            } else if let imageUrl = student?.studentImageURL {
-                FirebaseManager.shared.loadImageFromURL(imageUrl) { image in
-                    DispatchQueue.main.async {
-                        activityIndicator.stopAnimating()
-                        activityIndicator.removeFromSuperview()
-                        if let image = image {
-                            self.profileImageView.image = image
-                        } else {
-                            self.profileImageView.image = UIImage(named: "defaultImage")
-                        }
-                    }
-                }
-            } else {
-                profileImageView.image = placeholderImage
-            }
-        }
-    }
+           let placeholderImage = UIImage(named: "defaultImage")
+
+           if let imageUrlString = student?.studentImageURL, let imageUrl = URL(string: imageUrlString) {
+               let activityIndicator = UIActivityIndicatorView(style: .medium)
+               activityIndicator.center = profileImageView.center
+               profileImageView.addSubview(activityIndicator)
+               activityIndicator.startAnimating()
+
+               profileImageView.kf.setImage(with: imageUrl, placeholder: placeholderImage, options: nil) { result in
+                   DispatchQueue.main.async {
+                       activityIndicator.stopAnimating()
+                       activityIndicator.removeFromSuperview()
+                   }
+               }
+           } else {
+               profileImageView.image = placeholderImage
+           }
+       }
     
     @objc private func addSchedule() {
         guard let timeInput = timeTextField?.text, !timeInput.isEmpty else {

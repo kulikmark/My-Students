@@ -47,6 +47,30 @@ class LoginViewController: UIViewController {
         return textField
     }()
     
+//    private var passwordTextField: UITextField = {
+//        let textField = UITextField()
+//        textField.placeholder = "Enter your Password"
+//        textField.isSecureTextEntry = true
+//        textField.borderStyle = .roundedRect
+//        textField.clearButtonMode = .whileEditing
+//        textField.autocapitalizationType = .none
+//        return textField
+//    }()
+    
+    private var passwordEyeButton: UIButton = {
+        // Создаем кнопку для показа/скрытия пароля
+        let button = UIButton(type: .custom)
+        let config = UIImage.SymbolConfiguration(pointSize: 16)
+        let showPasswordImage = UIImage(systemName: "eye.fill", withConfiguration: config)
+        let hidePasswordImage = UIImage(systemName: "eye.slash.fill", withConfiguration: config)
+        button.setImage(showPasswordImage, for: .normal)
+        button.setImage(hidePasswordImage, for: .selected)
+        button.tintColor = .darkGray
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -30, bottom: 0, right: 0)
+        
+        return button
+    }()
+    
     private var passwordTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Enter your Password"
@@ -54,8 +78,18 @@ class LoginViewController: UIViewController {
         textField.borderStyle = .roundedRect
         textField.clearButtonMode = .whileEditing
         textField.autocapitalizationType = .none
+        
         return textField
     }()
+    
+    @objc private func togglePasswordVisibility() {
+        passwordTextField.isSecureTextEntry.toggle()
+        
+        // Обновляем состояние кнопки в зависимости от текущего состояния
+        if let button = passwordTextField.rightView as? UIButton {
+            button.isSelected.toggle()
+        }
+    }
     
     private var loginButton: UIButton = {
         let button = UIButton(type: .system)
@@ -176,9 +210,14 @@ class LoginViewController: UIViewController {
                     make.bottom.equalTo(stackView.snp.top).offset(-30)
                }
         
+        // Устанавливаем кнопку как rightView текстового поля
+        passwordTextField.rightView = passwordEyeButton
+        passwordTextField.rightViewMode = .whileEditing
+        
         registerButton.addTarget(self, action: #selector(registerButtonTapped(_:)), for: .touchUpInside)
         loginButton.addTarget(self, action: #selector(loginButtonTapped(_:)), for: .touchUpInside)
         forgotPasswordButton.addTarget(self, action: #selector(forgotPasswordButtonTapped(_:)), for: .touchUpInside)
+        passwordEyeButton.addTarget(self, action: #selector(togglePasswordVisibility), for: .touchUpInside)
     }
     
     // MARK: - Login / Register Logic

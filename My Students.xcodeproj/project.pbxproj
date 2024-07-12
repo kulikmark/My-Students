@@ -47,6 +47,7 @@
 		6D6DCC5B2C2939C500BE983C /* StudentCardSetupUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC5A2C2939C500BE983C /* StudentCardSetupUI.swift */; };
 		6D6DCC622C293A7300BE983C /* StartScreenLabelMethodExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC612C293A7300BE983C /* StartScreenLabelMethodExtension.swift */; };
 		6D6DCC642C293C7C00BE983C /* StudentCardScheduleSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC632C293C7C00BE983C /* StudentCardScheduleSelection.swift */; };
+		6D9D201F2C416941007CF2EF /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 6D9D201E2C416941007CF2EF /* Kingfisher */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -107,6 +108,7 @@
 				6D2D55782C3C79D600D4CE8C /* FirebaseDatabase in Frameworks */,
 				6D2D55802C3C79D600D4CE8C /* FirebaseStorage in Frameworks */,
 				6D2D55742C3C79D600D4CE8C /* FirebaseAnalyticsSwift in Frameworks */,
+				6D9D201F2C416941007CF2EF /* Kingfisher in Frameworks */,
 				6D2D55722C3C79D600D4CE8C /* FirebaseAnalytics in Frameworks */,
 				6D4293032C29437000B44ED1 /* SnapKit in Frameworks */,
 				6D2D55762C3C79D600D4CE8C /* FirebaseAuth in Frameworks */,
@@ -264,6 +266,7 @@
 				6D2D557B2C3C79D600D4CE8C /* FirebaseFirestore */,
 				6D2D557D2C3C79D600D4CE8C /* FirebaseFirestoreSwift */,
 				6D2D557F2C3C79D600D4CE8C /* FirebaseStorage */,
+				6D9D201E2C416941007CF2EF /* Kingfisher */,
 			);
 			productName = "My Students";
 			productReference = 6D6DCC392C2936D100BE983C /* My Students.app */;
@@ -296,6 +299,7 @@
 			packageReferences = (
 				6D4293012C29437000B44ED1 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				6D2D55702C3C776200D4CE8C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				6D9D201D2C416941007CF2EF /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			productRefGroup = 6D6DCC3A2C2936D100BE983C /* Products */;
 			projectDirPath = "";
@@ -590,6 +594,14 @@
 				minimumVersion = 5.7.1;
 			};
 		};
+		6D9D201D2C416941007CF2EF /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.12.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -637,6 +649,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6D4293012C29437000B44ED1 /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		6D9D201E2C416941007CF2EF /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6D9D201D2C416941007CF2EF /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

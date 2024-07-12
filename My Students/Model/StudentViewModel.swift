@@ -26,7 +26,7 @@ class StudentViewModel: ObservableObject {
     }
     
     func fetchStudents() {
-        listener = db.collection("students").addSnapshotListener { [weak self] (querySnapshot, error) in
+        listener = db.collection("students").order(by: "order").addSnapshotListener { [weak self] (querySnapshot, error) in
             guard let documents = querySnapshot?.documents else {
                 print("Error fetching documents: \(error!)")
                 return

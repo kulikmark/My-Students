@@ -71,6 +71,7 @@ class StudentsCollectionViewController: UICollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        
         viewModel.$students
             .receive(on: RunLoop.main)
             .sink { [weak self] students in
@@ -135,7 +136,7 @@ class StudentsCollectionViewController: UICollectionViewController {
             self.collectionView.reloadData() // Перезагружаем коллекцию для отображения изменений
         }
     }
-
+    
     private func updateButtonsVisibility() {
         if viewModel.students.isEmpty {
             editStudentButton.isHidden = true
@@ -239,12 +240,12 @@ extension StudentsCollectionViewController {
 // MARK: - UICollectionViewDragDelegate
 
 extension StudentsCollectionViewController: UICollectionViewDragDelegate {
+    
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
         let student = viewModel.students[indexPath.item]
         let itemProvider = NSItemProvider(object: student.name as NSString)
         let dragItem = UIDragItem(itemProvider: itemProvider)
         dragItem.localObject = student
-        collectionView.reloadData()
         return [dragItem]
     }
 }
@@ -253,20 +254,30 @@ extension StudentsCollectionViewController: UICollectionViewDragDelegate {
 
 extension StudentsCollectionViewController: UICollectionViewDropDelegate {
     func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
-        let destinationIndexPath = coordinator.destinationIndexPath ?? IndexPath(item: 0, section: 0)
+        guard let destinationIndexPath = coordinator.destinationIndexPath else { return }
         
         coordinator.items.forEach { dropItem in
-            if let sourceIndexPath = dropItem.sourceIndexPath {
-                collectionView.performBatchUpdates {
-                    let student = viewModel.students.remove(at: sourceIndexPath.item)
-                    viewModel.students.insert(student, at: destinationIndexPath.item)
-                    collectionView.deleteItems(at: [sourceIndexPath])
-                    collectionView.insertItems(at: [destinationIndexPath])
-                }
-                coordinator.drop(dropItem.dragItem, toItemAt: destinationIndexPath)
+            guard let sourceIndexPath = dropItem.sourceIndexPath else { return }
+            
+            collectionView.performBatchUpdates {
+                let student = viewModel.students.remove(at: sourceIndexPath.item)
+                viewModel.students.insert(student, at: destinationIndexPath.item)
+                collectionView.deleteItems(at: [sourceIndexPath])
+                collectionView.insertItems(at: [destinationIndexPath])
             }
+            coordinator.drop(dropItem.dragItem, toItemAt: destinationIndexPath)
         }
         collectionView.reloadData()
+        
+        // Save the new order to the backend
+        FirebaseManager.shared.saveStudentsOrder(viewModel.students) { error in
+            if let error = error {
+                print("Failed to save students order: \(error.localizedDescription)")
+            } else {
+                print("Successfully saved students order")
+            }
+        }
+        
     }
     
     func collectionView(_ collectionView: UICollectionView, canHandle session: UIDropSession) -> Bool {

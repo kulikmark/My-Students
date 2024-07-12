@@ -8,6 +8,7 @@
 
 import UIKit
 import SnapKit
+import Kingfisher
 
 class StudentSearchHistoryTableViewCell: UITableViewCell {
     
@@ -24,7 +25,7 @@ class StudentSearchHistoryTableViewCell: UITableViewCell {
         return view
     }()
     
-    let studentImageView: UIImageView = {
+    let profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 25
@@ -58,7 +59,7 @@ class StudentSearchHistoryTableViewCell: UITableViewCell {
     
     private func setupSubviews() {
         contentView.addSubview(containerView)
-        containerView.addSubview(studentImageView)
+        containerView.addSubview(profileImageView)
         containerView.addSubview(studentNameLabel)
         
         containerView.snp.makeConstraints { make in
@@ -66,7 +67,7 @@ class StudentSearchHistoryTableViewCell: UITableViewCell {
             make.height.equalTo(80)
         }
         
-        studentImageView.snp.makeConstraints { make in
+        profileImageView.snp.makeConstraints { make in
             make.centerY.equalToSuperview()
             make.left.equalToSuperview().offset(10)
             make.width.height.equalTo(50)
@@ -74,11 +75,11 @@ class StudentSearchHistoryTableViewCell: UITableViewCell {
         
         studentNameLabel.snp.makeConstraints { make in
             make.centerY.equalToSuperview()
-            make.left.equalTo(studentImageView.snp.right).offset(10)
+            make.left.equalTo(profileImageView.snp.right).offset(10)
         }
     }
     
-    func configure(with student: Student) {
+//    func configure(with student: Student) {
 //        self.student = student
 //        studentNameLabel.text = student.name
 //        
@@ -89,5 +90,14 @@ class StudentSearchHistoryTableViewCell: UITableViewCell {
 //                studentImageView.image = UIImage(named: "defaultImage")
 //            }
 //        }
-    }
+//    }
+    func configure(with student: Student) {
+        studentNameLabel.text = student.name
+
+           if let imageUrlString = student.studentImageURL, let imageUrl = URL(string: imageUrlString) {
+               profileImageView.kf.setImage(with: imageUrl, placeholder: UIImage(named: "defaultImage"))
+           } else {
+               profileImageView.image = UIImage(named: "defaultImage")
+           }
+       }
 }

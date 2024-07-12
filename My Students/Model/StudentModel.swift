@@ -54,26 +54,26 @@ struct Student: Codable {
         }
     
     func toFirestoreData() -> [String: Any] {
-            var data: [String: Any] = [
-                "type": type.rawValue,
-                "name": name,
-                "parentName": parentName,
-                "phoneNumber": phoneNumber,
-                "lessonPrice": lessonPrice?.toFirestoreData() ?? NSNull(),
-                "schedule": schedule.map { $0.toFirestoreData() },
-                "months": months.map { $0.toFirestoreData() },
-                "lessons": lessons.map { $0.toFirestoreData() },
-                "photoUrls": photoUrls
-            ]
-
-            // Добавление URL изображения, если он доступен
-            if let imageUrl = studentImageURL {
-                data["studentImageURL"] = imageUrl
-            }
-
-            return data
+        var data: [String: Any] = [
+            "type": type.rawValue,
+            "name": name,
+            "parentName": parentName,
+            "phoneNumber": phoneNumber,
+            "lessonPrice": lessonPrice?.toFirestoreData() ?? NSNull(),
+            "schedule": schedule.map { $0.toFirestoreData() },
+            "months": months.map { $0.toFirestoreData() },
+            "lessons": lessons.map { $0.toFirestoreData() },
+            "photoUrls": photoUrls
+        ]
+        
+        // Добавление URL изображения, если он доступен
+        if let imageUrl = studentImageURL {
+            data["studentImageURL"] = imageUrl
         }
+        
+        return data
     }
+}
 
 struct Schedule: Codable {
     var id: String = UUID().uuidString
