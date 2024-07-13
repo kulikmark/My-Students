@@ -15,6 +15,7 @@ enum StudentType: String, Codable {
 
 struct Student: Codable {
     @DocumentID var id: String?
+    var order: Int?
     var studentImageURL: String? = nil
     var type: StudentType = .schoolchild
     var name: String = ""
@@ -27,7 +28,10 @@ struct Student: Codable {
     var lessons: [Lesson] = []
     var photoUrls: [String] = []
     
+     // Новое свойство для хранения порядка
+    
     init(
+        order: Int? = 0,
         studentImageURL: String? = nil,
         type: StudentType = .schoolchild,
         name: String = "",
@@ -35,26 +39,27 @@ struct Student: Codable {
         phoneNumber: String = "",
         lessonPrice: LessonPrice? = nil,
         schedule: [Schedule] = [],
-        
         months: [Month] = [],
         lessons: [Lesson] = [],
-        photoUrls: [URL] = []) {
-            
-            self.studentImageURL = studentImageURL
-            self.type = type
-            self.name = name
-            self.parentName = parentName
-            self.phoneNumber = phoneNumber
-            self.lessonPrice = lessonPrice
-            self.schedule = schedule
-            
-            self.months = months
-            self.lessons = lessons
-            self.photoUrls = photoUrls.map { $0.absoluteString }
-        }
+        photoUrls: [URL] = []
+    ) {
+        self.order = order
+        self.studentImageURL = studentImageURL
+        self.type = type
+        self.name = name
+        self.parentName = parentName
+        self.phoneNumber = phoneNumber
+        self.lessonPrice = lessonPrice
+        self.schedule = schedule
+        self.months = months
+        self.lessons = lessons
+        self.photoUrls = photoUrls.map { $0.absoluteString }
+    }
     
+    // Преобразование данных для Firestore
     func toFirestoreData() -> [String: Any] {
         var data: [String: Any] = [
+            "order": order ?? 0,
             "type": type.rawValue,
             "name": name,
             "parentName": parentName,
@@ -74,6 +79,7 @@ struct Student: Codable {
         return data
     }
 }
+
 
 struct Schedule: Codable {
     var id: String = UUID().uuidString

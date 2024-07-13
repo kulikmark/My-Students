@@ -57,6 +57,17 @@ class StudentsCollectionViewController: UICollectionViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Checking for memory leak
+    
+    deinit {
+            print("StudentsCollectionViewController is being deallocated")
+        }
+        
+        override func didReceiveMemoryWarning() {
+            super.didReceiveMemoryWarning()
+            print("StudentsCollectionViewController received a memory warning")
+        }
+    
     // MARK: - Life cycle
     
     override func viewWillAppear(_ animated: Bool) {
@@ -71,7 +82,6 @@ class StudentsCollectionViewController: UICollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
         viewModel.$students
             .receive(on: RunLoop.main)
             .sink { [weak self] students in
@@ -82,15 +92,14 @@ class StudentsCollectionViewController: UICollectionViewController {
             .store(in: &cancellables)
         
         view.backgroundColor = UIColor.systemGroupedBackground
-        //        self.title = "Students List"
+                self.title = "Students List"
+        
         
         setupSearchController()
         setupCollectionView()
         
         setupAddButton()
         setupEditButton()
-        
-        navigationItem.backButtonTitle = nil
         
         setupStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen")
     }

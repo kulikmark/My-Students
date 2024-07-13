@@ -75,6 +75,16 @@ class SideMenuViewController: UIViewController {
         }
     }
     
+    // MARK: - Background Update
+       
+       func updateBackground(isDarkMode: Bool = false) {
+           if isDarkMode {
+               view.backgroundColor = .black // Установите темный цвет фона
+           } else {
+               view.backgroundColor = .white // Установите белый цвет фона или любой другой по вашему выбору
+           }
+       }
+    
     // MARK: - Actions
     
     @objc private func darkModeButtonTapped() {

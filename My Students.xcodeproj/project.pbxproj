@@ -48,6 +48,7 @@
 		6D6DCC622C293A7300BE983C /* StartScreenLabelMethodExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC612C293A7300BE983C /* StartScreenLabelMethodExtension.swift */; };
 		6D6DCC642C293C7C00BE983C /* StudentCardScheduleSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6DCC632C293C7C00BE983C /* StudentCardScheduleSelection.swift */; };
 		6D9D201F2C416941007CF2EF /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 6D9D201E2C416941007CF2EF /* Kingfisher */; };
+		6D9D20212C4181BA007CF2EF /* CustomNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9D20202C4181BA007CF2EF /* CustomNavigationController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -97,6 +98,7 @@
 		6D6DCC5A2C2939C500BE983C /* StudentCardSetupUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentCardSetupUI.swift; sourceTree = "<group>"; };
 		6D6DCC612C293A7300BE983C /* StartScreenLabelMethodExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartScreenLabelMethodExtension.swift; sourceTree = "<group>"; };
 		6D6DCC632C293C7C00BE983C /* StudentCardScheduleSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentCardScheduleSelection.swift; sourceTree = "<group>"; };
+		6D9D20202C4181BA007CF2EF /* CustomNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomNavigationController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -202,6 +204,7 @@
 				6D4293142C32B52600B44ED1 /* UIImageSquareMethodExtension.swift */,
 				6D6DCC612C293A7300BE983C /* StartScreenLabelMethodExtension.swift */,
 				6D4293172C3442F200B44ED1 /* KeyboardWorkExtension.swift */,
+				6D9D20202C4181BA007CF2EF /* CustomNavigationController.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -349,6 +352,7 @@
 				6D4293112C3297FF00B44ED1 /* StudentsSearchViewController.swift in Sources */,
 				6D6DCC5B2C2939C500BE983C /* StudentCardSetupUI.swift in Sources */,
 				6D6DCC532C29378E00BE983C /* StudentViewModel.swift in Sources */,
+				6D9D20212C4181BA007CF2EF /* CustomNavigationController.swift in Sources */,
 				6D4293072C2CB3A300B44ED1 /* StudentCardPhotoChoosingPermission.swift in Sources */,
 				6D4293132C32A45400B44ED1 /* StudentSearchHistoryTableViewCell.swift in Sources */,
 				6D6DCC592C29398E00BE983C /* StudentCollectionViewCell.swift in Sources */,

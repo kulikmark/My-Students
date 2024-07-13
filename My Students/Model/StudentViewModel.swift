@@ -25,18 +25,32 @@ class StudentViewModel: ObservableObject {
         listener?.remove()
     }
     
-    func fetchStudents() {
-        listener = db.collection("students").order(by: "order").addSnapshotListener { [weak self] (querySnapshot, error) in
-            guard let documents = querySnapshot?.documents else {
-                print("Error fetching documents: \(error!)")
-                return
-            }
-            
-            self?.students = documents.compactMap { queryDocumentSnapshot in
-                try? queryDocumentSnapshot.data(as: Student.self)
+//    func fetchStudents() {
+//        listener = db.collection("students").addSnapshotListener { [weak self] (querySnapshot, error) in
+//            guard let documents = querySnapshot?.documents else {
+//                print("Error fetching documents: \(error!)")
+//                return
+//            }
+//            
+//            self?.students = documents.compactMap { queryDocumentSnapshot in
+//                try? queryDocumentSnapshot.data(as: Student.self)
+//            }
+//        }
+//    }
+    
+        func fetchStudents() {
+            listener = db.collection("students").order(by: "order").addSnapshotListener { [weak self] (querySnapshot, error) in
+                guard let documents = querySnapshot?.documents else {
+                    print("Error fetching documents: \(error!)")
+                    return
+                }
+    
+                self?.students = documents.compactMap { queryDocumentSnapshot in
+                    try? queryDocumentSnapshot.data(as: Student.self)
+                }
             }
         }
-    }
+
     
     func fetchSearchHistory() {
         db.collection("searchHistory").order(by: "timestamp", descending: true).getDocuments { [weak self] (querySnapshot, error) in

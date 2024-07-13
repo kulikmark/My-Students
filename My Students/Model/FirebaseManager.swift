@@ -43,7 +43,19 @@ class FirebaseManager {
         }
     }
     
-    // Add this method to save the updated order of students
+    func fetchStudents(completion: @escaping (Result<[Student], Error>) -> Void) {
+        db.collection("students").order(by: "order").getDocuments { (querySnapshot, error) in
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                let students = querySnapshot?.documents.compactMap { queryDocumentSnapshot in
+                    try? queryDocumentSnapshot.data(as: Student.self)
+                } ?? []
+                completion(.success(students))
+            }
+        }
+    }
+    
     func saveStudentsOrder(_ students: [Student], completion: @escaping (Error?) -> Void) {
         let batch = db.batch()
         
@@ -62,33 +74,33 @@ class FirebaseManager {
     }
     
     func uploadImage(_ image: UIImage, completion: @escaping (Result<String, Error>) -> Void) {
-        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
-            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to data"])))
-            return
-        }
-        
-        let imageRef = storage.reference().child("student_images/\(UUID().uuidString).jpg")
-        
-        let metadata = StorageMetadata()
-        metadata.contentType = "image/jpeg"
-        
-        imageRef.putData(imageData, metadata: metadata) { metadata, error in
-            if let error = error {
-                completion(.failure(error))
-            } else {
-                imageRef.downloadURL { url, error in
-                    if let error = error {
-                        completion(.failure(error))
-                    } else if let url = url {
-                        completion(.success(url.absoluteString))
-                    } else {
-                        completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get download URL"])))
-                    }
-                }
-            }
-        }
-    }
-    
+           guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+               completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert image to data"])))
+               return
+           }
+           
+           let imageRef = storage.reference().child("student_images/\(UUID().uuidString).jpg")
+           
+           let metadata = StorageMetadata()
+           metadata.contentType = "image/jpeg"
+           
+           imageRef.putData(imageData, metadata: metadata) { metadata, error in
+               if let error = error {
+                   completion(.failure(error))
+               } else {
+                   imageRef.downloadURL { url, error in
+                       if let error = error {
+                           completion(.failure(error))
+                       } else if let url = url {
+                           completion(.success(url.absoluteString))
+                       } else {
+                           completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get download URL"])))
+                       }
+                   }
+               }
+           }
+       }
+
     func deleteStudent(_ student: Student, completion: @escaping (Error?) -> Void) {
         guard let studentId = student.id else {
             completion(NSError(domain: "com.mystudents", code: 1, userInfo: [NSLocalizedDescriptionKey: "Student ID is missing"]))
@@ -101,31 +113,35 @@ class FirebaseManager {
             completion(error)
         }
     }
+
+    func fetchSearchHistory(completion: @escaping (Result<[SearchHistoryItem], Error>) -> Void) {
+        db.collection("searchHistory").order(by: "timestamp", descending: true).getDocuments { (querySnapshot, error) in
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                let searchHistory = querySnapshot?.documents.compactMap { queryDocumentSnapshot in
+                    try? queryDocumentSnapshot.data(as: SearchHistoryItem.self)
+                } ?? []
+                completion(.success(searchHistory))
+            }
+        }
+    }
+
+    func addSearchHistoryItem(_ searchHistoryItem: SearchHistoryItem, completion: @escaping (Error?) -> Void) {
+        db.collection("searchHistory").addDocument(data: searchHistoryItem.toFirestoreData()) { error in
+            completion(error)
+        }
+    }
+
+    func clearSearchHistory(completion: @escaping (Error?) -> Void) {
+        db.collection("searchHistory").getDocuments { (querySnapshot, error) in
+            if let error = error {
+                completion(error)
+            } else {
+                let batch = self.db.batch()
+                querySnapshot?.documents.forEach { batch.deleteDocument($0.reference) }
+                batch.commit(completion: completion)
+            }
+        }
+    }
 }
-
-
-
-//    func loadImageFromURL(_ imageUrl: String, completion: @escaping (UIImage?) -> Void) {
-//
-//        // Создаем ссылку на Firebase Storage по заданному URL изображения
-//        let storageRef = storage.reference(forURL: imageUrl)
-//
-//        // Загружаем данные изображения
-//        storageRef.getData(maxSize: 1024 * 1024) { data, error in
-//
-//            if let error = error {
-//                print("Error loading image from Firebase Storage: \(error.localizedDescription)")
-//                completion(nil)
-//            } else {
-//                // Если данные получены успешно, преобразуем их в UIImage
-//                if let data = data, let image = UIImage(data: data) {
-//
-//                    completion(image)
-//                } else {
-//                    // Если не удалось преобразовать данные в изображение
-//                    print("Failed to convert data to image for URL: \(imageUrl)")
-//                    completion(nil)
-//                }
-//            }
-//        }
-//    }

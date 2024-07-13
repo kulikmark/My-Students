@@ -47,16 +47,6 @@ class LoginViewController: UIViewController {
         return textField
     }()
     
-//    private var passwordTextField: UITextField = {
-//        let textField = UITextField()
-//        textField.placeholder = "Enter your Password"
-//        textField.isSecureTextEntry = true
-//        textField.borderStyle = .roundedRect
-//        textField.clearButtonMode = .whileEditing
-//        textField.autocapitalizationType = .none
-//        return textField
-//    }()
-    
     private var passwordEyeButton: UIButton = {
         // Создаем кнопку для показа/скрытия пароля
         let button = UIButton(type: .custom)
@@ -126,6 +116,16 @@ class LoginViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+            print("LoginViewController is being deallocated")
+        }
+        
+        override func didReceiveMemoryWarning() {
+            super.didReceiveMemoryWarning()
+            print("LoginViewController received a memory warning")
+        }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -135,10 +135,8 @@ class LoginViewController: UIViewController {
         setupKeyboardNotifications()
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tapGesture)
-    }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self)
+        
+        navigationController?.navigationBar.isHidden = true
     }
     
     private func setupUI() {
@@ -265,9 +263,7 @@ class LoginViewController: UIViewController {
     private func showMainScreen() {
         
         let containerVC = ContainerViewController(viewModel: viewModel)
-            let navController = UINavigationController(rootViewController: containerVC)
-//            navController.isNavigationBarHidden = true // Ensure the navigation bar is hidden
-            UIApplication.shared.windows.first?.rootViewController = navController
+            UIApplication.shared.windows.first?.rootViewController = containerVC
             UIApplication.shared.windows.first?.makeKeyAndVisible()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
@@ -281,7 +277,8 @@ class LoginViewController: UIViewController {
     
     @objc private func forgotPasswordButtonTapped(_ sender: UIButton) {
         let forgotPasswordVC = ForgotPasswordViewController()
-        navigationController?.pushViewController(forgotPasswordVC, animated: true)
+//        navigationController?.pushViewController(forgotPasswordVC, animated: true)
+        present(forgotPasswordVC, animated: true)
     }
     
     private func showAlert(title: String, message: String) {

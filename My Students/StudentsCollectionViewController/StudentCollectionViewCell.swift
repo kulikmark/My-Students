@@ -25,7 +25,7 @@ class StudentCollectionViewCell: UICollectionViewCell {
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 10
-        imageView.layer.cornerRadius = contentView.bounds.width / 2
+//        imageView.layer.cornerRadius = contentView.bounds.width / 2
         return imageView
     }()
     
@@ -130,7 +130,7 @@ class StudentCollectionViewCell: UICollectionViewCell {
         contentView.backgroundColor = .white
         contentView.layer.cornerRadius = 10
         
-        profileImageView.layer.cornerRadius = profileImageView.bounds.width / 2
+//        profileImageView.layer.cornerRadius = profileImageView.bounds.width / 2
     }
     
     @objc private func editButtonTapped() {
