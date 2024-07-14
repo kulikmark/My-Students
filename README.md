@@ -38,6 +38,41 @@ To manage the state of the data more efficiently, the Combine framework was inte
 ### Real-time Data Management with Firebase
 - **Firebase Integration:** Chose Firebase over RealmSwift (Atlas MongoDB) for real-time data management, offline data handling, and smooth synchronization when reconnecting to the internet, offering maximum reliability and convenience for users.
 
+- ## Screenshots
+
+### Login Screens
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/LoginScreen.png" alt="LoginScreen" width="200"></td>
+    <td align="center"><img src="screenshots/LoginScreenKeyboard.png" alt="LoginScreen with Keyboard" width="200"></td>
+    <td align="center"><img src="screenshots/LoginScreenPasswordShowing.png" alt="LoginScreen Password Showing Button" width="200"></td>
+    <td align="center"><img src="screenshots/LoginScreenPasswordReseting.png" alt="LoginScreen Password Resetting" width="200"></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/MainScreen.png" alt="MainScreen" width="200"></td>
+    <td align="center"><img src="screenshots/MainScreenBottomSheet.png" alt="MainScreen Bottom Sheet" width="200"></td>
+    <td align="center"><img src="screenshots/MainScreenSideMenu.png" alt="MainScreen Side Menu" width="200"></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/NewStudentCard.png" alt="New Student Card" width="200"></td>
+    <td align="center"><img src="screenshots/ExistStudentCardUpper.png" alt="Existing Student Card Upper" width="200"></td>
+    <td align="center"><img src="screenshots/ExistStudentCardDowner.png" alt="Existing Student Card Downer" width="200"></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/SearchScreen.png" alt="SearchScreen" width="200"></td>
+  </tr>
+</table>
+
+
 ## Screenshots
 
 ### Login Screens
