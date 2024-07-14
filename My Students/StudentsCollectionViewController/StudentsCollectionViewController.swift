@@ -33,18 +33,8 @@ class StudentsCollectionViewController: UICollectionViewController {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "plus"), for: .normal)
         button.tintColor = .white
-        button.backgroundColor = .systemGreen
-        button.layer.cornerRadius = 25 // половина ширины
-        return button
-    }()
-    
-    private lazy var editStudentButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setImage(UIImage(systemName: "pencil"), for: .normal)
-        button.tintColor = .white
         button.backgroundColor = .systemBlue
-        button.layer.cornerRadius = 25
-        button.isHidden = true
+        button.layer.cornerRadius = 25 // половина ширины
         return button
     }()
     
@@ -75,8 +65,6 @@ class StudentsCollectionViewController: UICollectionViewController {
         viewModel.fetchStudents()
         self.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: self.viewModel.students.isEmpty, collectionView: self.collectionView ?? UICollectionView())
         collectionView.reloadData()
-        
-        updateButtonsVisibility()
     }
     
     override func viewDidLoad() {
@@ -87,7 +75,7 @@ class StudentsCollectionViewController: UICollectionViewController {
             .sink { [weak self] students in
                 self?.collectionView.reloadData()
                 self?.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: students.isEmpty, collectionView: self?.collectionView ?? UICollectionView())
-                self?.updateButtonsVisibility()
+//                self?.updateButtonsVisibility()
             }
             .store(in: &cancellables)
         
@@ -99,7 +87,6 @@ class StudentsCollectionViewController: UICollectionViewController {
         setupCollectionView()
         
         setupAddButton()
-        setupEditButton()
         
         setupStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen")
     }
@@ -119,39 +106,6 @@ class StudentsCollectionViewController: UICollectionViewController {
     @objc func addNewStudent() {
         let studentCardVC = StudentCardViewController(viewModel: viewModel, editMode: .add)
         navigationController?.pushViewController(studentCardVC, animated: true)
-    }
-    
-    func setupEditButton() {
-        view.addSubview(editStudentButton)
-        editStudentButton.snp.makeConstraints { make in
-            make.width.equalTo(50)
-            make.height.equalTo(50)
-            make.trailing.equalTo(view.safeAreaLayoutGuide.snp.trailing).offset(-20)
-            make.bottom.equalTo(addStudentButton.snp.top).offset(-20)
-        }
-        editStudentButton.addTarget(self, action: #selector(editButtonTapped), for: .touchUpInside)
-    }
-    
-    @objc func editButtonTapped() {
-        isEditingCells.toggle() // Переключаем значение флага редактирования
-        
-        // Устанавливаем изображение кнопки в зависимости от режима редактирования
-        let buttonImageName = isEditingCells ? "checkmark" : "pencil"
-        let buttonImage = UIImage(systemName: buttonImageName)
-        editStudentButton.setImage(buttonImage, for: .normal)
-        
-        // Выполняем анимацию изменения
-        UIView.animate(withDuration: 0.3) {
-            self.collectionView.reloadData() // Перезагружаем коллекцию для отображения изменений
-        }
-    }
-    
-    private func updateButtonsVisibility() {
-        if viewModel.students.isEmpty {
-            editStudentButton.isHidden = true
-        } else {
-            editStudentButton.isHidden = false
-        }
     }
     
     func setupSearchController() {
@@ -216,22 +170,33 @@ extension StudentsCollectionViewController {
         return viewModel.students.count
     }
     
+//    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+//        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StudentCell", for: indexPath) as! StudentCollectionViewCell
+//        let student = viewModel.students[indexPath.item]
+//        cell.configure(with: student)
+//        cell.delegate = self
+//        let studentBottomSheetVC = StudentBottomSheetViewController(student: student)
+//        studentBottomSheetVC.showDeleteConfirmation = { [weak self] in
+//            self?.showDeleteConfirmation(at: indexPath)
+//        }
+//        
+//        studentBottomSheetVC.editAction = { [weak self] in
+//            let studentCardVC = StudentCardViewController(viewModel: self!.viewModel, editMode: .edit)
+//            studentCardVC.student = student
+//            cell.delegate = self
+//            self?.navigationController?.pushViewController(studentCardVC, animated: true)
+//        }
+//        return cell
+//    }
+    
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StudentCell", for: indexPath) as! StudentCollectionViewCell
         let student = viewModel.students[indexPath.item]
         cell.configure(with: student)
-        cell.isEditing = isEditingCells
-        cell.showDeleteConfirmation = { [weak self] in
-            self?.showDeleteConfirmation(at: indexPath)
-        }
+        cell.delegate = self
         
-        cell.editAction = { [weak self] in
-            let studentCardVC = StudentCardViewController(viewModel: self!.viewModel, editMode: .edit)
-            studentCardVC.student = student
-            self?.navigationController?.pushViewController(studentCardVC, animated: true)
-            self?.isEditingCells.toggle()
-            self?.editStudentButton.setImage(UIImage(systemName: "pencil"), for: .normal)
-        }
+        let studentBottomSheetVC = StudentBottomSheetViewController(student: student)
+        studentBottomSheetVC.delegate = self
         return cell
     }
     
@@ -335,5 +300,48 @@ extension StudentsCollectionViewController {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
+    }
+}
+
+
+extension StudentsCollectionViewController: StudentCollectionViewCellDelegate {
+    func presentStudentBottomSheet(for student: Student) {
+        let studentBottomSheetVC = StudentBottomSheetViewController(student: student)
+        studentBottomSheetVC.delegate = self
+        studentBottomSheetVC.modalPresentationStyle = .pageSheet
+        if #available(iOS 15.0, *) {
+            if let sheet = studentBottomSheetVC.sheetPresentationController {
+                if #available(iOS 16.0, *) {
+                    sheet.detents = [.custom(resolver: { context in
+                        return 150
+                    })]
+                } else {
+                    // Fallback on earlier versions
+                }
+                sheet.prefersGrabberVisible = true
+            }
+        }
+        present(studentBottomSheetVC, animated: true, completion: nil)
+    }
+}
+
+extension StudentsCollectionViewController: StudentBottomSheetDelegate {
+    func didTapEditButton(for student: Student) {
+        dismiss(animated: true) {
+            let studentCardVC = StudentCardViewController(viewModel: self.viewModel, editMode: .edit)
+            studentCardVC.student = student
+            self.navigationController?.pushViewController(studentCardVC, animated: true)
+        }
+        
+    }
+    
+    func didTapDeleteButton(for student: Student) {
+        dismiss(animated: true) {
+            if let indexPath = self.viewModel.students.firstIndex(where: { $0.id == student.id }) {
+                self.showDeleteConfirmation(at: IndexPath(item: indexPath, section: 0))
+                print("didTapDeleteButton")
+                
+            }
+        }
     }
 }

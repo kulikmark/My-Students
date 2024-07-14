@@ -9,23 +9,21 @@ import UIKit
 import SnapKit
 import Kingfisher
 
+protocol StudentCollectionViewCellDelegate: AnyObject {
+    func presentStudentBottomSheet(for student: Student)
+}
+
 class StudentCollectionViewCell: UICollectionViewCell {
     
     var student: Student?
-    var isEditing: Bool = false {
-        didSet {
-            editButton.isHidden = !isEditing
-            deleteButton.isHidden = !isEditing
-            animateShake(isEditing: isEditing)
-        }
-    }
+    
+    weak var delegate: StudentCollectionViewCellDelegate?
 
     lazy var profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 10
-//        imageView.layer.cornerRadius = contentView.bounds.width / 2
         return imageView
     }()
     
@@ -51,30 +49,14 @@ class StudentCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
-    let editButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Edit", for: .normal)
-        button.titleLabel?.adjustsFontSizeToFitWidth = true
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 12)
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .systemBlue
-        button.layer.cornerRadius = 10
-        button.isHidden = true
-        return button
-    }()
-    
-    lazy var deleteButton: UIButton = {
+    lazy var studentCellManageButton: UIButton = {
         let button = UIButton(type: .custom)
-        let config = UIImage.SymbolConfiguration(pointSize: 25)
-        let image = UIImage(systemName: "trash.fill", withConfiguration: config)
+        let config = UIImage.SymbolConfiguration(pointSize: 20)
+        let image = UIImage(systemName: "ellipsis", withConfiguration: config)
         button.setImage(image, for: .normal)
-        button.tintColor = .red
-        button.isHidden = true
+        button.tintColor = .darkGray
         return button
     }()
-    
-    var editAction: (() -> Void)?
-    var showDeleteConfirmation: (() -> Void)?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -84,11 +66,7 @@ class StudentCollectionViewCell: UICollectionViewCell {
         contentView.addSubview(profileImageView)
         contentView.addSubview(studentNameLabel)
         contentView.addSubview(scheduleLabel)
-        contentView.addSubview(editButton)
-        contentView.addSubview(deleteButton)
-        
-        editButton.addTarget(self, action: #selector(editButtonTapped), for: .touchUpInside)
-        deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
+        contentView.addSubview(studentCellManageButton)
         
         setupConstraints()
     }
@@ -111,17 +89,16 @@ class StudentCollectionViewCell: UICollectionViewCell {
             make.leading.trailing.equalToSuperview().inset(5)
         }
         
-        editButton.snp.makeConstraints { make in
-            make.bottom.equalToSuperview().offset(-10)
-            make.centerX.equalToSuperview()
-            make.width.equalTo(contentView.snp.width).offset(-20)
-            make.height.equalTo(30)
+        studentCellManageButton.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(7)
+            make.right.equalToSuperview().offset(-7)
         }
-        
-        deleteButton.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(-10)
-            make.right.equalToSuperview().offset(5)
-        }
+        studentCellManageButton.addTarget(self, action: #selector(studetnCellManageButtonTapped), for: .touchUpInside)
+    }
+    
+  @objc func studetnCellManageButtonTapped() {
+      guard let student = student else { return }
+        delegate?.presentStudentBottomSheet(for: student)
     }
     
     override func layoutSubviews() {
@@ -129,17 +106,9 @@ class StudentCollectionViewCell: UICollectionViewCell {
         
         contentView.backgroundColor = .white
         contentView.layer.cornerRadius = 10
-        
-//        profileImageView.layer.cornerRadius = profileImageView.bounds.width / 2
     }
     
-    @objc private func editButtonTapped() {
-            editAction?()
-        }
-    
-    @objc func deleteButtonTapped() {
-        showDeleteConfirmation?()
-    }
+
     
 //    func configure(with student: Student) {
 //        self.student = student
