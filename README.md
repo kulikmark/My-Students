@@ -41,19 +41,19 @@ To manage the state of the data more efficiently, the Combine framework was inte
 ## Screenshots
 
 ### Login Screens
-- **LoginScreen**
-- **LoginScreen with Keyboard**
-- **LoginScreen Password Showing Button**
-- **LoginScreen Password Resetting**
+- ![LoginScreen](screenshots/LoginScreen.png)
+- ![LoginScreen with Keyboard](screenshots/LoginScreenKeyboard.png)
+- ![LoginScreen Password Showing Button](screenshots/LoginScreenPasswordShowing.png)
+- ![LoginScreen Password Resetting](screenshots/LoginScreenPasswordReseting.png)
 
 ### Main Screens
-- **MainScreen**
-- **MainScreen Bottom Sheet**
-- **MainScreen Side Menu**
+- ![MainScreen](screenshots/MainScreen.png)
+- ![MainScreen Bottom Sheet](screenshots/MainScreenBottomSheet.png)
+- ![MainScreen Side Menu](screenshots/MainScreenSideMenu.png)
 
 ### Student Cards
-- **New Student Card**
-- **Existing Student Card**
+- ![New Student Card](screenshots/NewStudentCard.png)
+- ![Existing Student Card](screenshots/ExistStudentCardUpper.png) (Upper) ![Existing Student Card](screenshots/ExistStudentCardDowner.png) (Downer)
 
 ### Search Screen
-- **SearchScreen**
+- ![SearchScreen](screenshots/SearchScreen.png)
