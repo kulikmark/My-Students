@@ -41,6 +41,7 @@ To manage the state of the data more efficiently, the Combine framework was inte
 - ## Screenshots
 
 ### Login Screens
+
 <table>
   <tr>
     <td align="center"><img src="screenshots/LoginScreen.png" alt="LoginScreen" width="200"></td>
@@ -50,6 +51,8 @@ To manage the state of the data more efficiently, the Combine framework was inte
   </tr>
 </table>
 
+### Main Screen
+
 <table>
   <tr>
     <td align="center"><img src="screenshots/MainScreen.png" alt="MainScreen" width="200"></td>
@@ -57,6 +60,8 @@ To manage the state of the data more efficiently, the Combine framework was inte
     <td align="center"><img src="screenshots/MainScreenSideMenu.png" alt="MainScreen Side Menu" width="200"></td>
   </tr>
 </table>
+
+### Add / Edit Student Cards
 
 <table>
   <tr>
@@ -66,29 +71,10 @@ To manage the state of the data more efficiently, the Combine framework was inte
   </tr>
 </table>
 
+### Search Screen
+
 <table>
   <tr>
     <td align="center"><img src="screenshots/SearchScreen.png" alt="SearchScreen" width="200"></td>
   </tr>
 </table>
-
-
-## Screenshots
-
-### Login Screens
-- ![LoginScreen](screenshots/LoginScreen.png)
-- ![LoginScreen with Keyboard](screenshots/LoginScreenKeyboard.png)
-- ![LoginScreen Password Showing Button](screenshots/LoginScreenPasswordShowing.png)
-- ![LoginScreen Password Resetting](screenshots/LoginScreenPasswordReseting.png)
-
-### Main Screens
-- ![MainScreen](screenshots/MainScreen.png)
-- ![MainScreen Bottom Sheet](screenshots/MainScreenBottomSheet.png)
-- ![MainScreen Side Menu](screenshots/MainScreenSideMenu.png)
-
-### Student Cards
-- ![New Student Card](screenshots/NewStudentCard.png)
-- ![Existing Student Card](screenshots/ExistStudentCardUpper.png) (Upper) ![Existing Student Card](screenshots/ExistStudentCardDowner.png) (Downer)
-
-### Search Screen
-- ![SearchScreen](screenshots/SearchScreen.png)
