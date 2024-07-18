@@ -21,14 +21,12 @@ struct Student: Codable {
     var name: String = ""
     var parentName: String = ""
     var phoneNumber: String = ""
-    var lessonPrice: LessonPrice? = nil
+    var lessonPrice: LessonPrice
     var schedule: [Schedule] = []
     
     var months: [Month] = []
     var lessons: [Lesson] = []
     var photoUrls: [String] = []
-    
-     // Новое свойство для хранения порядка
     
     init(
         order: Int? = 0,
@@ -37,11 +35,11 @@ struct Student: Codable {
         name: String = "",
         parentName: String = "",
         phoneNumber: String = "",
-        lessonPrice: LessonPrice? = nil,
+        lessonPrice: LessonPrice,
         schedule: [Schedule] = [],
         months: [Month] = [],
         lessons: [Lesson] = [],
-        photoUrls: [URL] = []
+        photoUrls: [String] = []
     ) {
         self.order = order
         self.studentImageURL = studentImageURL
@@ -53,7 +51,7 @@ struct Student: Codable {
         self.schedule = schedule
         self.months = months
         self.lessons = lessons
-        self.photoUrls = photoUrls.map { $0.absoluteString }
+        self.photoUrls = photoUrls
     }
     
     // Преобразование данных для Firestore
@@ -64,7 +62,7 @@ struct Student: Codable {
             "name": name,
             "parentName": parentName,
             "phoneNumber": phoneNumber,
-            "lessonPrice": lessonPrice?.toFirestoreData() ?? NSNull(),
+            "lessonPrice": lessonPrice.toFirestoreData(),
             "schedule": schedule.map { $0.toFirestoreData() },
             "months": months.map { $0.toFirestoreData() },
             "lessons": lessons.map { $0.toFirestoreData() },

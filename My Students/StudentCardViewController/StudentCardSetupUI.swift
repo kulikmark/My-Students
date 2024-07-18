@@ -153,7 +153,7 @@ extension StudentCardViewController {
         lessonPriceTextField.borderStyle = .roundedRect
         lessonPriceTextField.placeholder = "Enter Price"
         lessonPriceTextField.keyboardType = .decimalPad
-        lessonPriceTextField.text = student != nil ? "\(student!.lessonPrice?.price ?? 0)" : ""
+        lessonPriceTextField.text = student != nil ? "\(student!.lessonPrice.price)" : ""
         lessonPriceTextField.clearButtonMode = .whileEditing
         
         labelsTextFieldsStackView.addArrangedSubview(currencyLabel)
@@ -168,7 +168,7 @@ extension StudentCardViewController {
         }
         currencyTextField.borderStyle = .roundedRect
         currencyTextField.placeholder = "Enter Currency name"
-        currencyTextField.text = student != nil ? "\(student!.lessonPrice?.currency ?? "")" : ""
+        currencyTextField.text = student != nil ? "\(student!.lessonPrice.currency)" : ""
         currencyTextField.clearButtonMode = .whileEditing
         
         labelsTextFieldsStackView.addArrangedSubview(scheduleLabel)
@@ -195,44 +195,12 @@ extension StudentCardViewController {
             make.height.equalTo(150)
         }
         
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.minimumLineHeight = 10.0
-        paragraphStyle.maximumLineHeight = 18.0
-        
-        let weekdayTextField = UITextField()
-        mainStackView.addArrangedSubview(weekdayTextField)
-        weekdayTextField.snp.makeConstraints { make in
-            make.height.equalTo(50)
-        }
-        weekdayTextField.borderStyle = .roundedRect
-        let weekdayAttributedPlaceholder = NSAttributedString(string: "Enter weekday (e.g., MON, TUE, WED, etc.)", attributes: [
-            NSAttributedString.Key.paragraphStyle: paragraphStyle])
-        weekdayTextField.attributedPlaceholder = weekdayAttributedPlaceholder
-        weekdayTextField.placeholder = "Enter weekday (e.g., MON, TUE, WED, etc.)"
-        weekdayTextField.clearButtonMode = .whileEditing
-        
-        let timeTextField = UITextField()
-        mainStackView.addArrangedSubview(timeTextField)
-        timeTextField.snp.makeConstraints { make in
-            make.height.equalTo(50)
-        }
-        timeTextField.borderStyle = .roundedRect
-        let timeAttributedPlaceholder = NSAttributedString(string: "Enter time for each weekday separated by ;", attributes: [
-            NSAttributedString.Key.paragraphStyle: paragraphStyle])
-        timeTextField.attributedPlaceholder = timeAttributedPlaceholder
-        timeTextField.placeholder = "Enter time for each weekday separated by ;"
-        timeTextField.keyboardType = .numbersAndPunctuation
-        timeTextField.clearButtonMode = .whileEditing
-        
-        self.weekdayTextField = weekdayTextField
-        self.timeTextField = timeTextField
-        
         let addScheduleButton = UIButton()
         addScheduleButton.setTitle("Add", for: .normal)
         addScheduleButton.setTitleColor(.white, for: .normal)
         addScheduleButton.backgroundColor = .systemBlue
         addScheduleButton.layer.cornerRadius = 8
-        addScheduleButton.addTarget(self, action: #selector(addSchedule), for: .touchUpInside)
+        addScheduleButton.addTarget(self, action: #selector(showScheduleBottomSheet), for: .touchUpInside)
         
         mainStackView.addArrangedSubview(addScheduleButton)
         addScheduleButton.snp.makeConstraints { make in
@@ -244,38 +212,7 @@ extension StudentCardViewController {
         phoneTextField.delegate = self
         lessonPriceTextField.delegate = self
         currencyTextField.delegate = self
-        weekdayTextField.delegate = self
-        timeTextField.delegate = self
     }
-    
-//    func setupProfileImageView() {
-//            let placeholderImage = UIImage(named: "defaultImage")
-//            
-//            if let imageUrlString = student?.studentImageURL, !imageUrlString.isEmpty {
-//                let activityIndicator = UIActivityIndicatorView(style: .medium)
-//                activityIndicator.center = profileImageView.center
-//                profileImageView.addSubview(activityIndicator)
-//                activityIndicator.startAnimating()
-//                
-//                    FirebaseManager.shared.loadImageFromURL(imageUrlString) { [weak self] image in
-//                        DispatchQueue.main.async {
-//                            activityIndicator.stopAnimating()
-//                            activityIndicator.removeFromSuperview()
-//                            if let image = image {
-//                                print("Loaded image from Firebase Storage for URL: \(imageUrlString)")
-//                                self?.profileImageView.image = image
-//                                self?.profileImageView.layer.cornerRadius = self?.profileImageView.bounds.width ?? 0 / 2
-//                            } else {
-//                                print("Failed to load image for URL: \(imageUrlString)")
-//                                self?.profileImageView.image = placeholderImage
-//                            }
-//                        }
-//                    }
-//                
-//            } else {
-//                profileImageView.image = placeholderImage
-//            }
-//        }
     
     func setupProfileImageView() {
            let placeholderImage = UIImage(named: "defaultImage")
@@ -297,105 +234,42 @@ extension StudentCardViewController {
            }
        }
     
-    @objc private func addSchedule() {
-        guard let timeInput = timeTextField?.text, !timeInput.isEmpty else {
-            displayErrorAlert(message: "Please enter time.")
-            return
-        }
+    @objc private func showScheduleBottomSheet() {
+        let scheduleBottomSheetVC = ScheduleBottomSheetViewController()
+        scheduleBottomSheetVC.modalPresentationStyle = .pageSheet
         
-        var formattedTimes: [String] = []
-        
-        // Split the time input based on semicolon for days and comma for times
-        let timeGroups = timeInput.components(separatedBy: ";")
-        
-        let weekdays = weekdayTextField?.text?.components(separatedBy: ",") ?? []
-        for (index, weekday) in weekdays.enumerated() {
-            let uppercaseWeekday = weekday.trimmingCharacters(in: .whitespaces).uppercased()
-            let validWeekdays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
-            
-            // Check for valid weekday input
-            if !validWeekdays.contains(uppercaseWeekday) {
-                displayErrorAlert(message: "Please enter valid weekday abbreviations separated by commas (e.g., MON, TUE, WED).")
-                return
-            }
-            
-            // Ensure corresponding time group exists
-            guard index < timeGroups.count else {
-                displayErrorAlert(message: "Please enter time for each specified weekday (e.g., 15; 15, 17; 15-17).")
-                return
-            }
-            
-            var formattedTimeItems: [String] = []
-            
-            // Split the time group based on comma, and handle each part
-            let timeRanges = timeGroups[index].components(separatedBy: ",")
-            for timeRange in timeRanges {
-                if timeRange.contains("-") {
-                    // Handle time range (e.g., 15-17)
-                    let timeComponents = timeRange.split(separator: "-")
-                    if timeComponents.count == 2,
-                       let formattedStartTime = formatTime(String(timeComponents[0]).trimmingCharacters(in: .whitespaces)),
-                       let formattedEndTime = formatTime(String(timeComponents[1]).trimmingCharacters(in: .whitespaces)) {
-                        formattedTimeItems.append("\(formattedStartTime)-\(formattedEndTime)")
-                    } else {
-                        displayErrorAlert(message: "Please enter a valid time range (e.g., 15:00-17:00).")
-                        return
-                    }
-                } else {
-                    // Handle single time (e.g., 15)
-                    if let formattedTime = formatTime(timeRange.trimmingCharacters(in: .whitespaces)) {
-                        formattedTimeItems.append(formattedTime)
-                    } else {
-                        displayErrorAlert(message: "Please enter a valid time separated by ; (e.g., 15; 15, 17; 15-17).")
-                        return
-                    }
+        if #available(iOS 15.0, *) {
+            if let sheet = scheduleBottomSheetVC.sheetPresentationController {
+                
+                sheet.detents = [.medium()]
+                sheet.prefersGrabberVisible = true
+                
+                // Передача текущих расписаний
+                scheduleBottomSheetVC.currentScheduleItems = scheduleItems
+                
+                print("showScheduleBottomSheet scheduleItems \(String(describing: scheduleItems))") // Отладочный вывод
+                
+                scheduleBottomSheetVC.onSave = { [weak self] schedules in
+                    guard let self = self else { return }
+                    
+                    self.scheduleItems.append(contentsOf: schedules)
+                    
+                    // Sort scheduleItems by weekday
+                    self.scheduleItems.sort(by: {
+                        self.orderOfDay($0.weekday) < self.orderOfDay($1.weekday)
+                    })
+                    
+                    self.scheduleCollectionView.reloadData()
                 }
+                
+                present(scheduleBottomSheetVC, animated: true, completion: nil)
             }
-            
-            formattedTimes.append("\(uppercaseWeekday) \(formattedTimeItems.joined(separator: ", "))")
+        } else {
+            // Fallback on earlier versions
         }
-        
-        // Create new schedule items and add them to the collection
-        for formattedTime in formattedTimes {
-            var newScheduleItem = Schedule()
-            let components = formattedTime.split(separator: " ")
-            newScheduleItem.weekday = String(components[0])
-            newScheduleItem.time = String(components[1...].joined(separator: " "))
-            
-            scheduleItems.append(newScheduleItem)
-        }
-        
-        // Sort schedule items
-        scheduleItems.sort { orderOfDay($0.weekday) < orderOfDay($1.weekday) }
-        
-        scheduleCollectionView.reloadData()
-        
-        // Clear text fields after adding
-        weekdayTextField?.text = ""
-        timeTextField?.text = ""
     }
-    
-    
-    // Метод для форматирования времени в "HH:mm"
-    private func formatTime(_ time: String) -> String? {
-        let timeComponents = time.split(separator: ":")
-        if timeComponents.count == 1 {
-            // Если введены только часы (например, "15"), добавить ":00"
-            if let hour = Int(timeComponents[0]), hour >= 0 && hour < 24 {
-                return String(format: "%02d:00", hour)
-            }
-        } else if timeComponents.count == 2 {
-            // Если введены часы и минуты (например, "15:30")
-            if let hour = Int(timeComponents[0]), let minute = Int(timeComponents[1]),
-               hour >= 0 && hour < 24 && minute >= 0 && minute < 60 {
-                return String(format: "%02d:%02d", hour, minute)
-            }
-        }
-        // Если введено некорректное время, возвращать nil
-        return nil
-    }
-    
-    func orderOfDay(_ weekday: String) -> Int {
+    // Method to get the order of days
+    private func orderOfDay(_ weekday: String) -> Int {
         switch weekday {
         case "MON": return 0
         case "TUE": return 1
@@ -476,26 +350,13 @@ extension StudentCardViewController {
             if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
                 return false
             }
-//        case studentNameTextField, parentNameTextField, currencyTextField:
-//            let allowedCharacters = CharacterSet.letters
-//            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
-//                return false
-//            }
+
         case phoneTextField:
             let allowedCharacters = CharacterSet(charactersIn: "+0123456789")
             if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
                 return false
             }
-        case weekdayTextField:
-            let characterSet = CharacterSet.decimalDigits
-            if string.rangeOfCharacter(from: characterSet) != nil {
-                return false
-            }
-        case timeTextField:
-            let allowedCharacters = CharacterSet(charactersIn: "0123456789,-;")
-            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
-                return false
-            }
+
         default:
             break
         }

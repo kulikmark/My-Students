@@ -135,7 +135,7 @@
 //
 //    @objc private func saveButtonTapped() {
 //        view.endEditing(true)
-//        
+//
 //       let studentOrder = student?.order
 //
 //        let studentType: StudentType = studentTypeSegmentedControl.selectedSegmentIndex == 0 ? .schoolchild : .adult
@@ -400,13 +400,13 @@ class StudentCardViewController: UIViewController {
     }
     
     private func setupActivityIndicator() {
-            activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview(activityIndicator)
-            NSLayoutConstraint.activate([
-                activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-            ])
-        }
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(activityIndicator)
+        NSLayoutConstraint.activate([
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+    }
     
     // MARK: - Data Initialization
     
@@ -440,35 +440,35 @@ class StudentCardViewController: UIViewController {
     }
     
     @objc private func saveButtonTapped() {
-            view.endEditing(true)
-            
-            guard let studentType = getStudentType() else { return }
-            guard validateInputs() else { return }
-            
-            var studentDetails = prepareStudentDetails(studentType: studentType)
-            
-            // Start activity indicator
-            activityIndicator.startAnimating()
-            
-            // Handle image upload if needed
-            if let selectedImage = selectedImage, imageIsChanged {
-                FirebaseManager.shared.uploadImage(selectedImage) { result in
-                    switch result {
-                    case .success(let imageUrl):
-                        studentDetails.studentImageURL = imageUrl // Update student image URL
-                        print("Image uploaded successfully. Image URL: \(imageUrl)")
-                        self.saveStudentToFirestore(studentDetails)
-                    case .failure(let error):
-                        print("Error uploading image to Firebase Storage: \(error.localizedDescription)")
-                        self.activityIndicator.stopAnimating()
-                        // Optionally display an error alert
-                    }
+        view.endEditing(true)
+        
+        guard let studentType = getStudentType() else { return }
+        guard validateInputs() else { return }
+        
+        var studentDetails = prepareStudentDetails(studentType: studentType)
+        
+        // Start activity indicator
+        activityIndicator.startAnimating()
+        
+        // Handle image upload if needed
+        if let selectedImage = selectedImage, imageIsChanged {
+            FirebaseManager.shared.uploadImage(selectedImage) { result in
+                switch result {
+                case .success(let imageUrl):
+                    studentDetails.studentImageURL = imageUrl // Update student image URL
+                    print("Image uploaded successfully. Image URL: \(imageUrl)")
+                    self.saveStudentToFirestore(studentDetails)
+                case .failure(let error):
+                    print("Error uploading image to Firebase Storage: \(error.localizedDescription)")
+                    self.activityIndicator.stopAnimating()
+                    // Optionally display an error alert
                 }
-            } else {
-                // If no image is selected or it is not changed
-                saveStudentToFirestore(studentDetails)
             }
+        } else {
+            // If no image is selected or it is not changed
+            saveStudentToFirestore(studentDetails)
         }
+    }
     
     // MARK: - Helper Methods
     
@@ -500,7 +500,7 @@ class StudentCardViewController: UIViewController {
             }
         }
         
-        guard let lessonPriceString = lessonPriceTextField.text, let lessonPrice = Double(lessonPriceString) else {
+        guard let lessonPriceString = lessonPriceTextField.text, let lessonPrice = Int(lessonPriceString) else {
             displayErrorAlert(message: "Please enter a valid lesson price.")
             return false
         }
@@ -517,60 +517,71 @@ class StudentCardViewController: UIViewController {
     private func prepareStudentDetails(studentType: StudentType) -> Student {
         // Prepare student details object from UI inputs
         return Student( order: student?.order,
-            type: studentType,
-                       name: studentNameTextField.text ?? "",
-                       parentName: parentNameTextField.text ?? "",
-                       phoneNumber: phoneTextField.text ?? "",
-                       lessonPrice: LessonPrice(price: Int(lessonPriceTextField.text ?? "") ?? 0,
-                                                currency: currencyTextField.text ?? ""),
-                       schedule: Array(scheduleItems),
-                       months: [],
-                       lessons: [],
-                       photoUrls: [])
+                        type: studentType,
+                        name: studentNameTextField.text ?? "",
+                        parentName: parentNameTextField.text ?? "",
+                        phoneNumber: phoneTextField.text ?? "",
+                        lessonPrice: LessonPrice(price: Int(lessonPriceTextField.text ?? "") ?? 0,
+                                                 currency: currencyTextField.text ?? ""),
+                        schedule: Array(scheduleItems),
+                        months: [],
+                        lessons: [],
+                        photoUrls: [])
     }
     
     private func saveStudentToFirestore(_ studentDetails: Student) {
-            guard let studentType = getStudentType() else { return }
+        guard let studentType = getStudentType() else { return }
+        
+        // Save student details to Firestore
+        switch editMode {
+        case .add:
+            FirebaseManager.shared.addOrUpdateStudent(studentDetails) { error in
+                if let error = error {
+                    print("Error adding student: \(error.localizedDescription)")
+                } else {
+                    print("Student added successfully.")
+                    print("Saved student details: \(studentDetails)")
+                    self.activityIndicator.stopAnimating()
+                    // Navigate back after successful save
+                    self.navigationController?.popViewController(animated: true)
+                }
+            }
+        case .edit:
+            guard var existingStudent = student else {
+                print("Error: Trying to edit student details without an existing student.")
+                return
+            }
+            guard let studentId = student?.id else {
+                print("Error: Trying to edit student without an ID.")
+                return
+            }
+            existingStudent.id = studentId // Set existing student ID
+            existingStudent.studentImageURL = studentDetails.studentImageURL // Ensure image URL is updated
             
-            // Save student details to Firestore
-            switch editMode {
-            case .add:
-                FirebaseManager.shared.addOrUpdateStudent(studentDetails) { error in
-                    if let error = error {
-                        print("Error adding student: \(error.localizedDescription)")
-                    } else {
-                        print("Student added successfully.")
-                        print("Saved student details: \(studentDetails)")
-                        self.activityIndicator.stopAnimating()
-                        // Navigate back after successful save
-                        self.navigationController?.popViewController(animated: true)
-                    }
-                }
-            case .edit:
-                guard var existingStudent = student else {
-                    print("Error: Trying to edit student details without an existing student.")
-                    return
-                }
-                guard let studentId = student?.id else {
-                    print("Error: Trying to edit student without an ID.")
-                    return
-                }
-                existingStudent.id = studentId // Set existing student ID
-                existingStudent.studentImageURL = studentDetails.studentImageURL // Ensure image URL is updated
-                
-                FirebaseManager.shared.addOrUpdateStudent(existingStudent) { error in
-                    if let error = error {
-                        print("Error updating student: \(error.localizedDescription)")
-                    } else {
-                        print("Student updated successfully.")
-                        print("Updated student details: \(existingStudent)")
-                        self.activityIndicator.stopAnimating()
-                        // Navigate back after successful update
-                        self.navigationController?.popViewController(animated: true)
-                    }
+            // Обновление остальных данных студента
+                existingStudent.type = studentDetails.type
+                 existingStudent.name = studentDetails.name
+                 existingStudent.parentName = studentDetails.parentName
+                 existingStudent.phoneNumber = studentDetails.phoneNumber
+                 existingStudent.lessonPrice = studentDetails.lessonPrice
+                 existingStudent.schedule = studentDetails.schedule
+                 existingStudent.months = studentDetails.months
+                 existingStudent.lessons = studentDetails.lessons
+                 existingStudent.photoUrls = studentDetails.photoUrls
+            
+            FirebaseManager.shared.addOrUpdateStudent(existingStudent) { error in
+                if let error = error {
+                    print("Error updating student: \(error.localizedDescription)")
+                } else {
+                    print("Student updated successfully.")
+                    print("Updated student details: \(existingStudent)")
+                    self.activityIndicator.stopAnimating()
+                    // Navigate back after successful update
+                    self.navigationController?.popViewController(animated: true)
                 }
             }
         }
+    }
     
     private func compressImage(_ image: UIImage) -> Data? {
         guard let imageData = image.jpegData(compressionQuality: 0.8) else { return nil }

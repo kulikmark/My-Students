@@ -24,6 +24,7 @@ class ContainerViewController: UIViewController {
     
     lazy var mainNavigationController: UINavigationController = {
         let navigationController = UINavigationController(rootViewController: StudentsCollectionViewController(viewModel: StudentViewModel()))
+        navigationController.delegate = self
         return navigationController
     }()
     
@@ -143,6 +144,18 @@ class ContainerViewController: UIViewController {
             self.mainNavigationController.view.frame.origin.x = shouldOpen ? self.sideMenuWidth : 0
             self.sideMenuViewController.view.frame.origin.x = shouldOpen ? 0 : -self.sideMenuWidth
             self.mainNavigationController.view.alpha = shouldOpen ? 0.5 : 1.0
+        }
+    }
+}
+
+// MARK: - UINavigationControllerDelegate
+
+extension ContainerViewController: UINavigationControllerDelegate {
+    func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
+        if viewController is StudentsCollectionViewController {
+            panGestureRecognizer.isEnabled = true
+        } else {
+            panGestureRecognizer.isEnabled = false
         }
     }
 }

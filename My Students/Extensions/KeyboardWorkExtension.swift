@@ -46,12 +46,7 @@ extension StudentCardViewController {
             return lessonPriceTextField
         } else if currencyTextField.isFirstResponder {
             return currencyTextField
-        } else if weekdayTextField.isFirstResponder {
-            return weekdayTextField
-        } else if timeTextField.isFirstResponder {
-            return timeTextField
         }
-        
         return nil
     }
     

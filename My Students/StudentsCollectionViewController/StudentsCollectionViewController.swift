@@ -16,8 +16,6 @@ class StudentsCollectionViewController: UICollectionViewController {
     @ObservedObject var viewModel: StudentViewModel
     private var cancellables = Set<AnyCancellable>()
     
-    private var isEditingCells: Bool = false
-    
     let searchController = UISearchController(searchResultsController: nil)
     
     // Properties for layout
@@ -53,10 +51,10 @@ class StudentsCollectionViewController: UICollectionViewController {
             print("StudentsCollectionViewController is being deallocated")
         }
         
-        override func didReceiveMemoryWarning() {
-            super.didReceiveMemoryWarning()
-            print("StudentsCollectionViewController received a memory warning")
-        }
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        print("StudentsCollectionViewController received a memory warning")
+    }
     
     // MARK: - Life cycle
     
@@ -75,19 +73,15 @@ class StudentsCollectionViewController: UICollectionViewController {
             .sink { [weak self] students in
                 self?.collectionView.reloadData()
                 self?.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: students.isEmpty, collectionView: self?.collectionView ?? UICollectionView())
-//                self?.updateButtonsVisibility()
             }
             .store(in: &cancellables)
         
         view.backgroundColor = UIColor.systemGroupedBackground
-                self.title = "Students List"
-        
+        self.title = "Students List"
         
         setupSearchController()
         setupCollectionView()
-        
         setupAddButton()
-        
         setupStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen")
     }
     
@@ -170,25 +164,6 @@ extension StudentsCollectionViewController {
         return viewModel.students.count
     }
     
-//    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-//        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StudentCell", for: indexPath) as! StudentCollectionViewCell
-//        let student = viewModel.students[indexPath.item]
-//        cell.configure(with: student)
-//        cell.delegate = self
-//        let studentBottomSheetVC = StudentBottomSheetViewController(student: student)
-//        studentBottomSheetVC.showDeleteConfirmation = { [weak self] in
-//            self?.showDeleteConfirmation(at: indexPath)
-//        }
-//        
-//        studentBottomSheetVC.editAction = { [weak self] in
-//            let studentCardVC = StudentCardViewController(viewModel: self!.viewModel, editMode: .edit)
-//            studentCardVC.student = student
-//            cell.delegate = self
-//            self?.navigationController?.pushViewController(studentCardVC, animated: true)
-//        }
-//        return cell
-//    }
-    
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StudentCell", for: indexPath) as! StudentCollectionViewCell
         let student = viewModel.students[indexPath.item]
@@ -200,15 +175,26 @@ extension StudentsCollectionViewController {
         return cell
     }
     
-    override func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
-            let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash.fill"), attributes: .destructive) { _ in
-                self.showDeleteConfirmation(at: indexPath)
-            }
-            return UIMenu(title: "", children: [deleteAction])
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+//            let student = viewModel.students[indexPath.item]
+//        let monthsTableVC = MonthsTableViewController(viewModel: viewModel, student: student)
+//        monthsTableVC.lessonPrice = "\(student.lessonPrice.price) \(student.lessonPrice.currency)"
+//            navigationController?.pushViewController(monthsTableVC, animated: true)
+        let student = viewModel.students[indexPath.item]
+               let monthsTableVC = MonthsTableViewController(viewModel: viewModel, studentId: student.id ?? "") // Pass only the student ID
+               navigationController?.pushViewController(monthsTableVC, animated: true)
         }
-        return configuration
-    }
+    
+    // Deleting student with the long tap
+//    override func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+//        let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+//            let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash.fill"), attributes: .destructive) { _ in
+//                self.showDeleteConfirmation(at: indexPath)
+//            }
+//            return UIMenu(title: "", children: [deleteAction])
+//        }
+//        return configuration
+//    }
 }
 
 // MARK: - UICollectionViewDragDelegate
@@ -263,7 +249,10 @@ extension StudentsCollectionViewController: UICollectionViewDropDelegate {
     }
 }
 
+// MARK: - Deleting Student
+
 extension StudentsCollectionViewController {
+    
     func showDeleteConfirmation(at indexPath: IndexPath) {
         let alert = UIAlertController(title: "Delete Student", message: "Are you sure you want to delete this student?", preferredStyle: .alert)
         let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { _ in
@@ -303,8 +292,10 @@ extension StudentsCollectionViewController {
     }
 }
 
+// MARK: - Student Bottom Sheet methods
 
 extension StudentsCollectionViewController: StudentCollectionViewCellDelegate {
+    
     func presentStudentBottomSheet(for student: Student) {
         let studentBottomSheetVC = StudentBottomSheetViewController(student: student)
         studentBottomSheetVC.delegate = self
@@ -313,12 +304,12 @@ extension StudentsCollectionViewController: StudentCollectionViewCellDelegate {
             if let sheet = studentBottomSheetVC.sheetPresentationController {
                 if #available(iOS 16.0, *) {
                     sheet.detents = [.custom(resolver: { context in
-                        return 150
+                        return 190
                     })]
                 } else {
                     // Fallback on earlier versions
                 }
-                sheet.prefersGrabberVisible = true
+//                sheet.prefersGrabberVisible = true
             }
         }
         present(studentBottomSheetVC, animated: true, completion: nil)
@@ -326,6 +317,7 @@ extension StudentsCollectionViewController: StudentCollectionViewCellDelegate {
 }
 
 extension StudentsCollectionViewController: StudentBottomSheetDelegate {
+    
     func didTapEditButton(for student: Student) {
         dismiss(animated: true) {
             let studentCardVC = StudentCardViewController(viewModel: self.viewModel, editMode: .edit)

@@ -71,7 +71,7 @@ class StudentBottomSheetViewController: UIViewController {
         nameLabel.text = "Student: \(student.name)"
         view.addSubview(nameLabel)
         nameLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(20)
+            make.top.equalToSuperview().offset(30)
             make.left.equalToSuperview().offset(20)
         }
         
@@ -96,12 +96,10 @@ class StudentBottomSheetViewController: UIViewController {
     
     @objc private func editButtonTapped() {
             delegate?.didTapEditButton(for: student)
-        print("editButtonTapped \(editButtonTapped)")
         }
         
         @objc func deleteButtonTapped() {
             delegate?.didTapDeleteButton(for: student)
-            print("deleteButtonTapped \(deleteButtonTapped)")
         }
 }
 

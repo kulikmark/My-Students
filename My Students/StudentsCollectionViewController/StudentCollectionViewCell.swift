@@ -18,7 +18,7 @@ class StudentCollectionViewCell: UICollectionViewCell {
     var student: Student?
     
     weak var delegate: StudentCollectionViewCellDelegate?
-
+    
     lazy var profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -96,8 +96,8 @@ class StudentCollectionViewCell: UICollectionViewCell {
         studentCellManageButton.addTarget(self, action: #selector(studetnCellManageButtonTapped), for: .touchUpInside)
     }
     
-  @objc func studetnCellManageButtonTapped() {
-      guard let student = student else { return }
+    @objc func studetnCellManageButtonTapped() {
+        guard let student = student else { return }
         delegate?.presentStudentBottomSheet(for: student)
     }
     
@@ -108,51 +108,10 @@ class StudentCollectionViewCell: UICollectionViewCell {
         contentView.layer.cornerRadius = 10
     }
     
-
-    
-//    func configure(with student: Student) {
-//        self.student = student
-//        
-//        studentNameLabel.text = student.name
-//        
-//        if let imageUrl = student.studentImageURL {
-//            // Здесь загружаем изображение по URL, предполагая, что у вас есть метод для загрузки изображения по URL
-//            // В данном примере используется метод `loadImageFromURL` для загрузки изображения с URL
-//            FirebaseManager.shared.loadImageFromURL(imageUrl) { image in
-//                DispatchQueue.main.async {
-//                    if let image = image {
-//                        self.profileImageView.image = image
-//                        self.profileImageView.layer.cornerRadius = self.profileImageView.bounds.width / 2
-//                    } else {
-//                        self.profileImageView.image = UIImage(named: "defaultImage")
-//                    }
-//                }
-//            }
-//        } else {
-//            self.profileImageView.image = UIImage(named: "defaultImage")
-//        }
-//        
-//        updateScheduleTextField()
-//    }
-    
-//    func configure(with student: Student) {
-//        self.student = student
-//        studentNameLabel.text = student.name
-//
-//        if let imageUrlString = student.studentImageURL, let imageUrl = URL(string: imageUrlString) {
-//            // Используем Kingfisher для загрузки и кэширования изображения
-//            profileImageView.kf.setImage(with: imageUrl, placeholder: UIImage(named: "defaultImage"))
-//        } else {
-//            profileImageView.image = UIImage(named: "defaultImage")
-//        }
-//        
-//        updateScheduleTextField()
-//    }
-    
     func configure(with student: Student) {
         self.student = student
         studentNameLabel.text = student.name
-
+        
         if let imageUrlString = student.studentImageURL, let imageUrl = URL(string: imageUrlString) {
             // Используем Kingfisher для загрузки и кэширования изображения
             profileImageView.kf.setImage(with: imageUrl, placeholder: UIImage(named: "defaultImage")) { result in
@@ -172,7 +131,7 @@ class StudentCollectionViewCell: UICollectionViewCell {
         
         updateScheduleTextField()
     }
-
+    
     func updateScheduleTextField() {
         var scheduleStrings = [String]()
         
@@ -210,21 +169,21 @@ class StudentCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    private func animateShake(isEditing: Bool) {
-        if isEditing {
-            let animation = CABasicAnimation(keyPath: "transform.rotation")
-            let additionalRotation = CGFloat(0.1 * (.pi / 180.0))
-            let shakeRotation = CGFloat(0.005)
-            
-            animation.fromValue = -shakeRotation - additionalRotation
-            animation.toValue = shakeRotation + additionalRotation
-            animation.duration = 0.15
-            animation.repeatCount = .infinity
-            animation.autoreverses = true
-            
-            layer.add(animation, forKey: "shake")
-        } else {
-            layer.removeAnimation(forKey: "shake")
-        }
-    }
+    //    private func animateShake(isEditing: Bool) {
+    //        if isEditing {
+    //            let animation = CABasicAnimation(keyPath: "transform.rotation")
+    //            let additionalRotation = CGFloat(0.1 * (.pi / 180.0))
+    //            let shakeRotation = CGFloat(0.005)
+    //
+    //            animation.fromValue = -shakeRotation - additionalRotation
+    //            animation.toValue = shakeRotation + additionalRotation
+    //            animation.duration = 0.15
+    //            animation.repeatCount = .infinity
+    //            animation.autoreverses = true
+    //
+    //            layer.add(animation, forKey: "shake")
+    //        } else {
+    //            layer.removeAnimation(forKey: "shake")
+    //        }
+    //    }
 }

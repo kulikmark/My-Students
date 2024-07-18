@@ -164,14 +164,14 @@ extension StudentsSearchViewController: UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         //        let student = searchHistory[indexPath.row]
         let student = searchController.isActive ? filteredStudents[indexPath.row] : viewModel.students.first { $0.id == viewModel.searchHistory[indexPath.row].studentId }
-        let monthsVC = MonthsTableViewController()
-        monthsVC.student = student
+//        let monthsVC = MonthsTableViewController(viewModel: viewModel, student: student)
+//        monthsVC.student = student
         if let student = student {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 self.viewModel.addSearchHistoryItem(for: student)
             }
         }
-        navigationController?.pushViewController(monthsVC, animated: true)
+//        navigationController?.pushViewController(monthsVC, animated: true)
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -201,9 +201,9 @@ extension StudentsSearchViewController: StudentsTableViewHeaderDelegate {
     }
     
     func navigateToMonths(for student: Student) {
-        let monthsVC = MonthsTableViewController()
-        monthsVC.student = student
-        navigationController?.pushViewController(monthsVC, animated: true)
+//        let monthsVC = MonthsTableViewController(viewModel: viewModel, student: student)
+//        monthsVC.student = student
+//        navigationController?.pushViewController(monthsVC, animated: true)
     }
 }
 
