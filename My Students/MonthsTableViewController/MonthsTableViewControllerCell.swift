@@ -8,15 +8,7 @@
 import UIKit
 import SnapKit
 
-class MonthCell: UITableViewCell {
-    
-    let containerView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .white
-        view.layer.cornerRadius = 10
-        view.layer.masksToBounds = true
-        return view
-    }()
+class MonthsTableViewControllerCell: UITableViewCell {
     
     let monthLabel: UIStackView = {
         let stackview = UIStackView()
@@ -56,27 +48,21 @@ class MonthCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        
         // Устанавливаем фон ячейки на прозрачный
         self.backgroundColor = .clear
         
-        contentView.addSubview(containerView)
-        
-        containerView.addSubview(monthLabel)
+        contentView.addSubview(monthLabel)
         monthLabel.addArrangedSubview(monthYearLabel)
         monthLabel.addArrangedSubview(totalSumLabel)
         
-        containerView.addSubview(paymentStatusLabel)
-        containerView.addSubview(switchControl)
+        contentView.addSubview(paymentStatusLabel)
+        contentView.addSubview(switchControl)
         
         setupConstraints()
     }
     
     private func setupConstraints() {
-        containerView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(3)
-            make.height.equalTo(70)
-        }
-        
         monthLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().inset(20)
             make.centerY.equalToSuperview()
@@ -93,16 +79,44 @@ class MonthCell: UITableViewCell {
         }
     }
     
-    func configure(with student: Student, month: Month, index: Int, target: Any?, action: Selector) {
+    // Configure method
+//    func configure(with student: Student, month: Month, lessons: [Lesson], index: Int, target: Any?, action: Selector) {
+//        monthYearLabel.text = "\(month.monthName) \(month.monthYear)"
+//        
+//        let lessonsCount = lessons.count
+//        let lessonPrice = student.lessonPrice
+//        let moneySum = lessonsCount * lessonPrice.price
+//        
+//        // Проверка значений перед установкой
+//            print("Lessons Count: \(lessonsCount)")
+//            print("Lesson Price: \(lessonPrice.price)")
+//            print("Calculated Money Sum: \(moneySum)")
+//        
+//        totalSumLabel.text = "Total Sum: \(String(moneySum)) \(lessonPrice.currency)"
+//
+//        // Ensure the layout is updated
+//        totalSumLabel.setNeedsDisplay()
+//              contentView.setNeedsLayout()
+//              contentView.layoutIfNeeded()
+//        
+//        switchControl.tag = index
+//        switchControl.isOn = month.isPaid
+//        switchControl.addTarget(target, action: action, for: .valueChanged)
+//        
+//        paymentStatusLabel.text = switchControl.isOn ? "Paid" : "Unpaid"
+//        
+//        print("Total Sum Label Text: \(totalSumLabel.text ?? "nil")")
+//    }
+    
+    func configure(with student: Student, month: Month, lessons: [Lesson], index: Int, target: Any?, action: Selector) {
         monthYearLabel.text = "\(month.monthName) \(month.monthYear)"
         
-        let lessons = month.lessons
-        let lessonsCount = Int(lessons.count)
+        // Используем сохраненную сумму вместо пересчета
+        let moneySum = month.moneySum ?? 0
         
-        let lessonPrice = month.lessonPrice
-        let moneySum = lessonsCount * (lessonPrice?.price ?? 0)
+        totalSumLabel.text = "Total Sum: \(String(moneySum)) \(student.lessonPrice.currency)"
         
-        totalSumLabel.text = String(format: "Total Sum: %.2f %@", moneySum, lessonPrice?.currency ?? "")
+        print("totalSumLabel \(totalSumLabel.text)")
         
         switchControl.tag = index
         switchControl.isOn = month.isPaid
@@ -110,10 +124,9 @@ class MonthCell: UITableViewCell {
         
         paymentStatusLabel.text = switchControl.isOn ? "Paid" : "Unpaid"
     }
-    
+
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }
-
-

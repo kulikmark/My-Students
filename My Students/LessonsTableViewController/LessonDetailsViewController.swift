@@ -8,27 +8,21 @@
 import UIKit
 import SnapKit
 import PhotosUI
+import FirebaseStorage
+import Kingfisher
 
-class LessonDetailsViewController: UIViewController, UIImagePickerControllerDelegate & UINavigationControllerDelegate, UICollectionViewDelegate, UICollectionViewDataSource {
+class LessonDetailsViewController: UIViewController, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
     
-    var student: Student!
-    var lesson: Lesson!
+    var studentId: String
+    var selectedLesson: Lesson
+    var photoCollectionView: UICollectionView
     
-    var updatedlessonsForStudent: [Lesson] = []
-    var homeworksArray = [String]()
-    
-    var photoImageViews: [UIImageView] = []
-    var photoCollectionView: UICollectionView!
-    
-    var changesMade = false
-    
-    var enterHWLabel: UILabel!
-    var clippedPhotosLabel: UILabel!
-    var attendanceSwitch: UISwitch!
-    var statusLabel: UILabel!
+    var enterHWLabel: UILabel
+    var clippedPhotosLabel: UILabel
+    var attendanceSwitch: UISwitch
+    var statusLabel: UILabel
     var paperclipButton = UIButton(type: .system)
-    var saveButton = UIButton(type: .system)
-    
+//    var saveButton = UIButton(type: .system)
     
     let homeworkTextView: UITextView = {
         let textView = UITextView()
@@ -39,63 +33,142 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
         return textView
     }()
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        // Устанавливаем значение UISwitch равным значению lesson.attended
-        attendanceSwitch.isOn = lesson.attended
+    init(studentId: String, selectedLesson: Lesson) {
+            self.studentId = studentId
+            self.selectedLesson = selectedLesson
+            
+            // Initialize photoCollectionView and other UI elements before calling super.init
+            let layout = UICollectionViewFlowLayout()
+            layout.scrollDirection = .horizontal
+            self.photoCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+            
+            self.enterHWLabel = UILabel()
+            self.clippedPhotosLabel = UILabel()
+            self.attendanceSwitch = UISwitch()
+            self.statusLabel = UILabel()
+            
+            super.init(nibName: nil, bundle: nil)
+        }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            // Устанавливаем значение UISwitch равным значению lesson.attended
+            attendanceSwitch.isOn = selectedLesson.attended
+            
+            loadLessonDetails()
+        }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "Lesson \(lesson.date)"
-        
-        // Заменяем кнопку "Back" на кастомную кнопку
-        let backButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(backButtonTapped))
-        navigationItem.leftBarButtonItem = backButton
-        
+        self.title = "Lesson \(selectedLesson.date)"
         view.backgroundColor = .white
+        
+        updateUIWithLessonDetails()
+        
+        loadLessonDetails()
+        setupNavigationItems()
         setupUI()
         setupObservers()
         setupTapGesture()
         
-        // Set the text view with the current homework
-        homeworkTextView.text = lesson.homework
-        // Устанавливаем значение UISwitch равным значению lesson.attended
-        attendanceSwitch.isOn = lesson.attended
+        photoCollectionView.delegate = self
+        photoCollectionView.dataSource = self
+
     }
     
-    @objc func saveButtonTapped() {
-        changesMade = false
-        
-        guard let updatedHomework = homeworkTextView.text else {
-            print("Error: Failed to get updated homework")
-            return
+    func setupNavigationItems() {
+            // Создание кастомной кнопки "Назад"
+            let backButton = UIBarButtonItem(title: "Back", style: .plain, target: self, action: #selector(backButtonTapped))
+            navigationItem.leftBarButtonItem = backButton
+            
+            // Кнопки "Поделиться" и "Скрепка" остаются без изменений
+            let shareButton = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareHomework))
+            let paperclipButton = UIBarButtonItem(image: UIImage(systemName: "paperclip"), style: .plain, target: self, action: #selector(paperclipButtonTapped))
+            navigationItem.rightBarButtonItems = [shareButton, paperclipButton]
         }
+    
+    @objc func backButtonTapped() {
+        // Обновление объекта lesson текущим состоянием
+        selectedLesson.homework = homeworkTextView.text
+        selectedLesson.attended = attendanceSwitch.isOn
         
-        // Обновляем состояние attended
-        lesson.attended = attendanceSwitch.isOn
-        //        lesson.homework = updatedHomework
-        lesson.homework = updatedHomework.isEmpty ? nil : updatedHomework
+        FirebaseManager.shared.saveLessonDetails(studentId: studentId, monthId: selectedLesson.monthId, lesson: selectedLesson) { result in
+            switch result {
+            case .success:
+                print("Lesson successfully saved.")
+                self.navigationController?.popViewController(animated: true)
+            case .failure(let error):
+                print("Error saving lesson: \(error)")
+                self.navigationController?.popViewController(animated: true)
+            }
+        }
+       }
+    
+    func saveLessonsDetails() {
+        // Обновление объекта lesson текущим состоянием
+        selectedLesson.homework = homeworkTextView.text
+        selectedLesson.attended = attendanceSwitch.isOn
         
-//        // Отправляем уведомление о обновлении урока
-//        NotificationCenter.default.post(name: .lessonUpdatedNotification, object: nil, userInfo: ["updatedLesson": lesson!])
-        
-        navigationController?.popViewController(animated: true)
-        
-        print("Checking photoImageViews after saveButtonTapped \(photoImageViews)")
+        FirebaseManager.shared.saveLessonDetails(studentId: studentId, monthId: selectedLesson.monthId, lesson: selectedLesson) { result in
+            switch result {
+            case .success:
+                print("Lesson successfully saved.")
+            case .failure(let error):
+                print("Error saving lesson: \(error)")
+            }
+        }
     }
     
-    @objc private func backButtonTapped() {
-       
-    }
+//    @objc func saveButtonTapped() {
+//           // Update the lesson object with the current state
+//           selectedLesson.homework = homeworkTextView.text
+//           selectedLesson.attended = attendanceSwitch.isOn
+//           
+//        FirebaseManager.shared.saveLessonDetails(studentId: studentId, monthId: selectedLesson.monthId, lesson: selectedLesson) { result in
+//                switch result {
+//                case .success:
+//                    print("Lesson successfully saved.")
+//                    self.navigationController?.popViewController(animated: true)
+//                case .failure(let error):
+//                    print("Error saving lesson: \(error)")
+//                }
+//            }
+//       }
     
     @objc func attendanceSwitchValueChanged(_ sender: UISwitch) {
-      
-        lesson?.attended = sender.isOn
+        selectedLesson.attended = sender.isOn
         statusLabel.text = sender.isOn ? "Student was present" : "Student was absent"
-     
     }
+    
+    func loadLessonDetails() {
+        FirebaseManager.shared.loadLessonDetails(studentId: studentId, monthId: selectedLesson.monthId, lessonId: selectedLesson.id) { result in
+               switch result {
+               case .success(let lesson):
+                   self.selectedLesson = lesson
+                   self.updateUIWithLessonDetails()
+               case .failure(let error):
+                   print("Error loading lesson: \(error)")
+               }
+           }
+       }
+    
+    func updateUIWithLessonDetails() {
+           homeworkTextView.text = selectedLesson.homework
+           attendanceSwitch.isOn = selectedLesson.attended
+           statusLabel.text = selectedLesson.attended ? "Student was present" : "Student was absent"
+       }
 }
+
+// MARK: - Paper clip button: Photo Gallery methods
+
+import UIKit
+import PhotosUI
+import FirebaseStorage
+import Kingfisher
 
 // MARK: - Paper clip button: Photo Gallery methods
 
@@ -121,13 +194,20 @@ extension LessonDetailsViewController {
     }
     
     func presentImagePicker(sourceType: UIImagePickerController.SourceType) {
-        var configuration = PHPickerConfiguration()
-        configuration.filter = .images // Фильтр только для изображений
-        configuration.selectionLimit = 0 // 0 означает неограниченное количество выбранных элементов
-        
-        let picker = PHPickerViewController(configuration: configuration)
-        picker.delegate = self
-        present(picker, animated: true, completion: nil)
+        if #available(iOS 14, *) {
+            var configuration = PHPickerConfiguration()
+            configuration.filter = .images // Фильтр только для изображений
+            configuration.selectionLimit = 0 // 0 означает неограниченное количество выбранных элементов
+            
+            let picker = PHPickerViewController(configuration: configuration)
+            picker.delegate = self
+            present(picker, animated: true, completion: nil)
+        } else {
+            let imagePicker = UIImagePickerController()
+            imagePicker.delegate = self
+            imagePicker.sourceType = sourceType
+            present(imagePicker, animated: true, completion: nil)
+        }
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
@@ -138,82 +218,126 @@ extension LessonDetailsViewController {
     }
     
     func addImageForHW(image: UIImage) {
-            print("Current number of images: \(lesson.photoUrls.count)")
-            
-            guard !lesson.photoUrls.contains(where: { $0.path == image.description }) else {
-                let errorAlert = UIAlertController(title: "Error", message: "This photo has already been added.", preferredStyle: .alert)
-                errorAlert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                self.present(errorAlert, animated: true, completion: nil)
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else { return }
+        let uniqueID = UUID().uuidString
+        let temporaryPlaceholder = "temporary_\(uniqueID)"
+        selectedLesson.HWPhotos.append(temporaryPlaceholder)
+        let tempIndexPath = IndexPath(item: selectedLesson.HWPhotos.count - 1, section: 0)
+        photoCollectionView.insertItems(at: [tempIndexPath])
+
+        let storageRef = FirebaseManager.shared.storage.reference().child("homework_images/\(uniqueID).jpg")
+
+        storageRef.putData(imageData, metadata: nil) { (metadata, error) in
+            guard error == nil else {
+                print("Error uploading image: \(String(describing: error))")
                 return
             }
             
-            if let imageUrl = saveImageToFileSystem(image: image) {
-                lesson.photoUrls.append(imageUrl)
-                photoCollectionView.reloadData()
+            storageRef.downloadURL { (url, error) in
+                guard let downloadURL = url else {
+                    print("Error getting download URL: \(String(describing: error))")
+                    return
+                }
+                
+                let photoUrl = downloadURL.absoluteString
+                
+                if let tempIndex = self.selectedLesson.HWPhotos.firstIndex(of: temporaryPlaceholder) {
+                    self.selectedLesson.HWPhotos[tempIndex] = photoUrl
+                    DispatchQueue.main.async {
+                        self.photoCollectionView.reloadItems(at: [IndexPath(item: tempIndex, section: 0)])
+                    }
+                }
+
+                // Save the updated lesson details to Firebase
+                FirebaseManager.shared.saveLessonDetails(studentId: self.studentId, monthId: self.selectedLesson.monthId, lesson: self.selectedLesson) { result in
+                    switch result {
+                    case .success:
+                        print("Lesson successfully updated with new photo URL.")
+                    case .failure(let error):
+                        print("Error saving lesson with new photo URL: \(error)")
+                    }
+                }
             }
         }
-    
-    // Метод для сохранения изображения в файловой системе и возврата URL
-    func saveImageToFileSystem(image: UIImage) -> URL? {
-        guard let data = image.jpegData(compressionQuality: 0.8) else {
-            print("Failed to convert image to JPEG data")
-            return nil
-        }
-        
-        do {
-            // Создаем URL для нового файла в директории документов приложения
-            let documentsDirectory = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-            let fileUrl = documentsDirectory.appendingPathComponent("\(UUID().uuidString).jpg")
-            
-            // Сохраняем данные в файл
-            try data.write(to: fileUrl)
-            
-            return fileUrl // Возвращаем URL сохраненного изображения
-        } catch {
-            print("Error saving image to file system: \(error.localizedDescription)")
-            return nil
-        }
     }
-
-    @objc func deleteImage(_ sender: UIButton) {
-           let point = sender.convert(CGPoint.zero, to: photoCollectionView)
-           guard let indexPath = photoCollectionView.indexPathForItem(at: point) else { return }
-           
-           lesson.photoUrls.remove(at: indexPath.item)
-           photoCollectionView.deleteItems(at: [indexPath])
-       }
     
-    @objc func openFullscreenImage(_ gesture: UITapGestureRecognizer) {
-        guard let imageView = gesture.view,
-              let cell = imageView.superview?.superview as? UICollectionViewCell,
-              let indexPath = photoCollectionView.indexPath(for: cell) else {
-            return
-        }
+    @objc func deleteImage(_ sender: UIButton) {
+        // Identify the index path of the photo to be deleted
+        let point = sender.convert(CGPoint.zero, to: photoCollectionView)
+        guard let indexPath = photoCollectionView.indexPathForItem(at: point) else { return }
         
-        let images = lesson.photoUrls.compactMap { try? Data(contentsOf: $0) }.compactMap { UIImage(data: $0) }
-        let fullscreenVC = FullscreenImageViewController(images: images, initialIndex: indexPath.item)
-        present(fullscreenVC, animated: true, completion: nil)
+        // Get the URL of the photo to be deleted
+        let photoUrl = selectedLesson.HWPhotos[indexPath.item]
+        
+        // Remove the photo from the data source
+        selectedLesson.HWPhotos.remove(at: indexPath.item)
+        
+        // Update the collection view to reflect the deletion
+        photoCollectionView.deleteItems(at: [indexPath])
+        
+        // Delete the photo from Firebase storage
+        let storageRef = FirebaseManager.shared.storage.reference(forURL: photoUrl)
+        storageRef.delete { error in
+            if let error = error {
+                print("Error deleting photo from storage: \(error.localizedDescription)")
+            } else {
+                // Photo successfully deleted from storage
+                
+                // Save the updated lesson details to Firebase
+                FirebaseManager.shared.saveLessonDetails(studentId: self.studentId, monthId: self.selectedLesson.monthId, lesson: self.selectedLesson) { result in
+                    switch result {
+                    case .success:
+                        print("Lesson successfully updated after deleting photo.")
+                    case .failure(let error):
+                        print("Error saving lesson after deleting photo: \(error)")
+                    }
+                }
+            }
+        }
     }
 }
 
-// MARK: - UICollectionViewDelegate, UICollectionViewDataSource
+// MARK: - UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout
 
-extension LessonDetailsViewController {
+extension LessonDetailsViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return lesson.photoUrls.count
+        return selectedLesson.HWPhotos.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        return UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! HWPhotoCollectionViewCell
-        let imageUrl = lesson.photoUrls[indexPath.item]
-        if let imageData = try? Data(contentsOf: imageUrl),
-           let image = UIImage(data: imageData) {
-            cell.imageView.image = image
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HWPhotoCell", for: indexPath) as! HWPhotoCollectionViewCell
+        let photoURL = selectedLesson.HWPhotos[indexPath.item]
+        
+        if photoURL.starts(with: "temporary") {
+            cell.imageView.image = nil
+            cell.showLoadingIndicator()
+        } else {
+            if let url = URL(string: photoURL) {
+                cell.imageView.kf.setImage(with: url)
+            }
+            cell.hideLoadingIndicator()
         }
+
         cell.deleteButton.addTarget(self, action: #selector(deleteImage(_:)), for: .touchUpInside)
-        cell.containerView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(openFullscreenImage(_:))))
-        cell.containerView.isUserInteractionEnabled = true
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print("Cell at index \(indexPath.item) was tapped")
+        
+        saveLessonsDetails()
+        
+        let images = selectedLesson.HWPhotos.compactMap { URL(string: $0) }
+        if !images.isEmpty {
+            let fullscreenVC = FullscreenImageViewController(imageURLs: images, initialIndex: indexPath.item)
+            present(fullscreenVC, animated: true, completion: nil)
+        } else {
+            print("No images to display")
+        }
     }
 }
 
@@ -224,27 +348,41 @@ extension LessonDetailsViewController: PHPickerViewControllerDelegate {
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         dismiss(animated: true, completion: nil)
         
-        for result in results {
+        // Temporary dictionary to store images with their corresponding order
+        var imageDict = [Int: UIImage]()
+        
+        let dispatchGroup = DispatchGroup()
+        
+        for (index, result) in results.enumerated() {
             if result.itemProvider.canLoadObject(ofClass: UIImage.self) {
+                dispatchGroup.enter()
                 result.itemProvider.loadObject(ofClass: UIImage.self) { (image, error) in
                     if let image = image as? UIImage {
-                        DispatchQueue.main.async {
-                            self.addImageForHW(image: image)
-                        }
+                        imageDict[index] = image
                     }
+                    dispatchGroup.leave()
+                }
+            }
+        }
+        
+        dispatchGroup.notify(queue: .main) {
+            let sortedKeys = imageDict.keys.sorted()
+            for key in sortedKeys {
+                if let image = imageDict[key] {
+                    self.addImageForHW(image: image)
                 }
             }
         }
     }
 }
 
-
 extension LessonDetailsViewController {
     
     func setupUI() {
-        let shareButton = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareHomework))
-        let paperclipButton = UIBarButtonItem(image: UIImage(systemName: "paperclip"), style: .plain, target: self, action: #selector(paperclipButtonTapped))
-        navigationItem.rightBarButtonItems = [shareButton, paperclipButton]
+        
+//        let shareButton = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareHomework))
+//        let paperclipButton = UIBarButtonItem(image: UIImage(systemName: "paperclip"), style: .plain, target: self, action: #selector(paperclipButtonTapped))
+//        navigationItem.rightBarButtonItems = [shareButton, paperclipButton]
         
         let statusStackView = UIStackView()
                statusStackView.axis = .horizontal
@@ -269,38 +407,37 @@ extension LessonDetailsViewController {
         
         attendanceSwitch = UISwitch()
         attendanceSwitch.addTarget(self, action: #selector(attendanceSwitchValueChanged(_:)), for: .valueChanged)
-        attendanceSwitch.isOn = lesson.attended
+        attendanceSwitch.isOn = selectedLesson.attended
         statusLabel.text = attendanceSwitch.isOn ? "Student was present" : "Student was absent"
         
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
-        layout.minimumInteritemSpacing = 5
-        layout.itemSize = CGSize(width: 60, height: 60)
+        layout.minimumInteritemSpacing = 10
+        layout.itemSize = CGSize(width: 250, height: 250)
         
         photoCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         photoCollectionView.delegate = self
         photoCollectionView.dataSource = self
-        photoCollectionView.register(HWPhotoCollectionViewCell.self, forCellWithReuseIdentifier: "PhotoCell")
+        photoCollectionView.register(HWPhotoCollectionViewCell.self, forCellWithReuseIdentifier: "HWPhotoCell")
         photoCollectionView.backgroundColor = .systemGroupedBackground
         photoCollectionView.layer.cornerRadius = 10
         
-        saveButton = UIButton(type: .system)
-        saveButton.setTitle("Save Changes", for: .normal)
-        saveButton.layer.cornerRadius = 10
-        saveButton.setTitleColor(.white, for: .normal)
-        saveButton.backgroundColor = .systemBlue
-        saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
-        
-        view.addSubview(statusStackView)
-        statusStackView.addArrangedSubview(statusLabel)
-        statusStackView.addArrangedSubview(attendanceSwitch)
-        
+//        saveButton = UIButton(type: .system)
+//        saveButton.setTitle("Save Changes", for: .normal)
+//        saveButton.layer.cornerRadius = 10
+//        saveButton.setTitleColor(.white, for: .normal)
+//        saveButton.backgroundColor = .systemBlue
+//        saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
+//        
         view.addSubview(enterHWLabel)
         view.addSubview(homeworkTextView)
         view.addSubview(clippedPhotosLabel)
-        view.addSubview(saveButton)
         view.addSubview(photoCollectionView)
-        
+        view.addSubview(statusStackView)
+        statusStackView.addArrangedSubview(statusLabel)
+        statusStackView.addArrangedSubview(attendanceSwitch)
+//        view.addSubview(saveButton)
+    
         // Constraints:
         enterHWLabel.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
@@ -321,21 +458,21 @@ extension LessonDetailsViewController {
         photoCollectionView.snp.makeConstraints { make in
             make.top.equalTo(clippedPhotosLabel.snp.bottom).offset(8)
             make.leading.trailing.equalToSuperview().inset(16)
-            make.height.equalTo(80)
+//            make.height.equalTo(80)
+            make.bottom.equalTo(statusStackView.snp.top).offset(-20)
         }
-        
         photoCollectionView.layer.cornerRadius = 10
         
         statusStackView.snp.makeConstraints { make in
-            make.bottom.equalTo(saveButton.snp.top).offset(-20)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-50)
             make.trailing.leading.equalToSuperview().inset(16)
         }
         
-        saveButton.snp.makeConstraints { make in
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-20)
-                       make.leading.trailing.equalToSuperview().inset(20)
-                       make.height.equalTo(44)
-        }
+//        saveButton.snp.makeConstraints { make in
+//            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-20)
+//                       make.leading.trailing.equalToSuperview().inset(20)
+//                       make.height.equalTo(44)
+//        }
     }
     
     func setupObservers() {
@@ -345,6 +482,7 @@ extension LessonDetailsViewController {
     
     func setupTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false // Позволяет касаниям проходить через жест
         view.addGestureRecognizer(tapGesture)
     }
     

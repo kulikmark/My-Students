@@ -119,7 +119,8 @@ class StudentCollectionViewCell: UICollectionViewCell {
                 case .success(let value):
                     self.profileImageView.image = value.image
                     self.profileImageView.layer.cornerRadius = self.profileImageView.bounds.width / 2
-                case .failure:
+                case .failure(let error):
+                    print("Ошибка загрузки изображения: \(error.localizedDescription)")
                     self.profileImageView.image = UIImage(named: "defaultImage")
                     self.profileImageView.layer.cornerRadius = self.profileImageView.bounds.width / 2
                 }

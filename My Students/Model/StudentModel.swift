@@ -26,7 +26,7 @@ struct Student: Codable {
     
     var months: [Month] = []
     var lessons: [Lesson] = []
-    var photoUrls: [String] = []
+    var HWPhotos: [String] = []
     
     init(
         order: Int? = 0,
@@ -39,7 +39,7 @@ struct Student: Codable {
         schedule: [Schedule] = [],
         months: [Month] = [],
         lessons: [Lesson] = [],
-        photoUrls: [String] = []
+        HWPhotos: [String] = []
     ) {
         self.order = order
         self.studentImageURL = studentImageURL
@@ -51,7 +51,7 @@ struct Student: Codable {
         self.schedule = schedule
         self.months = months
         self.lessons = lessons
-        self.photoUrls = photoUrls
+        self.HWPhotos = HWPhotos
     }
     
     // Преобразование данных для Firestore
@@ -66,7 +66,7 @@ struct Student: Codable {
             "schedule": schedule.map { $0.toFirestoreData() },
             "months": months.map { $0.toFirestoreData() },
             "lessons": lessons.map { $0.toFirestoreData() },
-            "photoUrls": photoUrls
+            "HWPhotos": HWPhotos
         ]
         
         // Добавление URL изображения, если он доступен
@@ -95,22 +95,29 @@ struct Schedule: Codable {
 
 struct Month: Codable {
     var id: String = UUID().uuidString
+    var timestamp: TimeInterval
     var monthName: String = ""
     var monthYear: String = ""
     var isPaid: Bool = false
     var lessonPrice: LessonPrice? = nil
     var lessons: [Lesson] = []
+    var moneySum: Int? = nil
     
     func toFirestoreData() -> [String: Any] {
         return [
             "id": id,
+            "timestamp": timestamp,
             "monthName": monthName,
             "monthYear": monthYear,
             "isPaid": isPaid,
             "lessonPrice": lessonPrice?.toFirestoreData() ?? NSNull(),
-            "lessons": lessons.map { $0.toFirestoreData() }
+            "lessons": lessons.map { $0.toFirestoreData() },
+            "moneySum": moneySum ?? NSNull()
         ]
     }
+    mutating func updateMoneySum(with lessons: [Lesson], lessonPrice: Int) {
+           self.moneySum = lessons.count * lessonPrice
+       }
 }
 
 struct LessonPrice: Codable {
@@ -128,22 +135,53 @@ struct LessonPrice: Codable {
 }
 
 struct Lesson: Codable {
-    var id: String = UUID().uuidString
-    var date: String = ""
-    var attended: Bool = false
-    var homework: String? = nil
-    var photoUrls: [String] = []
+    var id: String
+    var date: String
+    var attended: Bool
+    var homework: String?
+    var HWPhotos: [String]
+    var monthId: String
     
     func toFirestoreData() -> [String: Any] {
         return [
             "id": id,
             "date": date,
             "attended": attended,
-            "homework": homework ?? NSNull(),
-            "photoUrls": photoUrls
+            "homework": homework ?? "",
+            "HWPhotos": HWPhotos,
+            "monthId": monthId
         ]
     }
+
+    init(id: String, date: String, attended: Bool, homework: String?, HWPhotos: [String], monthId: String) {
+        self.id = id
+        self.date = date
+        self.attended = attended
+        self.homework = homework
+        self.HWPhotos = HWPhotos
+        self.monthId = monthId
+    }
+    
+    init(fromFirestoreData data: [String: Any]) throws {
+        guard
+            let id = data["id"] as? String,
+            let date = data["date"] as? String,
+            let attended = data["attended"] as? Bool,
+            let HWPhotos = data["HWPhotos"] as? [String],
+            let monthId = data["monthId"] as? String
+        else {
+            throw NSError(domain: "com.mystudents", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid data"])
+        }
+        
+        self.id = id
+        self.date = date
+        self.attended = attended
+        self.homework = data["homework"] as? String
+        self.HWPhotos = HWPhotos
+        self.monthId = monthId
+    }
 }
+
 
 struct SearchHistoryItem: Codable {
     var id: String = UUID().uuidString

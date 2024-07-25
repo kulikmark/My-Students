@@ -2,7 +2,7 @@
 //  MonthsTableViewController.swift
 //  Accounting
 //
-//  Created by Марк Кулик on 29.04.2024.
+//  Created by Марк Кулик on 13.04.2024.
 //
 
 import UIKit
@@ -16,12 +16,19 @@ class MonthsTableViewController: UITableViewController {
     private var cancellables = Set<AnyCancellable>()
    
     var studentId: String
-    
-    init(viewModel: StudentViewModel, studentId: String) {
-        self.viewModel = viewModel
-        self.studentId = studentId
-        super.init(style: .plain)
-    }
+    var studentLessonPrice: Int
+    var lessonsByMonth: [String: [Lesson]] = [:]
+
+    init(viewModel: StudentViewModel, studentId: String, studentLessonPrice: Int, lessonsByMonth: [String: [Lesson]]) {
+           self.viewModel = viewModel
+           self.studentId = studentId
+           self.studentLessonPrice = studentLessonPrice
+           self.lessonsByMonth = lessonsByMonth
+           super.init(style: .plain)
+           
+           // Reload table view with preloaded lessons
+           self.tableView.reloadData()
+       }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -38,18 +45,24 @@ class MonthsTableViewController: UITableViewController {
             .store(in: &cancellables)
         
         if let selectedStudent = viewModel.getStudentById(studentId) {
-            title = "Months list of \(selectedStudent.name)"
-        }
+                title = "Months list of \(selectedStudent.name)"
+            }
         
         setupUI()
         setupTableView()
         setupNavigationBar()
+       
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        tableView.reloadData()
     }
     
     private func setupTableView() {
-        tableView.separatorStyle = .singleLine
-        tableView.separatorColor = UIColor.clear
-        tableView.reloadData()
+            tableView.separatorStyle = .singleLine
+            tableView.separatorColor = UIColor.lightGray // Custom color for separators
+            tableView.separatorInset = UIEdgeInsets.zero // Remove any inset if needed
+            tableView.reloadData()
     }
     
     private func setupNavigationBar() {
@@ -59,27 +72,21 @@ class MonthsTableViewController: UITableViewController {
     
     @objc private func backButtonTapped() {
         if let selectedStudent = viewModel.getStudentById(studentId) {
-            FirebaseManager.shared.addOrUpdateStudent(selectedStudent) { error in
-                if let error = error {
-                    print("Error adding student: \(error.localizedDescription)")
-                } else {
+            FirebaseManager.shared.addOrUpdateStudent(selectedStudent) { result in
+                switch result {
+                case .success:
                     print("Student months updated successfully.")
+                case .failure(let error):
+                    print("Error adding student: \(error.localizedDescription)")
                 }
                 self.navigationController?.popViewController(animated: true)
             }
         }
     }
+
     
     @objc private func addMonthButtonTapped() {
-        guard let selectedStudent = viewModel.getStudentById(studentId), hasSelectedSchedule(student: selectedStudent) else {
-            displayErrorMessage("Add a schedule in the student card")
-            return
-        }
         showMonthSelection()
-    }
-    
-    private func hasSelectedSchedule(student: Student) -> Bool {
-        return !student.schedule.isEmpty
     }
     
     private func displayErrorMessage(_ message: String) {
@@ -122,8 +129,36 @@ class MonthsTableViewController: UITableViewController {
         present(yearAlertController, animated: true)
     }
     
+//    private func addMonth(_ monthYear: String, monthName: String) {
+//        guard let selectedStudent = viewModel.getStudentById(studentId) else { return }
+//        
+//        let dateFormatter = DateFormatter()
+//        dateFormatter.dateFormat = "MMMM yyyy"
+//        let dateString = "\(monthName) \(monthYear)"
+//        
+//        guard let date = dateFormatter.date(from: dateString) else { return }
+//        let timestamp = date.timeIntervalSince1970
+//        
+//        // Проверяем уникальность месяца и года
+//        if selectedStudent.months.contains(where: { $0.monthName == monthName && $0.monthYear == monthYear }) {
+//            let errorAlert = UIAlertController(title: "Error", message: "This month and year already exists.", preferredStyle: .alert)
+//            errorAlert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+//            self.present(errorAlert, animated: true, completion: nil)
+//        } else {
+//            viewModel.addMonth(to: selectedStudent, monthName: monthName, monthYear: monthYear, timestamp: timestamp)
+//            tableView.reloadData()
+//        }
+//    }
+    
     private func addMonth(_ monthYear: String, monthName: String) {
         guard let selectedStudent = viewModel.getStudentById(studentId) else { return }
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMMM yyyy"
+        let dateString = "\(monthName) \(monthYear)"
+        
+        guard let date = dateFormatter.date(from: dateString) else { return }
+        let timestamp = date.timeIntervalSince1970
         
         // Проверяем уникальность месяца и года
         if selectedStudent.months.contains(where: { $0.monthName == monthName && $0.monthYear == monthYear }) {
@@ -131,36 +166,98 @@ class MonthsTableViewController: UITableViewController {
             errorAlert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
             self.present(errorAlert, animated: true, completion: nil)
         } else {
-            viewModel.addMonth(to: selectedStudent, monthName: monthName, monthYear: monthYear)
+           
+            let moneySum = 0
+            
+            viewModel.addMonth(to: selectedStudent, monthName: monthName, monthYear: monthYear, moneySum: moneySum, timestamp: timestamp)
+            
+            tableView.reloadData()
         }
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let selectedStudent = viewModel.getStudentById(studentId) else { return 0 }
-        return selectedStudent.months.count
+//        return selectedStudent.months.count
+        return sortedMonths(from: selectedStudent).count
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 70
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MonthCell", for: indexPath) as! MonthCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MonthCell", for: indexPath) as! MonthsTableViewControllerCell
         
         guard let selectedStudent = viewModel.getStudentById(studentId) else { return cell }
-        let month = selectedStudent.months[indexPath.row]
+//        let month = selectedStudent.months[indexPath.row]
+        let sortedMonths = sortedMonths(from: selectedStudent)
+                let month = sortedMonths[indexPath.row]
+        let lessons = lessonsByMonth[month.id] ?? []
+        cell.configure(with: selectedStudent, month: month, lessons: lessons, index: indexPath.row, target: self, action: #selector(switchValueChanged(_:)))
         
-        cell.configure(with: selectedStudent, month: month, index: indexPath.row, target: self, action: #selector(switchValueChanged(_:)))
         cell.selectionStyle = .none
         return cell
     }
     
+//    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+//        guard let selectedStudent = viewModel.getStudentById(studentId) else { return }
+//        
+////        let selectedMonth = selectedStudent.months[indexPath.row]
+//        let selectedMonth = sortedMonths(from: selectedStudent)[indexPath.row]
+//        
+//        let lessonsTableVC = LessonsTableViewController(
+//                    viewModel: viewModel,
+//                    studentId: studentId,
+//                    selectedMonth: selectedMonth,
+//                    studentLessonPrice: studentLessonPrice
+//                )
+//        navigationController?.pushViewController(lessonsTableVC, animated: true)
+//    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let selectedStudent = viewModel.getStudentById(studentId) else { return }
+        
+        let selectedMonth = sortedMonths(from: selectedStudent)[indexPath.row]
+
+        Task {
+            do {
+                // Load lessons for the selected month
+                let lessons = try await viewModel.loadLessons(for: studentId, month: selectedMonth)
+                DispatchQueue.main.async {
+                    // Initialize the LessonsTableViewController with the loaded lessons
+                    let lessonsTableVC = LessonsTableViewController(
+                        viewModel: self.viewModel,
+                        studentId: self.studentId,
+                        selectedMonth: selectedMonth,
+                        studentLessonPrice: self.studentLessonPrice,
+                        lessonsForStudent: lessons // Pass the loaded lessons here
+                    )
+                    self.navigationController?.pushViewController(lessonsTableVC, animated: true)
+                }
+            } catch {
+                print("Failed to load lessons: \(error)")
+            }
+        }
+    }
+
+
     @objc private func switchValueChanged(_ sender: UISwitch) {
         let index = sender.tag
-        guard let selectedStudent = viewModel.getStudentById(studentId) else { return }
         viewModel.updatePaidStatus(for: studentId, at: index, isPaid: sender.isOn)
     }
+    
+//    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+//        return true
+//    }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             confirmDeletion(at: indexPath)
         }
+    }
+    
+    private func sortedMonths(from student: Student) -> [Month] {
+        return student.months.sorted { $0.timestamp < $1.timestamp }
     }
     
     private func confirmDeletion(at indexPath: IndexPath) {
@@ -223,7 +320,7 @@ class MonthsTableViewController: UITableViewController {
         }
         
         // Настройка таблицы оплаченных месяцев
-        tableView.register(MonthCell.self, forCellReuseIdentifier: "MonthCell")
+        tableView.register(MonthsTableViewControllerCell.self, forCellReuseIdentifier: "MonthCell")
         tableView.dataSource = self
         tableView.delegate = self
     }

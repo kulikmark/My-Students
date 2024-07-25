@@ -7,30 +7,35 @@
 
 import UIKit
 import SnapKit
+import Kingfisher
 
 class FullscreenImageViewController: UIViewController, UIScrollViewDelegate {
     
     let scrollView = UIScrollView()
-    var imageViews: [UIImageView] = []
-    var currentIndex: Int = 0
-    let closeButton = UIButton(type: .custom)
-    
-    init(images: [UIImage], initialIndex: Int) {
-        super.init(nibName: nil, bundle: nil)
-        self.modalPresentationStyle = .fullScreen
-        self.currentIndex = initialIndex
-        for image in images {
-            let imageView = UIImageView(image: image)
-            imageView.contentMode = .scaleAspectFit
-            imageView.clipsToBounds = true
-            imageView.isUserInteractionEnabled = true
-            imageViews.append(imageView)
+        var imageURLs: [URL] = []
+        var currentIndex: Int = 0
+        let closeButton = UIButton(type: .custom)
+        var imageViews: [UIImageView] = []
+        
+        init(imageURLs: [URL], initialIndex: Int) {
+            super.init(nibName: nil, bundle: nil)
+            self.modalPresentationStyle = .fullScreen
+            self.imageURLs = imageURLs
+            self.currentIndex = initialIndex
+            
+            // Load images from imageURLs using Kingfisher
+            for url in imageURLs {
+                let imageView = UIImageView()
+                imageView.contentMode = .scaleAspectFit
+                imageView.clipsToBounds = true
+                imageView.kf.setImage(with: url, placeholder: UIImage(named: "placeholder_image"))
+                imageViews.append(imageView)
+            }
         }
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
     
     override func viewDidLoad() {
         super.viewDidLoad()

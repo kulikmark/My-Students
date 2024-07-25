@@ -452,7 +452,7 @@ class StudentCardViewController: UIViewController {
         
         // Handle image upload if needed
         if let selectedImage = selectedImage, imageIsChanged {
-            FirebaseManager.shared.uploadImage(selectedImage) { result in
+            FirebaseManager.shared.uploadProfileImage(selectedImage) { result in
                 switch result {
                 case .success(let imageUrl):
                     studentDetails.studentImageURL = imageUrl // Update student image URL
@@ -500,7 +500,7 @@ class StudentCardViewController: UIViewController {
             }
         }
         
-        guard let lessonPriceString = lessonPriceTextField.text, let lessonPrice = Int(lessonPriceString) else {
+        guard let lessonPriceString = lessonPriceTextField.text, let _ = Int(lessonPriceString) else {
             displayErrorAlert(message: "Please enter a valid lesson price.")
             return false
         }
@@ -526,7 +526,7 @@ class StudentCardViewController: UIViewController {
                         schedule: Array(scheduleItems),
                         months: [],
                         lessons: [],
-                        photoUrls: [])
+                        HWPhotos: [])
     }
     
     private func saveStudentToFirestore(_ studentDetails: Student) {
@@ -535,17 +535,18 @@ class StudentCardViewController: UIViewController {
         // Save student details to Firestore
         switch editMode {
         case .add:
-            FirebaseManager.shared.addOrUpdateStudent(studentDetails) { error in
-                if let error = error {
-                    print("Error adding student: \(error.localizedDescription)")
-                } else {
+            FirebaseManager.shared.addOrUpdateStudent(studentDetails) { result in
+                switch result {
+                case .success:
                     print("Student added successfully.")
-                    print("Saved student details: \(studentDetails)")
+                case .failure(let error):
+                    print("Error adding student: \(error.localizedDescription)")
+                }
                     self.activityIndicator.stopAnimating()
                     // Navigate back after successful save
                     self.navigationController?.popViewController(animated: true)
                 }
-            }
+            
         case .edit:
             guard var existingStudent = student else {
                 print("Error: Trying to edit student details without an existing student.")
@@ -567,21 +568,21 @@ class StudentCardViewController: UIViewController {
                  existingStudent.schedule = studentDetails.schedule
                  existingStudent.months = studentDetails.months
                  existingStudent.lessons = studentDetails.lessons
-                 existingStudent.photoUrls = studentDetails.photoUrls
+                 existingStudent.HWPhotos = studentDetails.HWPhotos
             
-            FirebaseManager.shared.addOrUpdateStudent(existingStudent) { error in
-                if let error = error {
-                    print("Error updating student: \(error.localizedDescription)")
-                } else {
-                    print("Student updated successfully.")
-                    print("Updated student details: \(existingStudent)")
+            FirebaseManager.shared.addOrUpdateStudent(existingStudent) { result in
+                switch result {
+                case .success:
+                    print("Student added successfully.")
+                case .failure(let error):
+                    print("Error adding student: \(error.localizedDescription)")
+                }
                     self.activityIndicator.stopAnimating()
                     // Navigate back after successful update
                     self.navigationController?.popViewController(animated: true)
                 }
             }
         }
-    }
     
     private func compressImage(_ image: UIImage) -> Data? {
         guard let imageData = image.jpegData(compressionQuality: 0.8) else { return nil }

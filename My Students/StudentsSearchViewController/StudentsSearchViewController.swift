@@ -161,17 +161,31 @@ extension StudentsSearchViewController: UITableViewDelegate, UITableViewDataSour
         return 80
     }
     
+//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+//        //        let student = searchHistory[indexPath.row]
+//        let student = searchController.isActive ? filteredStudents[indexPath.row] : viewModel.students.first { $0.id == viewModel.searchHistory[indexPath.row].studentId }
+////        let monthsVC = MonthsTableViewController(viewModel: viewModel, student: student)
+////        monthsVC.student = student
+//        if let student = student {
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+//                self.viewModel.addSearchHistoryItem(for: student)
+//            }
+//        }
+////        navigationController?.pushViewController(monthsVC, animated: true)
+//    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //        let student = searchHistory[indexPath.row]
         let student = searchController.isActive ? filteredStudents[indexPath.row] : viewModel.students.first { $0.id == viewModel.searchHistory[indexPath.row].studentId }
-//        let monthsVC = MonthsTableViewController(viewModel: viewModel, student: student)
-//        monthsVC.student = student
+        
         if let student = student {
+            // Update search history
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 self.viewModel.addSearchHistoryItem(for: student)
             }
+            
+            // Navigate to MonthsTableViewController
+            navigateToMonths(for: student)
         }
-//        navigationController?.pushViewController(monthsVC, animated: true)
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -190,7 +204,7 @@ extension StudentsSearchViewController: UITableViewDelegate, UITableViewDataSour
 
 extension StudentsSearchViewController: StudentsTableViewHeaderDelegate {
     func clearSearchHistory() {
-    
+        
         DispatchQueue.main.async {
             self.viewModel.clearSearchHistory()
         }
@@ -200,11 +214,51 @@ extension StudentsSearchViewController: StudentsTableViewHeaderDelegate {
         studentsTableView.reloadData()
     }
     
+//    func navigateToMonths(for student: Student) {
+//        let studentLessonPrice = student.lessonPrice.price
+//        
+//        Task {
+//            do {
+//                let lessonsByMonth = try await viewModel.loadAllLessons(for: student.id ?? "")
+//                DispatchQueue.main.async {
+//                    let monthsTableVC = MonthsTableViewController(viewModel: self.viewModel, studentId: student.id ?? "", studentLessonPrice: studentLessonPrice, lessonsByMonth: lessonsByMonth)
+//                    self.navigationController?.pushViewController(monthsTableVC, animated: true)
+//                }
+//            } catch {
+//                print("Failed to load lessons: \(error)")
+//            }
+//        }
+//    }
+    
     func navigateToMonths(for student: Student) {
-//        let monthsVC = MonthsTableViewController(viewModel: viewModel, student: student)
-//        monthsVC.student = student
-//        navigationController?.pushViewController(monthsVC, animated: true)
+        guard let studentId = student.id else {
+            print("Student ID is missing.")
+            return
+        }
+        
+        let studentLessonPrice = student.lessonPrice.price
+        
+        // Load lessons asynchronously
+        Task {
+            do {
+                let lessonsByMonth = try await viewModel.loadAllLessons(for: studentId)
+                
+                // Create and push the MonthsTableViewController
+                DispatchQueue.main.async {
+                    let monthsTableVC = MonthsTableViewController(
+                        viewModel: self.viewModel,
+                        studentId: studentId,
+                        studentLessonPrice: studentLessonPrice,
+                        lessonsByMonth: lessonsByMonth
+                    )
+                    self.navigationController?.pushViewController(monthsTableVC, animated: true)
+                }
+            } catch {
+                print("Failed to load lessons: \(error)")
+            }
+        }
     }
+
 }
 
 

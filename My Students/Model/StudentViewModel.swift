@@ -25,37 +25,12 @@ class StudentViewModel: ObservableObject {
         listener?.remove()
     }
     
+    // MARK: - Managing Student FireBase methods
+    
     func getStudentById(_ id: String) -> Student? {
             return students.first { $0.id == id }
         }
     
-    func addMonth(to student: Student, monthName: String, monthYear: String) {
-            var updatedStudent = student
-            let newMonth = Month(monthName: monthName, monthYear: monthYear)
-            updatedStudent.months.append(newMonth)
-
-            guard let studentId = student.id else { return }
-
-            db.collection("students").document(studentId).setData(updatedStudent.toFirestoreData()) { error in
-                if let error = error {
-                    print("Error adding month: \(error)")
-                } else {
-                    self.fetchStudents() // Fetch the updated list of students
-                }
-            }
-        }
-    
-    // Пример метода для удаления месяца
-        func deleteMonth(for studentId: String, at index: Int) {
-            guard let studentIndex = students.firstIndex(where: { $0.id == studentId }) else { return }
-            students[studentIndex].months.remove(at: index)
-        }
-        
-        // Пример метода для изменения статуса оплаты месяца
-        func updatePaidStatus(for studentId: String, at index: Int, isPaid: Bool) {
-            guard let studentIndex = students.firstIndex(where: { $0.id == studentId }) else { return }
-            students[studentIndex].months[index].isPaid = isPaid
-        }
     
     func fetchStudents() {
         listener = db.collection("students").order(by: "order").addSnapshotListener { [weak self] (querySnapshot, error) in
@@ -69,6 +44,120 @@ class StudentViewModel: ObservableObject {
             }
         }
     }
+
+    // MARK: - Managing MonthsTableVC saving methods
+    
+    func addMonth(to student: Student, monthName: String, monthYear: String, moneySum: Int, timestamp: TimeInterval) {
+        var updatedStudent = student
+        let newMonth = Month(timestamp: timestamp, monthName: monthName, monthYear: monthYear, moneySum: moneySum)
+        updatedStudent.months.append(newMonth)
+        
+        // Sort months by timestamp before saving
+        updatedStudent.months.sort { $0.timestamp < $1.timestamp }
+        
+        FirebaseManager.shared.addOrUpdateStudent(updatedStudent) { [weak self] result in
+            switch result {
+            case .success:
+                self?.fetchStudents() // Fetch the updated list of students
+            case .failure(let error):
+                print("Error adding month: \(error)")
+            }
+        }
+    }
+    
+    func deleteMonth(for studentId: String, at index: Int) {
+        guard var student = getStudentById(studentId) else { return }
+        student.months.remove(at: index)
+
+        // Sort months by timestamp after deletion
+        student.months.sort { $0.timestamp < $1.timestamp }
+        
+        FirebaseManager.shared.addOrUpdateStudent(student) { [weak self] result in
+            switch result {
+            case .success:
+                self?.fetchStudents() // Fetch the updated list of students
+            case .failure(let error):
+                print("Error deleting month: \(error)")
+            }
+        }
+    }
+    
+    func updateMonthSum(for studentId: String, month: Month, totalAmount: Int, completion: @escaping (Result<Void, Error>) -> Void) {
+        FirebaseManager.shared.updateMonthSum(for: studentId, month: month, totalAmount: totalAmount, completion: completion)
+    }
+
+
+        func updatePaidStatus(for studentId: String, at index: Int, isPaid: Bool) {
+            guard var student = getStudentById(studentId) else { return }
+            student.months[index].isPaid = isPaid
+
+            FirebaseManager.shared.addOrUpdateStudent(student) { [weak self] result in
+                switch result {
+                case .success:
+                    self?.fetchStudents() // Fetch the updated list of students
+                case .failure(let error):
+                    print("Error updating paid status: \(error)")
+                }
+            }
+        }
+    
+    // trying to load lessons to catch lessonPrice.price
+    func loadLessons(for studentId: String, month: Month) async throws -> [Lesson] {
+            try await withCheckedThrowingContinuation { continuation in
+                FirebaseManager.shared.loadLessons(for: studentId, month: month) { result in
+                    continuation.resume(with: result)
+                }
+            }
+        }
+    
+    func loadAllLessons(for studentId: String) async throws -> [String: [Lesson]] {
+           guard let student = getStudentById(studentId) else { return [:] }
+           var lessonsByMonth: [String: [Lesson]] = [:]
+           
+           for month in student.months {
+               let lessons = try await loadLessons(for: studentId, month: month)
+               lessonsByMonth[month.id] = lessons
+           }
+           
+           return lessonsByMonth
+       }
+    
+    // MARK: - Managing LessonsTablesVC saving methods
+    
+    func addOrUpdateStudent(_ student: Student, completion: @escaping (Result<Void, Error>) -> Void) {
+            FirebaseManager.shared.addOrUpdateStudent(student) { result in
+                switch result {
+                case .success():
+                    // Fetch the updated list of students
+                    self.fetchStudents()
+                    completion(.success(()))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+        }
+    
+    func saveLessons(for studentId: String, lessons: [Lesson], month: Month, completion: @escaping (Result<Void, Error>) -> Void) {
+        FirebaseManager.shared.saveLessons(for: studentId, lessons: lessons, month: month, completion: completion)
+        }
+
+        func loadLessons(for studentId: String, month: Month, completion: @escaping (Result<[Lesson], Error>) -> Void) {
+            FirebaseManager.shared.loadLessons(for: studentId, month: month, completion: completion)
+        }
+    
+    func deleteAllLessons(for studentId: String, month: Month, completion: @escaping (Result<Void, Error>) -> Void) {
+            FirebaseManager.shared.deleteAllLessons(for: studentId, month: month, completion: completion)
+        }
+        
+        func deleteLesson(for studentId: String, month: Month, lessonId: String, completion: @escaping (Result<Void, Error>) -> Void) {
+            FirebaseManager.shared.deleteLesson(for: studentId, month: month, lessonId: lessonId, completion: completion)
+        }
+    
+ // MARK: - Managing LessonDetailsVC saving methods
+    
+// methods for saving all data from LessonDetailsVC
+        
+    // MARK: - Managing SearchHistoryVC saving methods
     
     func fetchSearchHistory() {
         db.collection("searchHistory").order(by: "timestamp", descending: true).getDocuments { [weak self] (querySnapshot, error) in
@@ -85,7 +174,49 @@ class StudentViewModel: ObservableObject {
         }
     }
     
+//    func addSearchHistoryItem(for student: Student) {
+//        let searchHistoryItem = SearchHistoryItem(studentId: student.id ?? "")
+//        db.collection("searchHistory").addDocument(data: searchHistoryItem.toFirestoreData()) { [weak self] error in
+//            if let error = error {
+//                print("Error adding search history item: \(error)")
+//            } else {
+//                self?.searchHistory.insert(searchHistoryItem, at: 0)
+//            }
+//        }
+//    }
+//    
+//    func clearSearchHistory() {
+//        db.collection("searchHistory").getDocuments { [weak self] (querySnapshot, error) in
+//            if let error = error {
+//                print("Error fetching search history for deletion: \(error)")
+//                return
+//            }
+//            
+//            guard let documents = querySnapshot?.documents else { return }
+//            
+//            let batch = self?.db.batch()
+//            for document in documents {
+//                batch?.deleteDocument(document.reference)
+//            }
+//            batch?.commit { error in
+//                if let error = error {
+//                    print("Error clearing search history: \(error)")
+//                } else {
+//                    DispatchQueue.main.async {
+//                        self?.searchHistory.removeAll()
+//                    }
+//                }
+//            }
+//        }
+//    }
     func addSearchHistoryItem(for student: Student) {
+        // Проверка на наличие дубликатов
+        let existingHistoryItem = searchHistory.first { $0.studentId == student.id }
+        guard existingHistoryItem == nil else {
+            print("Student is already in search history.")
+            return
+        }
+        
         let searchHistoryItem = SearchHistoryItem(studentId: student.id ?? "")
         db.collection("searchHistory").addDocument(data: searchHistoryItem.toFirestoreData()) { [weak self] error in
             if let error = error {
@@ -95,7 +226,7 @@ class StudentViewModel: ObservableObject {
             }
         }
     }
-    
+
     func clearSearchHistory() {
         db.collection("searchHistory").getDocuments { [weak self] (querySnapshot, error) in
             if let error = error {
@@ -120,6 +251,5 @@ class StudentViewModel: ObservableObject {
             }
         }
     }
-    
-   
+
 }

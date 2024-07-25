@@ -15,6 +15,7 @@ class StudentsCollectionViewController: UICollectionViewController {
     
     @ObservedObject var viewModel: StudentViewModel
     private var cancellables = Set<AnyCancellable>()
+    var studentId: String
     
     let searchController = UISearchController(searchResultsController: nil)
     
@@ -36,10 +37,11 @@ class StudentsCollectionViewController: UICollectionViewController {
         return button
     }()
     
-    init(viewModel: StudentViewModel) {
-        self.viewModel = viewModel
-        super.init(collectionViewLayout: UICollectionViewFlowLayout())
-    }
+    init(viewModel: StudentViewModel, studentId: String) {
+           self.viewModel = viewModel
+           self.studentId = studentId
+           super.init(collectionViewLayout: UICollectionViewFlowLayout())
+       }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -176,13 +178,20 @@ extension StudentsCollectionViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//            let student = viewModel.students[indexPath.item]
-//        let monthsTableVC = MonthsTableViewController(viewModel: viewModel, student: student)
-//        monthsTableVC.lessonPrice = "\(student.lessonPrice.price) \(student.lessonPrice.currency)"
-//            navigationController?.pushViewController(monthsTableVC, animated: true)
-        let student = viewModel.students[indexPath.item]
-               let monthsTableVC = MonthsTableViewController(viewModel: viewModel, studentId: student.id ?? "") // Pass only the student ID
-               navigationController?.pushViewController(monthsTableVC, animated: true)
+            let student = viewModel.students[indexPath.item]
+            let studentLessonPrice = student.lessonPrice.price
+            
+            Task {
+                do {
+                    let lessonsByMonth = try await viewModel.loadAllLessons(for: student.id ?? "")
+                    DispatchQueue.main.async {
+                        let monthsTableVC = MonthsTableViewController(viewModel: self.viewModel, studentId: student.id ?? "", studentLessonPrice: studentLessonPrice, lessonsByMonth: lessonsByMonth)
+                        self.navigationController?.pushViewController(monthsTableVC, animated: true)
+                    }
+                } catch {
+                    print("Failed to load lessons: \(error)")
+                }
+            }
         }
     
     // Deleting student with the long tap
