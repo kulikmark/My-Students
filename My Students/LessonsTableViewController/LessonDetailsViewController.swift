@@ -6,12 +6,17 @@
 //
 
 import UIKit
+import SwiftUI
+import Combine
 import SnapKit
 import PhotosUI
 import FirebaseStorage
 import Kingfisher
 
 class LessonDetailsViewController: UIViewController, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
+    
+    @ObservedObject var viewModel: StudentViewModel
+    private var cancellables = Set<AnyCancellable>()
     
     var studentId: String
     var selectedLesson: Lesson
@@ -22,7 +27,6 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
     var attendanceSwitch: UISwitch
     var statusLabel: UILabel
     var paperclipButton = UIButton(type: .system)
-//    var saveButton = UIButton(type: .system)
     
     let homeworkTextView: UITextView = {
         let textView = UITextView()
@@ -33,11 +37,11 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
         return textView
     }()
     
-    init(studentId: String, selectedLesson: Lesson) {
+    init(viewModel: StudentViewModel, studentId: String, selectedLesson: Lesson) {
+        self.viewModel = viewModel
             self.studentId = studentId
             self.selectedLesson = selectedLesson
             
-            // Initialize photoCollectionView and other UI elements before calling super.init
             let layout = UICollectionViewFlowLayout()
             layout.scrollDirection = .horizontal
             self.photoCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -56,9 +60,7 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
     
     override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
-            // Устанавливаем значение UISwitch равным значению lesson.attended
             attendanceSwitch.isOn = selectedLesson.attended
-            
             loadLessonDetails()
         }
     
@@ -66,6 +68,12 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
         super.viewDidLoad()
         self.title = "Lesson \(selectedLesson.date)"
         view.backgroundColor = .white
+        
+        viewModel.$students
+            .receive(on: RunLoop.main)
+            .sink { _ in
+            }
+            .store(in: &cancellables)
         
         updateUIWithLessonDetails()
         
@@ -109,7 +117,6 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
        }
     
     func saveLessonsDetails() {
-        // Обновление объекта lesson текущим состоянием
         selectedLesson.homework = homeworkTextView.text
         selectedLesson.attended = attendanceSwitch.isOn
         
@@ -122,22 +129,6 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
             }
         }
     }
-    
-//    @objc func saveButtonTapped() {
-//           // Update the lesson object with the current state
-//           selectedLesson.homework = homeworkTextView.text
-//           selectedLesson.attended = attendanceSwitch.isOn
-//           
-//        FirebaseManager.shared.saveLessonDetails(studentId: studentId, monthId: selectedLesson.monthId, lesson: selectedLesson) { result in
-//                switch result {
-//                case .success:
-//                    print("Lesson successfully saved.")
-//                    self.navigationController?.popViewController(animated: true)
-//                case .failure(let error):
-//                    print("Error saving lesson: \(error)")
-//                }
-//            }
-//       }
     
     @objc func attendanceSwitchValueChanged(_ sender: UISwitch) {
         selectedLesson.attended = sender.isOn
@@ -162,13 +153,6 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
            statusLabel.text = selectedLesson.attended ? "Student was present" : "Student was absent"
        }
 }
-
-// MARK: - Paper clip button: Photo Gallery methods
-
-import UIKit
-import PhotosUI
-import FirebaseStorage
-import Kingfisher
 
 // MARK: - Paper clip button: Photo Gallery methods
 
@@ -380,10 +364,6 @@ extension LessonDetailsViewController {
     
     func setupUI() {
         
-//        let shareButton = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareHomework))
-//        let paperclipButton = UIBarButtonItem(image: UIImage(systemName: "paperclip"), style: .plain, target: self, action: #selector(paperclipButtonTapped))
-//        navigationItem.rightBarButtonItems = [shareButton, paperclipButton]
-        
         let statusStackView = UIStackView()
                statusStackView.axis = .horizontal
                statusStackView.spacing = 10
@@ -421,14 +401,7 @@ extension LessonDetailsViewController {
         photoCollectionView.register(HWPhotoCollectionViewCell.self, forCellWithReuseIdentifier: "HWPhotoCell")
         photoCollectionView.backgroundColor = .systemGroupedBackground
         photoCollectionView.layer.cornerRadius = 10
-        
-//        saveButton = UIButton(type: .system)
-//        saveButton.setTitle("Save Changes", for: .normal)
-//        saveButton.layer.cornerRadius = 10
-//        saveButton.setTitleColor(.white, for: .normal)
-//        saveButton.backgroundColor = .systemBlue
-//        saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
-//        
+                
         view.addSubview(enterHWLabel)
         view.addSubview(homeworkTextView)
         view.addSubview(clippedPhotosLabel)
@@ -436,7 +409,6 @@ extension LessonDetailsViewController {
         view.addSubview(statusStackView)
         statusStackView.addArrangedSubview(statusLabel)
         statusStackView.addArrangedSubview(attendanceSwitch)
-//        view.addSubview(saveButton)
     
         // Constraints:
         enterHWLabel.snp.makeConstraints { make in
@@ -467,12 +439,6 @@ extension LessonDetailsViewController {
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-50)
             make.trailing.leading.equalToSuperview().inset(16)
         }
-        
-//        saveButton.snp.makeConstraints { make in
-//            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-20)
-//                       make.leading.trailing.equalToSuperview().inset(20)
-//                       make.height.equalTo(44)
-//        }
     }
     
     func setupObservers() {
@@ -509,9 +475,53 @@ extension LessonDetailsViewController {
     }
     
     @objc func shareHomework() {
-        guard let homeworkText = homeworkTextView.text else { return }
+        print("shareHomework вызван")
         
-        let activityVC = UIActivityViewController(activityItems: [homeworkText], applicationActivities: nil)
-        present(activityVC, animated: true, completion: nil)
+        print("Загружено студентов: \(viewModel.students.count)")
+        
+        guard let student = viewModel.students.first else {
+            print("Ошибка: студент не найден")
+            return
+        }
+        
+        let studentType = student.type
+        let name = studentType == .schoolchild ? student.parentName : student.name
+        let lessonDate = student.months.first?.lessons.first?.date ?? "Unknown date"
+        
+        guard let homeworkText = homeworkTextView.text, !homeworkText.isEmpty else {
+            print("Ошибка: текст домашнего задания пустой")
+            return
+        }
+        
+        print("Студент: \(name), Дата урока: \(lessonDate), Домашнее задание: \(homeworkText)")
+        
+        let message = "Hello, \(name)! Homework for \(lessonDate) is \(homeworkText)"
+        
+        // Собираем фотографии из коллекции
+        var activityItems: [Any] = [message]
+        for photoUrlString in selectedLesson.HWPhotos {
+            if let photoUrl = URL(string: photoUrlString) {
+                activityItems.append(photoUrl)
+            } else {
+                print("Ошибка: некорректный URL фотографии \(photoUrlString)")
+            }
+        }
+        
+        if activityItems.isEmpty {
+            print("Ошибка: нет элементов для шаринга")
+            return
+        }
+        
+        let activityVC = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+        
+        // Для iPad
+        if let popoverController = activityVC.popoverPresentationController {
+            popoverController.barButtonItem = self.navigationItem.rightBarButtonItems?.first
+            popoverController.sourceView = self.view
+        }
+        
+        present(activityVC, animated: true) {
+            print("UIActivityViewController представлен")
+        }
     }
 }

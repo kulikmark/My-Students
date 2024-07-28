@@ -247,9 +247,7 @@ extension StudentsSearchViewController: StudentsTableViewHeaderDelegate {
                 DispatchQueue.main.async {
                     let monthsTableVC = MonthsTableViewController(
                         viewModel: self.viewModel,
-                        studentId: studentId,
-                        studentLessonPrice: studentLessonPrice,
-                        lessonsByMonth: lessonsByMonth
+                        studentId: studentId
                     )
                     self.navigationController?.pushViewController(monthsTableVC, animated: true)
                 }

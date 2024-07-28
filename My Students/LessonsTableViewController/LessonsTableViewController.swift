@@ -18,15 +18,13 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
     
     var studentId: String
     var selectedMonth: Month
-    var studentLessonPrice: Int
     var lessonsForStudent: [Lesson] = []
     
     // Initialize with studentId and selectedMonth
-    init(viewModel: StudentViewModel, studentId: String, selectedMonth: Month, studentLessonPrice: Int, lessonsForStudent: [Lesson]) {
+    init(viewModel: StudentViewModel, studentId: String, selectedMonth: Month, lessonsForStudent: [Lesson]) {
         self.viewModel = viewModel
         self.studentId = studentId
         self.selectedMonth = selectedMonth
-        self.studentLessonPrice = studentLessonPrice
         self.lessonsForStudent = lessonsForStudent
         super.init(nibName: nil, bundle: nil)
     }
@@ -93,7 +91,7 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
     }
     
     func updateMonthSum() {
-            let totalAmount = lessonsForStudent.count * studentLessonPrice
+        let totalAmount = lessonsForStudent.count * (selectedMonth.lessonPrice?.price ?? 0)
             viewModel.updateMonthSum(for: studentId, month: selectedMonth, totalAmount: totalAmount) { result in
                 switch result {
                 case .success:
@@ -113,38 +111,40 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
     
     // Add lesson button tapped
     @objc func addLessonButtonTapped() {
-        showDatePicker()
+        showDatePickerForLesson()
         tableView?.reloadData()
     }
     
-    // Show date picker
-    func showDatePicker() {
-        let datePickerSheet = UIAlertController(title: "Lesson date", message: "\n\n\n\n\n\n\n\n\n\n\n\n", preferredStyle: .actionSheet)
+    func showDatePickerForLesson() {
+        let alertController = UIAlertController(title: "Select Lesson Date", message: nil, preferredStyle: .alert)
+        
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .date
         datePicker.preferredDatePickerStyle = .wheels
-        datePickerSheet.view.addSubview(datePicker)
+        
+        alertController.view.addSubview(datePicker)
+        
+        // Устанавливаем ограничения для UIDatePicker
         datePicker.snp.makeConstraints { make in
-            make.width.equalTo(400)
+            make.edges.equalToSuperview().inset(30)
             make.height.equalTo(300)
         }
-        datePickerSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        datePickerSheet.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
-            let selectedDate = datePicker.date
+        
+        let selectAction = UIAlertAction(title: "Select", style: .default) { _ in
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "dd.MM.yyyy"
-            let dateString = dateFormatter.string(from: selectedDate)
-            self.addLesson(date: dateString, attended: false)
-        }))
-        present(datePickerSheet, animated: true, completion: nil)
+            let selectedDate = dateFormatter.string(from: datePicker.date)
+            
+            self.addLesson(date: selectedDate, attended: false)
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        
+        alertController.addAction(selectAction)
+        alertController.addAction(cancelAction)
+        
+        present(alertController, animated: true, completion: nil)
     }
-    
-//    func addLesson(date: String, attended: Bool) {
-//        let lesson = Lesson(id: UUID().uuidString, date: date, attended: attended, homework: nil, HWPhotos: [], monthId: selectedMonth.id)
-//        lessonsForStudent.append(lesson)
-//        saveLessons()
-//        updateMonthSum()
-//    }
     
     func addLesson(date: String, attended: Bool) {
         
@@ -427,7 +427,7 @@ extension LessonsTableViewController: UITableViewDataSource {
         let lesson = lessonsForStudent[indexPath.row]
         
         // Создаем экземпляр LessonDetailsViewController
-        let lessonDetailVC = LessonDetailsViewController(studentId:studentId, selectedLesson: lesson)
+        let lessonDetailVC = LessonDetailsViewController(viewModel: viewModel, studentId:studentId, selectedLesson: lesson)
         
         // Переходим на экран LessonDetailsViewController
         navigationController?.pushViewController(lessonDetailVC, animated: true)

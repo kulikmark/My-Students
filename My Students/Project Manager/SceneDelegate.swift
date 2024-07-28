@@ -11,7 +11,6 @@ import Firebase
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-//    var navigationController: UINavigationController?
     var containerViewController: ContainerViewController?
     var loginViewController: LoginViewController?
     var viewModel = StudentViewModel()
@@ -37,7 +36,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         window?.makeKeyAndVisible()
     }
-
 
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.

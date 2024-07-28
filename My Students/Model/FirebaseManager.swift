@@ -116,6 +116,7 @@ class FirebaseManager {
     }
     
     // MARK: - Managing MonthsTableVC saving methods
+    
     func updateMonthSum(for studentId: String, month: Month, totalAmount: Int, completion: @escaping (Result<Void, Error>) -> Void) {
         db.collection("students").document(studentId).getDocument { (document, error) in
             if let error = error {
@@ -271,7 +272,6 @@ class FirebaseManager {
     
     // MARK: - Managing LessonDetailsVC saving methods
     
-    // Сохранение или обновление урока в указанном месяце
     func saveLessonDetails(studentId: String, monthId: String, lesson: Lesson, completion: @escaping (Result<Void, Error>) -> Void) {
         db.collection("students").document(studentId).getDocument { document, error in
             if let error = error {
@@ -280,39 +280,36 @@ class FirebaseManager {
             }
             
             guard var studentData = document?.data() else {
-                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Student not found"])))
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Студент не найден"])))
                 return
             }
             
             var months = studentData["months"] as? [[String: Any]] ?? []
             if let monthIndex = months.firstIndex(where: { ($0["id"] as? String) == monthId }) {
-                if var monthData = months[monthIndex] as? [String: Any] {
-                    var lessons = monthData["lessons"] as? [[String: Any]] ?? []
-                    if let lessonIndex = lessons.firstIndex(where: { ($0["id"] as? String) == lesson.id }) {
-                        lessons[lessonIndex] = lesson.toFirestoreData()
-                    } else {
-                        lessons.append(lesson.toFirestoreData())
-                    }
-                    monthData["lessons"] = lessons
-                    months[monthIndex] = monthData
-                    studentData["months"] = months
-                    
-                    self.db.collection("students").document(studentId).setData(studentData, merge: true) { error in
-                        if let error = error {
-                            completion(.failure(error))
-                        } else {
-                            completion(.success(()))
-                        }
-                    }
+                var monthData = months[monthIndex]
+                var lessons = monthData["lessons"] as? [[String: Any]] ?? []
+                if let lessonIndex = lessons.firstIndex(where: { ($0["id"] as? String) == lesson.id }) {
+                    lessons[lessonIndex] = lesson.toFirestoreData()
                 } else {
-                    completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Month data not found"])))
+                    lessons.append(lesson.toFirestoreData())
+                }
+                monthData["lessons"] = lessons
+                months[monthIndex] = monthData
+                studentData["months"] = months
+                
+                self.db.collection("students").document(studentId).setData(studentData, merge: true) { error in
+                    if let error = error {
+                        completion(.failure(error))
+                    } else {
+                        completion(.success(()))
+                    }
                 }
             } else {
-                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Month not found"])))
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Месяц не найден"])))
             }
         }
     }
-    
+
     // Загрузка деталей урока из указанного месяца
     func loadLessonDetails(studentId: String, monthId: String, lessonId: String, completion: @escaping (Result<Lesson, Error>) -> Void) {
         db.collection("students").document(studentId).getDocument { document, error in

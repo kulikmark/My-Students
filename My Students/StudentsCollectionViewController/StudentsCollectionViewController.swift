@@ -38,10 +38,10 @@ class StudentsCollectionViewController: UICollectionViewController {
     }()
     
     init(viewModel: StudentViewModel, studentId: String) {
-           self.viewModel = viewModel
-           self.studentId = studentId
-           super.init(collectionViewLayout: UICollectionViewFlowLayout())
-       }
+        self.viewModel = viewModel
+        self.studentId = studentId
+        super.init(collectionViewLayout: UICollectionViewFlowLayout())
+    }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -50,9 +50,9 @@ class StudentsCollectionViewController: UICollectionViewController {
     // MARK: - Checking for memory leak
     
     deinit {
-            print("StudentsCollectionViewController is being deallocated")
-        }
-        
+        print("StudentsCollectionViewController is being deallocated")
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         print("StudentsCollectionViewController received a memory warning")
@@ -178,32 +178,26 @@ extension StudentsCollectionViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-            let student = viewModel.students[indexPath.item]
-            let studentLessonPrice = student.lessonPrice.price
-            
-            Task {
-                do {
-                    let lessonsByMonth = try await viewModel.loadAllLessons(for: student.id ?? "")
-                    DispatchQueue.main.async {
-                        let monthsTableVC = MonthsTableViewController(viewModel: self.viewModel, studentId: student.id ?? "", studentLessonPrice: studentLessonPrice, lessonsByMonth: lessonsByMonth)
-                        self.navigationController?.pushViewController(monthsTableVC, animated: true)
-                    }
-                } catch {
-                    print("Failed to load lessons: \(error)")
-                }
-            }
-        }
+        let student = viewModel.students[indexPath.item]
+        let studentLessonPrice = student.lessonPrice.price
+        
+        let monthsTableVC = MonthsTableViewController(viewModel: self.viewModel, studentId: student.id ?? "")
+        self.navigationController?.pushViewController(monthsTableVC, animated: true)
+        
+        
+        
+    }
     
     // Deleting student with the long tap
-//    override func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-//        let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
-//            let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash.fill"), attributes: .destructive) { _ in
-//                self.showDeleteConfirmation(at: indexPath)
-//            }
-//            return UIMenu(title: "", children: [deleteAction])
-//        }
-//        return configuration
-//    }
+    //    override func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+    //        let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+    //            let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash.fill"), attributes: .destructive) { _ in
+    //                self.showDeleteConfirmation(at: indexPath)
+    //            }
+    //            return UIMenu(title: "", children: [deleteAction])
+    //        }
+    //        return configuration
+    //    }
 }
 
 // MARK: - UICollectionViewDragDelegate
@@ -318,7 +312,7 @@ extension StudentsCollectionViewController: StudentCollectionViewCellDelegate {
                 } else {
                     // Fallback on earlier versions
                 }
-//                sheet.prefersGrabberVisible = true
+                //                sheet.prefersGrabberVisible = true
             }
         }
         present(studentBottomSheetVC, animated: true, completion: nil)

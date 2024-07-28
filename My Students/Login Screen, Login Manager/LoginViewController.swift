@@ -1,3 +1,4 @@
+
 import UIKit
 import SnapKit
 import FirebaseAuth
@@ -38,17 +39,20 @@ class LoginViewController: UIViewController {
         return label
     }()
     
-    private var emailTextField: UITextField = {
-        let textField = UITextField()
+    private var emailTextField: CustomTextField = {
+        let textField = CustomTextField()
         textField.placeholder = "Enter your Email"
-        textField.borderStyle = .roundedRect
-        textField.clearButtonMode = .whileEditing
-        textField.autocapitalizationType = .none
+        return textField
+    }()
+    
+    private var passwordTextField: CustomTextField = {
+        let textField = CustomTextField()
+        textField.placeholder = "Enter your Password"
+        textField.isSecureTextEntry = true
         return textField
     }()
     
     private var passwordEyeButton: UIButton = {
-        // Создаем кнопку для показа/скрытия пароля
         let button = UIButton(type: .custom)
         let config = UIImage.SymbolConfiguration(pointSize: 16)
         let showPasswordImage = UIImage(systemName: "eye.fill", withConfiguration: config)
@@ -61,21 +65,8 @@ class LoginViewController: UIViewController {
         return button
     }()
     
-    private var passwordTextField: UITextField = {
-        let textField = UITextField()
-        textField.placeholder = "Enter your Password"
-        textField.isSecureTextEntry = true
-        textField.borderStyle = .roundedRect
-        textField.clearButtonMode = .whileEditing
-        textField.autocapitalizationType = .none
-        
-        return textField
-    }()
-    
     @objc private func togglePasswordVisibility() {
         passwordTextField.isSecureTextEntry.toggle()
-        
-        // Обновляем состояние кнопки в зависимости от текущего состояния
         if let button = passwordTextField.rightView as? UIButton {
             button.isSelected.toggle()
         }
@@ -87,6 +78,8 @@ class LoginViewController: UIViewController {
         button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 10
+        button.isEnabled = false
+        button.alpha = 0.5
         return button
     }()
     
@@ -96,6 +89,8 @@ class LoginViewController: UIViewController {
         button.backgroundColor = .systemGreen
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 10
+        button.isEnabled = false
+        button.alpha = 0.5
         return button
     }()
     
@@ -118,13 +113,13 @@ class LoginViewController: UIViewController {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
-            print("LoginViewController is being deallocated")
-        }
-        
-        override func didReceiveMemoryWarning() {
-            super.didReceiveMemoryWarning()
-            print("LoginViewController received a memory warning")
-        }
+        print("LoginViewController is being deallocated")
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        print("LoginViewController received a memory warning")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -133,6 +128,7 @@ class LoginViewController: UIViewController {
         
         setupUI()
         setupKeyboardNotifications()
+        setupTextFieldObservers()
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tapGesture)
         
@@ -168,21 +164,26 @@ class LoginViewController: UIViewController {
             make.width.equalToSuperview().offset(-40)
             make.bottom.equalToSuperview()
         }
-        // Установка высоты для текстовых полей и кнопок
+        
+        stackView.setCustomSpacing(35, after: emailTextField)
+        stackView.setCustomSpacing(35, after: passwordTextField)
+        
         emailTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
+        
         passwordTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
+        
         loginButton.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
+        
         registerButton.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
         
-        // Добавляем картинку
         let imageView = UIImageView()
         imageView.image = UIImage(named: "loginScreenBG")
         imageView.contentMode = .scaleAspectFit
@@ -198,19 +199,17 @@ class LoginViewController: UIViewController {
         contentView.addSubview(welcomeSubLabel)
         
         welcomeLabel.snp.makeConstraints { make in
-                   make.leading.trailing.equalToSuperview().inset(20)
-                   make.top.equalTo(imageView.snp.bottom).offset(-50)
-               }
-               
-        welcomeSubLabel.snp.makeConstraints { make in
-                   make.leading.trailing.equalToSuperview().inset(20)
-                   make.top.equalTo(welcomeLabel.snp.bottom).offset(10)
-                    make.bottom.equalTo(stackView.snp.top).offset(-30)
-               }
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.top.equalTo(imageView.snp.bottom).offset(-50)
+        }
         
-        // Устанавливаем кнопку как rightView текстового поля
+        welcomeSubLabel.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.top.equalTo(welcomeLabel.snp.bottom).offset(10)
+            make.bottom.equalTo(stackView.snp.top).offset(-30)
+        }
+        
         passwordTextField.rightView = passwordEyeButton
-        passwordTextField.rightViewMode = .whileEditing
         
         registerButton.addTarget(self, action: #selector(registerButtonTapped(_:)), for: .touchUpInside)
         loginButton.addTarget(self, action: #selector(loginButtonTapped(_:)), for: .touchUpInside)
@@ -218,22 +217,39 @@ class LoginViewController: UIViewController {
         passwordEyeButton.addTarget(self, action: #selector(togglePasswordVisibility), for: .touchUpInside)
     }
     
-    // MARK: - Login / Register Logic
+    private func setupTextFieldObservers() {
+        emailTextField.textField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
+        passwordTextField.textField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
+    }
+    
+    //    @objc private func textFieldsDidChange() {
+    //        emailTextField.setError(nil)
+    //        passwordTextField.setError(nil)
+    //
+    //        let isFormValid = !(emailTextField.text?.isEmpty ?? true) && !(passwordTextField.text?.isEmpty ?? true)
+    //
+    //        loginButton.isEnabled = isFormValid
+    //        registerButton.isEnabled = isFormValid
+    //
+    //        let alpha: CGFloat = isFormValid ? 1.0 : 0.5
+    //        loginButton.alpha = alpha
+    //        registerButton.alpha = alpha
+    //    }
     
     @objc private func registerButtonTapped(_ sender: UIButton) {
         guard let email = emailTextField.text, !email.isEmpty,
               let password = passwordTextField.text, !password.isEmpty else {
-            showAlert(title: "Oops...Try again.", message: "Please enter both email and password.")
             return
         }
         
         Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
-                if let error = error {
-                    let errorMessage = self.handleAuthError(error)
-                    self.showAlert(title: "Oops...Try again.", message: errorMessage)
-                    return
-                }
-            // Регистрация прошла успешно
+            if let error = error {
+                let errorMessage = self.handleAuthError(error)
+                //                self.emailTextField.setError(errorMessage)
+                self.displayError(errorMessage)
+                return
+            }
+            
             self.isLoggedIn = true
             LoginManager.shared.isLoggedIn = true
             self.showMainScreen()
@@ -243,17 +259,17 @@ class LoginViewController: UIViewController {
     @objc private func loginButtonTapped(_ sender: UIButton) {
         guard let email = emailTextField.text, !email.isEmpty,
               let password = passwordTextField.text, !password.isEmpty else {
-            showAlert(title: "Oops...Try again.", message: "Please enter both email and password.")
             return
         }
         
         Auth.auth().signIn(withEmail: email, password: password) { authResult, error in
-                if let error = error {
-                    let errorMessage = self.handleAuthError(error)
-                    self.showAlert(title: "Oops...Try again.", message: errorMessage)
-                    return
-                }
-            // Вход выполнен успешно
+            if let error = error {
+                let errorMessage = self.handleAuthError(error)
+                //                self.emailTextField.setError(errorMessage)
+                self.displayError(errorMessage)
+                return
+            }
+            
             self.isLoggedIn = true
             LoginManager.shared.isLoggedIn = true
             self.showMainScreen()
@@ -261,32 +277,72 @@ class LoginViewController: UIViewController {
     }
     
     private func showMainScreen() {
-        
         let containerVC = ContainerViewController(viewModel: viewModel)
-            UIApplication.shared.windows.first?.rootViewController = containerVC
-            UIApplication.shared.windows.first?.makeKeyAndVisible()
+        UIApplication.shared.windows.first?.rootViewController = containerVC
+        UIApplication.shared.windows.first?.makeKeyAndVisible()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    self.resignFirstResponder()
-                    self.emailTextField.text = ""
-                    self.passwordTextField.text = ""
-                    self.dismissKeyboard()
-                    
-                }
+            self.resignFirstResponder()
+            self.emailTextField.text = ""
+            self.passwordTextField.text = ""
+            self.dismissKeyboard()
+        }
     }
     
     @objc private func forgotPasswordButtonTapped(_ sender: UIButton) {
         let forgotPasswordVC = ForgotPasswordViewController()
-//        navigationController?.pushViewController(forgotPasswordVC, animated: true)
         present(forgotPasswordVC, animated: true)
     }
+}
+
+extension LoginViewController {
+    private func displayError(_ errorMessage: String) {
+        var emailError = false
+        var passwordError = false
+        
+        if errorMessage.contains("email") {
+            emailError = emailTextField.setError(errorMessage)
+        } else if errorMessage.contains("password") {
+            passwordError = passwordTextField.setError(errorMessage)
+        } else {
+            // For general errors, you might want to set error on both fields or show a generic error somewhere else
+            emailError = emailTextField.setError(errorMessage)
+        }
+        
+        updateButtonStates(hasError: emailError || passwordError)
+    }
     
-    private func showAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+    func updateButtonStates(hasError: Bool) {
+            let emailIsEmpty = emailTextField.text?.isEmpty ?? true
+            let passwordIsEmpty = passwordTextField.text?.isEmpty ?? true
+            
+            if hasError {
+                loginButton.isEnabled = false
+                registerButton.isEnabled = false
+                loginButton.backgroundColor = .systemGray4
+                registerButton.backgroundColor = .systemGray4
+            } else if emailIsEmpty || passwordIsEmpty {
+                loginButton.isEnabled = false
+                registerButton.isEnabled = false
+                loginButton.alpha = 0.5
+                registerButton.alpha = 0.5
+            } else {
+                loginButton.isEnabled = true
+                registerButton.isEnabled = true
+                loginButton.backgroundColor = .systemBlue
+                registerButton.backgroundColor = .systemGreen
+                loginButton.alpha = 1.0
+                registerButton.alpha = 1.0
+            }
+        }
+    
+    @objc private func textFieldsDidChange() {
+        let emailError = emailTextField.setError(nil)
+        let passwordError = passwordTextField.setError(nil)
+        updateButtonStates(hasError: emailError || passwordError)
     }
 }
+
 
 // MARK: - Errors handler
 
@@ -295,19 +351,19 @@ extension LoginViewController {
         guard let errorCode = AuthErrorCode.Code(rawValue: error._code) else {
             return error.localizedDescription
         }
-
+        
         switch errorCode {
-                case .invalidEmail:
-                    return "The email address is badly formatted."
-                case .emailAlreadyInUse:
-                    return "The email address is already in use by another account."
-                case .weakPassword:
-                    return "The password must be 6 characters long or more."
-                case .wrongPassword:
-                    return "The password is invalid or the user does not have a password."
-                default:
-                    return "Login failed. Please check your email and password."
-                }
+        case .invalidEmail:
+            return "The email address is badly formatted."
+        case .emailAlreadyInUse:
+            return "The email address is already in use by another account."
+        case .weakPassword:
+            return "The password must be 6 characters long or more."
+        case .wrongPassword:
+            return "The password is invalid or the user does not have a password."
+        default:
+            return "Login failed. Please check your email and password."
+        }
     }
 }
 

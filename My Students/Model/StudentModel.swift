@@ -25,8 +25,8 @@ struct Student: Codable {
     var schedule: [Schedule] = []
     
     var months: [Month] = []
-    var lessons: [Lesson] = []
-    var HWPhotos: [String] = []
+//    var lessons: [Lesson] = []
+//    var HWPhotos: [String] = []
     
     init(
         order: Int? = 0,
@@ -37,9 +37,7 @@ struct Student: Codable {
         phoneNumber: String = "",
         lessonPrice: LessonPrice,
         schedule: [Schedule] = [],
-        months: [Month] = [],
-        lessons: [Lesson] = [],
-        HWPhotos: [String] = []
+        months: [Month] = []
     ) {
         self.order = order
         self.studentImageURL = studentImageURL
@@ -50,8 +48,6 @@ struct Student: Codable {
         self.lessonPrice = lessonPrice
         self.schedule = schedule
         self.months = months
-        self.lessons = lessons
-        self.HWPhotos = HWPhotos
     }
     
     // Преобразование данных для Firestore
@@ -64,9 +60,7 @@ struct Student: Codable {
             "phoneNumber": phoneNumber,
             "lessonPrice": lessonPrice.toFirestoreData(),
             "schedule": schedule.map { $0.toFirestoreData() },
-            "months": months.map { $0.toFirestoreData() },
-            "lessons": lessons.map { $0.toFirestoreData() },
-            "HWPhotos": HWPhotos
+            "months": months.map { $0.toFirestoreData() }
         ]
         
         // Добавление URL изображения, если он доступен
@@ -77,7 +71,6 @@ struct Student: Codable {
         return data
     }
 }
-
 
 struct Schedule: Codable {
     var id: String = UUID().uuidString
@@ -99,6 +92,7 @@ struct Month: Codable {
     var monthName: String = ""
     var monthYear: String = ""
     var isPaid: Bool = false
+    var paymentDate: String = ""
     var lessonPrice: LessonPrice? = nil
     var lessons: [Lesson] = []
     var moneySum: Int? = nil
@@ -110,6 +104,7 @@ struct Month: Codable {
             "monthName": monthName,
             "monthYear": monthYear,
             "isPaid": isPaid,
+            "paymentDate": paymentDate,
             "lessonPrice": lessonPrice?.toFirestoreData() ?? NSNull(),
             "lessons": lessons.map { $0.toFirestoreData() },
             "moneySum": moneySum ?? NSNull()
