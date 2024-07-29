@@ -9,6 +9,18 @@ import UIKit
 import SnapKit
 
 class CustomTextField: UIView {
+    
+    /**
+        Если ты делаешь кастомную вьюху – у тебя должны быть понятые публичные методы конфигурации этой вьюхи например метод:
+     
+     internal configure(_ model: Model) {
+                self.myNestedTextField.text = model.text
+     }
+     
+        Вложеные сабьвюхи кастомной вью как правило не должны быть видно и помечены private.
+     */
+    
+    
     let textField: UITextField = {
         let textField = UITextField()
         textField.borderStyle = .roundedRect

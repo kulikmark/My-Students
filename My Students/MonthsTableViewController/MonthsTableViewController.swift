@@ -191,8 +191,10 @@ class MonthsTableViewController: UITableViewController {
 //        }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: "MonthCell", for: indexPath) as! MonthsTableViewControllerCell
-
+        // TODO: Say NO to force unwrap '!'  guard let... else { return UITableViewCell() }
         guard let selectedStudent = viewModel.getStudentById(studentId) else { return cell }
         let groupedMonths = Dictionary(grouping: selectedStudent.months, by: { $0.monthYear })
         let sortedKeys = groupedMonths.keys.sorted()
@@ -233,6 +235,7 @@ class MonthsTableViewController: UITableViewController {
             }
         }
     
+    // TODO: - Such logic should be handled in viewModel. It's a business logic it has nothing to do with UIViewController 
     func updatePaidStatus(for month: Month, isPaid: Bool) {
         guard var selectedStudent = viewModel.getStudentById(studentId) else { return }
         

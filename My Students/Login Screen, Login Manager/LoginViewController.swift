@@ -65,6 +65,7 @@ class LoginViewController: UIViewController {
         return button
     }()
     
+    // TODO: - func should be after lifycycle methods ( init, deinit )
     @objc private func togglePasswordVisibility() {
         passwordTextField.isSecureTextEntry.toggle()
         if let button = passwordTextField.rightView as? UIButton {

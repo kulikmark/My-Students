@@ -8,6 +8,9 @@
 import Foundation
 import FirebaseFirestore
 
+// TODO: 1 File = 1 Enitity
+// В одном файле может быть описан только один тип. Максимум тип и протокол и или тип и экстеншен к нему
+
 enum StudentType: String, Codable {
     case schoolchild = "Schoolchild"
     case adult = "Adult"
@@ -29,7 +32,9 @@ struct Student: Codable {
 //    var HWPhotos: [String] = []
     
     init(
-        order: Int? = 0,
+        order: Int? = 0, // why optional if u initialize with default 0
+                         // use '.zero' over '0'
+                         //
         studentImageURL: String? = nil,
         type: StudentType = .schoolchild,
         name: String = "",
