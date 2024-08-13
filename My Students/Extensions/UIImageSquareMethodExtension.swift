@@ -5,6 +5,13 @@
 //  Created by Марк Кулик on 01.07.2024.
 //
 
+
+//TODO: - Name extensions as UIImage+squareImage.swift
+/*
+ No need to write in file name Extension word
+ that work for all files 
+ */
+
 import UIKit
 
 // MARK: - UIImage Extension

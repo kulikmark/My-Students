@@ -13,9 +13,16 @@ import SnapKit
 
 class StudentsCollectionViewController: UICollectionViewController {
     
+    //TODO: Donts mess SWiftUI and UIKit
+    
+    /**
+     Никто не пишет SwiftUI и UIKit в такой солянке. Если проекто позволяет таргет swiftUi то обычно проект сразу весь на свифт юай. Исключение только может быть навигация так как она немного конченная нативная в свифтЮаЙ и используют прокладки в виде UiHostingViewController но то частности.
+     */
+    
+    
     @ObservedObject var viewModel: StudentViewModel
     private var cancellables = Set<AnyCancellable>()
-    var studentId: String
+    var studentId: String // why not private ?
     
     let searchController = UISearchController(searchResultsController: nil)
     
