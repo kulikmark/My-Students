@@ -25,8 +25,6 @@ struct Student: Codable {
     var schedule: [Schedule] = []
     
     var months: [Month] = []
-//    var lessons: [Lesson] = []
-//    var HWPhotos: [String] = []
     
     init(
         order: Int? = 0,

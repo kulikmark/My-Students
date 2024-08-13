@@ -64,28 +64,52 @@ class StudentsCollectionViewController: UICollectionViewController {
         super.viewWillAppear(animated)
         viewModel.fetchStudents()
         self.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: self.viewModel.students.isEmpty, collectionView: self.collectionView ?? UICollectionView())
-        collectionView.reloadData()
     }
     
+//    override func viewDidLoad() {
+//        super.viewDidLoad()
+//        
+//        viewModel.$students
+//            .receive(on: RunLoop.main)
+//            .sink { [weak self] students in
+//                self?.collectionView.reloadData()
+//                self?.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: students.isEmpty, collectionView: self?.collectionView ?? UICollectionView())
+//            }
+//            .store(in: &cancellables)
+//        
+//        view.backgroundColor = UIColor.systemGroupedBackground
+//        self.title = "Students List"
+//        
+//        setupSearchController()
+//        setupCollectionView()
+//        setupAddButton()
+//        setupStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen")
+//    }
+    
     override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        viewModel.$students
-            .receive(on: RunLoop.main)
-            .sink { [weak self] students in
-                self?.collectionView.reloadData()
-                self?.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: students.isEmpty, collectionView: self?.collectionView ?? UICollectionView())
-            }
-            .store(in: &cancellables)
-        
-        view.backgroundColor = UIColor.systemGroupedBackground
-        self.title = "Students List"
-        
-        setupSearchController()
-        setupCollectionView()
-        setupAddButton()
-        setupStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen")
-    }
+           super.viewDidLoad()
+           viewModel.start()
+           setupCollectionView()
+           setupSearchController()
+           setupAddButton()
+           
+           // Subscribe to students updates
+           viewModel.studentsSubject
+               .receive(on: RunLoop.main)
+               .sink { [weak self] students in
+                   self?.collectionView.reloadData()
+                   self?.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: students.isEmpty, collectionView: self?.collectionView ?? UICollectionView())
+               }
+               .store(in: &cancellables)
+
+           // Subscribe to search history updates
+           viewModel.searchHistorySubject
+               .receive(on: RunLoop.main)
+               .sink { [weak self] searchHistory in
+                   // Handle search history updates if needed
+               }
+               .store(in: &cancellables)
+       }
     
     // MARK: - Student Add / Edit Methods
     
