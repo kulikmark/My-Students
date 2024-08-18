@@ -5,7 +5,6 @@
 //  Created by Марк Кулик on 01.07.2024.
 //
 
-
 import UIKit
 import SnapKit
 import Kingfisher
@@ -79,18 +78,6 @@ class StudentSearchHistoryTableViewCell: UITableViewCell {
         }
     }
     
-//    func configure(with student: Student) {
-//        self.student = student
-//        studentNameLabel.text = student.name
-//        
-//        if let imageData = student.studentImageData {
-//            if let image = UIImage(data: imageData) {
-//                studentImageView.image = image
-//            } else {
-//                studentImageView.image = UIImage(named: "defaultImage")
-//            }
-//        }
-//    }
     func configure(with student: Student) {
         studentNameLabel.text = student.name
 

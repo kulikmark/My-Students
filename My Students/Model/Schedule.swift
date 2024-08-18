@@ -6,3 +6,17 @@
 //
 
 import Foundation
+
+struct Schedule: Codable {
+    var id: String = UUID().uuidString
+    var weekday: String = ""
+    var time: String = ""
+    
+    func toFirestoreData() -> [String: Any] {
+        return [
+            "id": id,
+            "weekday": weekday,
+            "time": time
+        ]
+    }
+}

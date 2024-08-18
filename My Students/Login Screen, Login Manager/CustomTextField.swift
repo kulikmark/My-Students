@@ -8,34 +8,14 @@
 import UIKit
 import SnapKit
 
+struct CustomTextFieldModel {
+    let placeholder: String
+    let text: String?
+    let isSecureTextEntry: Bool
+    let rightView: UIView?
+}
+
 class CustomTextField: UIView {
-    
-    /**
-        Если ты делаешь кастомную вьюху – у тебя должны быть понятые публичные методы конфигурации этой вьюхи например метод:
-     
-     internal configure(_ model: Model) {
-                self.myNestedTextField.text = model.text
-     }
-     
-        Вложеные сабьвюхи кастомной вью как правило не должны быть видно и помечены private.
-     */
-    
-    
-    let textField: UITextField = {
-        let textField = UITextField()
-        textField.borderStyle = .roundedRect
-        textField.clearButtonMode = .whileEditing
-        textField.autocapitalizationType = .none
-        return textField
-    }()
-    
-    let errorLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .red
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.isHidden = true
-        return label
-    }()
     
     var placeholder: String? {
         get { return textField.placeholder }
@@ -53,9 +33,7 @@ class CustomTextField: UIView {
     }
     
     var rightView: UIView? {
-        get {
-            return textField.rightView
-        }
+        get { return textField.rightView }
         set {
             textField.rightView = newValue
             textField.rightViewMode = .whileEditing
@@ -66,6 +44,22 @@ class CustomTextField: UIView {
         get { return textField.clearButtonMode }
         set { textField.clearButtonMode = newValue }
     }
+    
+    internal let textField: UITextField = {
+        let textField = UITextField()
+        textField.borderStyle = .roundedRect
+        textField.clearButtonMode = .whileEditing
+        textField.autocapitalizationType = .none
+        return textField
+    }()
+    
+    private let errorLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .red
+        label.font = UIFont.systemFont(ofSize: 14)
+        label.isHidden = true
+        return label
+    }()
     
     init() {
         super.init(frame: .zero)
@@ -78,7 +72,6 @@ class CustomTextField: UIView {
     
     private func setupUI() {
         addSubview(textField)
-        addSubview(textField)
         addSubview(errorLabel)
         
         textField.snp.makeConstraints { make in
@@ -87,30 +80,38 @@ class CustomTextField: UIView {
         }
         
         errorLabel.snp.makeConstraints { make in
-                    make.top.equalTo(textField.snp.bottom).offset(7)
-                    make.leading.trailing.equalToSuperview()
-                }
-    }
-    
-    // Add border color and width change for error state
-    // Add border color and width change for error state
-        func setError(_ message: String?) -> Bool {
-            if let message = message {
-                textField.layer.borderWidth = 1
-                textField.layer.borderColor = UIColor.red.cgColor
-                textField.layer.cornerRadius = 8 // Set the corner radius manually
-                textField.layer.masksToBounds = true
-                errorLabel.text = message
-                errorLabel.isHidden = false
-                return true
-            } else {
-                textField.layer.borderWidth = 0
-                textField.layer.borderColor = UIColor.clear.cgColor
-                textField.layer.cornerRadius = 8 // Reset the corner radius
-                textField.layer.masksToBounds = true
-                errorLabel.isHidden = true
-                return false
-            }
+            make.top.equalTo(textField.snp.bottom).offset(7)
+            make.leading.trailing.equalToSuperview()
         }
     }
+    
+    func configure(with model: CustomTextFieldModel) {
+        textField.placeholder = model.placeholder
+        textField.text = model.text
+        textField.isSecureTextEntry = model.isSecureTextEntry
+        textField.rightView = model.rightView
+    }
+    
+    func updateTextField(_ text: String?) {
+        textField.text = text
+    }
 
+    func setError(_ message: String?) -> Bool {
+        if let message = message {
+            textField.layer.borderWidth = 1
+            textField.layer.borderColor = UIColor.red.cgColor
+            textField.layer.cornerRadius = 8
+            textField.layer.masksToBounds = true
+            errorLabel.text = message
+            errorLabel.isHidden = false
+            return true
+        } else {
+            textField.layer.borderWidth = 0
+            textField.layer.borderColor = UIColor.clear.cgColor
+            textField.layer.cornerRadius = 8
+            textField.layer.masksToBounds = true
+            errorLabel.isHidden = true
+            return false
+        }
+    }
+}

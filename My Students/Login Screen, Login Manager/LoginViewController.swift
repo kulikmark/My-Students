@@ -1,12 +1,16 @@
 
 import UIKit
 import SnapKit
-import FirebaseAuth
+import Combine
 
 class LoginViewController: UIViewController {
     
+    weak var coordinator: AppCoordinator?
+    
     private var isLoggedIn: Bool = false
-    private var viewModel: StudentViewModel
+    private var studentViewModel: StudentViewModel
+    private var loginScreenViewModel: LoginScreenViewModel
+    private var cancellables = Set<AnyCancellable>()
     
     private var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -65,14 +69,6 @@ class LoginViewController: UIViewController {
         return button
     }()
     
-    // TODO: - func should be after lifycycle methods ( init, deinit )
-    @objc private func togglePasswordVisibility() {
-        passwordTextField.isSecureTextEntry.toggle()
-        if let button = passwordTextField.rightView as? UIButton {
-            button.isSelected.toggle()
-        }
-    }
-    
     private var loginButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Log in", for: .normal)
@@ -103,38 +99,57 @@ class LoginViewController: UIViewController {
         return button
     }()
     
-    init(viewModel: StudentViewModel) {
-        self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
-    }
+    init(studentViewModel: StudentViewModel, loginScreenViewModel: LoginScreenViewModel) {
+        self.studentViewModel = studentViewModel
+        self.loginScreenViewModel = loginScreenViewModel
+           super.init(nibName: nil, bundle: nil)
+       }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-        print("LoginViewController is being deallocated")
-    }
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        print("LoginViewController received a memory warning")
-    }
-    
     override func viewDidLoad() {
-        super.viewDidLoad()
+            super.viewDidLoad()
+
+            view.backgroundColor = .systemBackground
+
+            setupUI()
+            setupBindings()
+            setupKeyboardNotifications()
+            setupTextFieldObservers()
         
-        view.backgroundColor = .systemBackground
-        
-        setupUI()
-        setupKeyboardNotifications()
-        setupTextFieldObservers()
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        view.addGestureRecognizer(tapGesture)
-        
-        navigationController?.navigationBar.isHidden = true
-    }
+            loginScreenViewModel.start()
+        }
+
+        private func setupBindings() {
+            loginScreenViewModel.state
+                .receive(on: RunLoop.main)
+                .sink { [weak self] state in
+                    guard let self = self else { return }
+                    self.handleStateChange(state)
+                }
+                .store(in: &cancellables)
+        }
+    
+    private func handleStateChange(_ state: LoginViewModelState) {
+           switch state {
+           case .idle:
+               // initial state, maybe clear error messages
+               break
+           case .loading:
+               // show loading indicator
+               break
+           case .success:
+               // proceed to the next screen
+               self.isLoggedIn = true
+               LoginManager.shared.isLoggedIn = true
+               showMainScreen()
+           case .failed(let error):
+               // display error message
+               displayError(error)
+           }
+       }
     
     private func setupUI() {
         view.backgroundColor = .white
@@ -216,6 +231,19 @@ class LoginViewController: UIViewController {
         loginButton.addTarget(self, action: #selector(loginButtonTapped(_:)), for: .touchUpInside)
         forgotPasswordButton.addTarget(self, action: #selector(forgotPasswordButtonTapped(_:)), for: .touchUpInside)
         passwordEyeButton.addTarget(self, action: #selector(togglePasswordVisibility), for: .touchUpInside)
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tapGesture)
+        
+        navigationController?.navigationBar.isHidden = true
+    }
+    
+    // TODO: - func should be after lifycycle methods ( init, deinit )
+    @objc private func togglePasswordVisibility() {
+        passwordTextField.isSecureTextEntry.toggle()
+        if let button = passwordTextField.rightView as? UIButton {
+            button.isSelected.toggle()
+        }
     }
     
     private func setupTextFieldObservers() {
@@ -223,77 +251,29 @@ class LoginViewController: UIViewController {
         passwordTextField.textField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
     }
     
-    //    @objc private func textFieldsDidChange() {
-    //        emailTextField.setError(nil)
-    //        passwordTextField.setError(nil)
-    //
-    //        let isFormValid = !(emailTextField.text?.isEmpty ?? true) && !(passwordTextField.text?.isEmpty ?? true)
-    //
-    //        loginButton.isEnabled = isFormValid
-    //        registerButton.isEnabled = isFormValid
-    //
-    //        let alpha: CGFloat = isFormValid ? 1.0 : 0.5
-    //        loginButton.alpha = alpha
-    //        registerButton.alpha = alpha
-    //    }
+    @objc private func loginButtonTapped(_ sender: UIButton) {
+            guard let email = emailTextField.text, !email.isEmpty,
+                  let password = passwordTextField.text, !password.isEmpty else {
+                return
+            }
+            loginScreenViewModel.login(email: email, password: password)
+        }
     
     @objc private func registerButtonTapped(_ sender: UIButton) {
-        guard let email = emailTextField.text, !email.isEmpty,
-              let password = passwordTextField.text, !password.isEmpty else {
-            return
-        }
-        
-        Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
-            if let error = error {
-                let errorMessage = self.handleAuthError(error)
-                //                self.emailTextField.setError(errorMessage)
-                self.displayError(errorMessage)
-                return
-            }
-            
-            self.isLoggedIn = true
-            LoginManager.shared.isLoggedIn = true
-            self.showMainScreen()
-        }
-    }
-    
-    @objc private func loginButtonTapped(_ sender: UIButton) {
-        guard let email = emailTextField.text, !email.isEmpty,
-              let password = passwordTextField.text, !password.isEmpty else {
-            return
-        }
-        
-        Auth.auth().signIn(withEmail: email, password: password) { authResult, error in
-            if let error = error {
-                let errorMessage = self.handleAuthError(error)
-                //                self.emailTextField.setError(errorMessage)
-                self.displayError(errorMessage)
-                return
-            }
-            
-            self.isLoggedIn = true
-            LoginManager.shared.isLoggedIn = true
-            self.showMainScreen()
-        }
-    }
+           guard let email = emailTextField.text, !email.isEmpty,
+                 let password = passwordTextField.text, !password.isEmpty else {
+               return
+           }
+           loginScreenViewModel.register(email: email, password: password)
+       }
     
     private func showMainScreen() {
-        let containerVC = ContainerViewController(viewModel: viewModel)
-        UIApplication.shared.windows.first?.rootViewController = containerVC
-        UIApplication.shared.windows.first?.makeKeyAndVisible()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            self.resignFirstResponder()
-            self.emailTextField.text = ""
-            self.passwordTextField.text = ""
-            self.dismissKeyboard()
-        }
-    }
-    
-    @objc private func forgotPasswordButtonTapped(_ sender: UIButton) {
-        let forgotPasswordVC = ForgotPasswordViewController()
-        present(forgotPasswordVC, animated: true)
-    }
+           coordinator?.showContainerScreen()
+       }
+       
+       @objc private func forgotPasswordButtonTapped(_ sender: UIButton) {
+           coordinator?.showForgotPasswordScreen()
+       }
 }
 
 extension LoginViewController {
@@ -306,7 +286,6 @@ extension LoginViewController {
         } else if errorMessage.contains("password") {
             passwordError = passwordTextField.setError(errorMessage)
         } else {
-            // For general errors, you might want to set error on both fields or show a generic error somewhere else
             emailError = emailTextField.setError(errorMessage)
         }
         
@@ -341,30 +320,6 @@ extension LoginViewController {
         let emailError = emailTextField.setError(nil)
         let passwordError = passwordTextField.setError(nil)
         updateButtonStates(hasError: emailError || passwordError)
-    }
-}
-
-
-// MARK: - Errors handler
-
-extension LoginViewController {
-    private func handleAuthError(_ error: Error) -> String {
-        guard let errorCode = AuthErrorCode.Code(rawValue: error._code) else {
-            return error.localizedDescription
-        }
-        
-        switch errorCode {
-        case .invalidEmail:
-            return "The email address is badly formatted."
-        case .emailAlreadyInUse:
-            return "The email address is already in use by another account."
-        case .weakPassword:
-            return "The password must be 6 characters long or more."
-        case .wrongPassword:
-            return "The password is invalid or the user does not have a password."
-        default:
-            return "Login failed. Please check your email and password."
-        }
     }
 }
 

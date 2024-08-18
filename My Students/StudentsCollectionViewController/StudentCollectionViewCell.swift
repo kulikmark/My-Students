@@ -10,7 +10,7 @@ import SnapKit
 import Kingfisher
 
 protocol StudentCollectionViewCellDelegate: AnyObject {
-    func presentStudentBottomSheet(for student: Student)
+    func presentStudentCardBottomSheet(for student: Student)
 }
 
 class StudentCollectionViewCell: UICollectionViewCell {
@@ -23,6 +23,7 @@ class StudentCollectionViewCell: UICollectionViewCell {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
+        imageView.layer.masksToBounds = true
         imageView.layer.cornerRadius = 10
         return imageView
     }()
@@ -79,10 +80,9 @@ class StudentCollectionViewCell: UICollectionViewCell {
         }
         
         studentNameLabel.snp.makeConstraints { make in
-            make.top.equalTo(profileImageView.snp.bottom).offset(10)
-            make.width.equalTo(contentView.snp.width)
-            make.centerX.equalToSuperview()
-        }
+               make.top.equalTo(profileImageView.snp.bottom).offset(10)
+               make.leading.trailing.equalToSuperview().inset(10)
+           }
         
         scheduleLabel.snp.makeConstraints { make in
             make.top.equalTo(studentNameLabel.snp.bottom).offset(10)
@@ -98,7 +98,7 @@ class StudentCollectionViewCell: UICollectionViewCell {
     
     @objc func studetnCellManageButtonTapped() {
         guard let student = student else { return }
-        delegate?.presentStudentBottomSheet(for: student)
+        delegate?.presentStudentCardBottomSheet(for: student)
     }
     
     override func layoutSubviews() {
@@ -106,6 +106,9 @@ class StudentCollectionViewCell: UICollectionViewCell {
         
         contentView.backgroundColor = .white
         contentView.layer.cornerRadius = 10
+        
+        // Установка круглой формы изображения
+        profileImageView.layer.cornerRadius = profileImageView.frame.width / 2
     }
     
     func configure(with student: Student) {
@@ -118,20 +121,28 @@ class StudentCollectionViewCell: UICollectionViewCell {
                 switch result {
                 case .success(let value):
                     self.profileImageView.image = value.image
-                    self.profileImageView.layer.cornerRadius = self.profileImageView.bounds.width / 2
+                    // Убедимся, что layout завершен перед установкой cornerRadius
+                    self.profileImageView.layoutIfNeeded()
+                    self.profileImageView.layer.cornerRadius = self.profileImageView.frame.width / 2
+                    self.profileImageView.clipsToBounds = true
                 case .failure(let error):
                     print("Ошибка загрузки изображения: \(error.localizedDescription)")
                     self.profileImageView.image = UIImage(named: "defaultImage")
-                    self.profileImageView.layer.cornerRadius = self.profileImageView.bounds.width / 2
+                    self.profileImageView.layoutIfNeeded()
+                    self.profileImageView.layer.cornerRadius = self.profileImageView.frame.width / 2
+                    self.profileImageView.clipsToBounds = true
                 }
             }
         } else {
             profileImageView.image = UIImage(named: "defaultImage")
-            profileImageView.layer.cornerRadius = profileImageView.bounds.width / 2
+            profileImageView.layoutIfNeeded()
+            profileImageView.layer.cornerRadius = profileImageView.frame.width / 2
+            profileImageView.clipsToBounds = true
         }
         
         updateScheduleTextField()
     }
+
     
     func updateScheduleTextField() {
         var scheduleStrings = [String]()
@@ -169,22 +180,4 @@ class StudentCollectionViewCell: UICollectionViewCell {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    //    private func animateShake(isEditing: Bool) {
-    //        if isEditing {
-    //            let animation = CABasicAnimation(keyPath: "transform.rotation")
-    //            let additionalRotation = CGFloat(0.1 * (.pi / 180.0))
-    //            let shakeRotation = CGFloat(0.005)
-    //
-    //            animation.fromValue = -shakeRotation - additionalRotation
-    //            animation.toValue = shakeRotation + additionalRotation
-    //            animation.duration = 0.15
-    //            animation.repeatCount = .infinity
-    //            animation.autoreverses = true
-    //
-    //            layer.add(animation, forKey: "shake")
-    //        } else {
-    //            layer.removeAnimation(forKey: "shake")
-    //        }
-    //    }
 }

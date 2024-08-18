@@ -17,7 +17,6 @@ class StudentsSearchViewController: UIViewController {
     let searchController = UISearchController(searchResultsController: nil)
     var studentsTableView: UITableView!
     
-    //    private var searchHistory = [Student]()
     private var filteredStudents = [Student]()
     
     init(viewModel: StudentViewModel) {
@@ -47,14 +46,14 @@ class StudentsSearchViewController: UIViewController {
         setupSearchController()
         setupStudentsTableView()
         
-        viewModel.$students
+        viewModel.studentsSubject
             .receive(on: RunLoop.main)
             .sink { [weak self] students in
                 self?.studentsTableView.reloadData()
             }
             .store(in: &cancellables)
         
-        viewModel.$searchHistory
+        viewModel.searchHistorySubject
             .receive(on: RunLoop.main)
             .sink { [weak self] history in
                 self?.studentsTableView.reloadData()
@@ -91,7 +90,6 @@ class StudentsSearchViewController: UIViewController {
         view.addSubview(studentsTableView)
         
         studentsTableView.snp.makeConstraints { make in
-            //            make.edges.equalToSuperview()
             make.top.equalTo(view.snp.top).offset(-20)
             make.leading.trailing.bottom.equalToSuperview()
         }
@@ -161,19 +159,6 @@ extension StudentsSearchViewController: UITableViewDelegate, UITableViewDataSour
         return 80
     }
     
-//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        //        let student = searchHistory[indexPath.row]
-//        let student = searchController.isActive ? filteredStudents[indexPath.row] : viewModel.students.first { $0.id == viewModel.searchHistory[indexPath.row].studentId }
-////        let monthsVC = MonthsTableViewController(viewModel: viewModel, student: student)
-////        monthsVC.student = student
-//        if let student = student {
-//            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-//                self.viewModel.addSearchHistoryItem(for: student)
-//            }
-//        }
-////        navigationController?.pushViewController(monthsVC, animated: true)
-//    }
-    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let student = searchController.isActive ? filteredStudents[indexPath.row] : viewModel.students.first { $0.id == viewModel.searchHistory[indexPath.row].studentId }
         
@@ -183,7 +168,6 @@ extension StudentsSearchViewController: UITableViewDelegate, UITableViewDataSour
                 self.viewModel.addSearchHistoryItem(for: student)
             }
             
-            // Navigate to MonthsTableViewController
             navigateToMonths(for: student)
         }
     }
@@ -196,7 +180,7 @@ extension StudentsSearchViewController: UITableViewDelegate, UITableViewDataSour
     
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 140 // Высота для хедера с коллекцией
+        return 140
     }
 }
 
@@ -214,51 +198,23 @@ extension StudentsSearchViewController: StudentsTableViewHeaderDelegate {
         studentsTableView.reloadData()
     }
     
-//    func navigateToMonths(for student: Student) {
-//        let studentLessonPrice = student.lessonPrice.price
-//        
-//        Task {
-//            do {
-//                let lessonsByMonth = try await viewModel.loadAllLessons(for: student.id ?? "")
-//                DispatchQueue.main.async {
-//                    let monthsTableVC = MonthsTableViewController(viewModel: self.viewModel, studentId: student.id ?? "", studentLessonPrice: studentLessonPrice, lessonsByMonth: lessonsByMonth)
-//                    self.navigationController?.pushViewController(monthsTableVC, animated: true)
-//                }
-//            } catch {
-//                print("Failed to load lessons: \(error)")
-//            }
-//        }
-//    }
-    
     func navigateToMonths(for student: Student) {
         guard let studentId = student.id else {
             print("Student ID is missing.")
             return
         }
         
-        let studentLessonPrice = student.lessonPrice.price
-        
-        // Load lessons asynchronously
-        Task {
-            do {
-                let lessonsByMonth = try await viewModel.loadAllLessons(for: studentId)
-                
-                // Create and push the MonthsTableViewController
-                DispatchQueue.main.async {
-                    let monthsTableVC = MonthsTableViewController(
-                        viewModel: self.viewModel,
-                        studentId: studentId
-                    )
-                    self.navigationController?.pushViewController(monthsTableVC, animated: true)
-                }
-            } catch {
-                print("Failed to load lessons: \(error)")
-            }
+        DispatchQueue.main.async {
+            let monthsTableVC = MonthsTableViewController(
+                viewModel: self.viewModel,
+                studentID: studentId
+            )
+            self.navigationController?.pushViewController(monthsTableVC, animated: true)
+            
         }
+        
     }
-
 }
-
 
 protocol StudentsTableViewHeaderDelegate: AnyObject {
     func clearSearchHistory()

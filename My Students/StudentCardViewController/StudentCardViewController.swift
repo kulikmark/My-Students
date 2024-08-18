@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import SwiftUI
 import Combine
 import Photos
 import FirebaseFirestore
@@ -136,7 +135,7 @@ class StudentCardViewController: UIViewController {
     // MARK: - View Model Binding
     
     private func bindViewModel() {
-        viewModel.$students
+        viewModel.studentsSubject
             .receive(on: RunLoop.main)
             .sink { [weak self] students in
                 self?.scheduleCollectionView.reloadData()
@@ -231,7 +230,7 @@ class StudentCardViewController: UIViewController {
     
     private func prepareStudentDetails(studentType: StudentType) -> Student {
         // Prepare student details object from UI inputs
-        return Student( order: student?.order,
+        return Student( order: student?.order ?? 0,
                         type: studentType,
                         name: studentNameTextField.text ?? "",
                         parentName: parentNameTextField.text ?? "",
@@ -267,17 +266,15 @@ class StudentCardViewController: UIViewController {
                 print("Error: Trying to edit student without an ID.")
                 return
             }
-            existingStudent.id = studentId // Set existing student ID
-            existingStudent.studentImageURL = studentDetails.studentImageURL // Ensure image URL is updated
+            existingStudent.id = studentId
+            existingStudent.studentImageURL = studentDetails.studentImageURL
             
-            // Обновление остальных данных студента
             existingStudent.type = studentDetails.type
             existingStudent.name = studentDetails.name
             existingStudent.parentName = studentDetails.parentName
             existingStudent.phoneNumber = studentDetails.phoneNumber
             existingStudent.lessonPrice = studentDetails.lessonPrice
             existingStudent.schedule = studentDetails.schedule
-            //existingStudent.months = studentDetails.months
             existingStudent.months = student?.months ?? []
             
             FirebaseManager.shared.addOrUpdateStudent(existingStudent) { result in

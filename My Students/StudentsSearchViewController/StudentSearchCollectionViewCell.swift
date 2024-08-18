@@ -37,19 +37,6 @@ class StudentSearchCollectionViewCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
-//    func configure(with student: Student) {
-//        if let imageData = student.studentImageData {
-//               if let image = UIImage(data: imageData) {
-//                   imageView.image = image
-//               } else {
-//                   imageView.image = UIImage(named: "defaultImage")
-//               }
-//           } else {
-//               imageView.image = UIImage(named: "defaultImage")
-//           }
-//        nameLabel.text = student.name
-//    }
     
     func configure(with student: Student) {
            studentNameLabel.text = student.name

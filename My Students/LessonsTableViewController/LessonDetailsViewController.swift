@@ -69,7 +69,7 @@ class LessonDetailsViewController: UIViewController, UIImagePickerControllerDele
         self.title = "Lesson \(selectedLesson.date)"
         view.backgroundColor = .white
         
-        viewModel.$students
+        viewModel.studentsSubject
             .receive(on: RunLoop.main)
             .sink { _ in
             }

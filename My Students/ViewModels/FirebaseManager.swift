@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 import Firebase
 import FirebaseFirestore
 import FirebaseStorage
@@ -21,51 +22,50 @@ class FirebaseManager {
     // MARK: - Managing Student FireBase methods
     
     func addOrUpdateStudent(_ student: Student, completion: @escaping (Result<Void, Error>) -> Void) {
-            var studentRef: DocumentReference
-            
-            if let studentId = student.id {
-                studentRef = db.collection("students").document(studentId)
-            } else {
-                studentRef = db.collection("students").document(UUID().uuidString)
-            }
-            
-            var data = student.toFirestoreData()
-            
-            if student.id == nil {
-                data["id"] = studentRef.documentID
-            }
-            
-            studentRef.setData(data, merge: true) { error in
-                if let error = error {
-                    completion(.failure(error))
-                } else {
-                    completion(.success(()))
-                }
-            }
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
         }
-    
-    func fetchStudents(completion: @escaping (Result<[Student], Error>) -> Void) {
-        db.collection("students").order(by: "order").getDocuments { (querySnapshot, error) in
+        
+        var studentRef: DocumentReference
+        let userDocRef = db.collection("users").document(userId).collection("students")
+        
+        if let studentId = student.id {
+            studentRef = userDocRef.document(studentId)
+        } else {
+            studentRef = userDocRef.document(UUID().uuidString)
+        }
+        
+        var data = student.toFirestoreData()
+        
+        if student.id == nil {
+            data["id"] = studentRef.documentID
+        }
+        
+        studentRef.setData(data, merge: true) { error in
             if let error = error {
                 completion(.failure(error))
             } else {
-                let students = querySnapshot?.documents.compactMap { queryDocumentSnapshot in
-                    try? queryDocumentSnapshot.data(as: Student.self)
-                } ?? []
-                completion(.success(students))
+                completion(.success(()))
             }
         }
     }
     
     func saveStudentsOrder(_ students: [Student], completion: @escaping (Error?) -> Void) {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"]))
+            return
+        }
+        
         let batch = db.batch()
+        let userDocRef = db.collection("users").document(userId).collection("students")
         
         for (index, student) in students.enumerated() {
             guard let studentId = student.id else {
                 completion(NSError(domain: "com.mystudents", code: 1, userInfo: [NSLocalizedDescriptionKey: "Student ID is missing"]))
                 return
             }
-            let studentRef = db.collection("students").document(studentId)
+            let studentRef = userDocRef.document(studentId)
             batch.updateData(["order": index], forDocument: studentRef)
         }
         
@@ -103,12 +103,13 @@ class FirebaseManager {
     }
     
     func deleteStudent(_ student: Student, completion: @escaping (Error?) -> Void) {
-        guard let studentId = student.id else {
-            completion(NSError(domain: "com.mystudents", code: 1, userInfo: [NSLocalizedDescriptionKey: "Student ID is missing"]))
+        guard let userId = Auth.auth().currentUser?.uid,
+              let studentId = student.id else {
+            completion(NSError(domain: "com.mystudents", code: 1, userInfo: [NSLocalizedDescriptionKey: "Student ID or user ID is missing"]))
             return
         }
         
-        let studentRef = db.collection("students").document(studentId)
+        let studentRef = db.collection("users").document(userId).collection("students").document(studentId)
         
         studentRef.delete { error in
             completion(error)
@@ -118,7 +119,12 @@ class FirebaseManager {
     // MARK: - Managing MonthsTableVC saving methods
     
     func updateMonthSum(for studentId: String, month: Month, totalAmount: Int, completion: @escaping (Result<Void, Error>) -> Void) {
-        db.collection("students").document(studentId).getDocument { (document, error) in
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
+        }
+        
+        db.collection("users").document(userId).collection("students").document(studentId).getDocument { (document, error) in
             if let error = error {
                 completion(.failure(error))
                 return
@@ -134,7 +140,7 @@ class FirebaseManager {
                 months[monthIndex]["moneySum"] = totalAmount
                 studentData["months"] = months
                 
-                self.db.collection("students").document(studentId).setData(studentData, merge: true) { error in
+                self.db.collection("users").document(userId).collection("students").document(studentId).setData(studentData, merge: true) { error in
                     if let error = error {
                         completion(.failure(error))
                     } else {
@@ -150,7 +156,12 @@ class FirebaseManager {
     // MARK: - Managing LessonsTableVC saving methods
     
     func saveLessons(for studentId: String, lessons: [Lesson], month: Month, completion: @escaping (Result<Void, Error>) -> Void) {
-        db.collection("students").document(studentId).getDocument { (document, error) in
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
+        }
+        
+        db.collection("users").document(userId).collection("students").document(studentId).getDocument { (document, error) in
             if let error = error {
                 completion(.failure(error))
                 return
@@ -172,7 +183,7 @@ class FirebaseManager {
             
             studentData["months"] = months
             
-            self.db.collection("students").document(studentId).setData(studentData, merge: true) { error in
+            self.db.collection("users").document(userId).collection("students").document(studentId).setData(studentData, merge: true) { error in
                 if let error = error {
                     completion(.failure(error))
                 } else {
@@ -183,7 +194,12 @@ class FirebaseManager {
     }
     
     func loadLessons(for studentId: String, month: Month, completion: @escaping (Result<[Lesson], Error>) -> Void) {
-        db.collection("students").document(studentId).getDocument { (document, error) in
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
+        }
+        
+        db.collection("users").document(userId).collection("students").document(studentId).getDocument { (document, error) in
             if let error = error {
                 completion(.failure(error))
                 return
@@ -202,85 +218,104 @@ class FirebaseManager {
         }
     }
     
-    // Удаление одного урока
-       func deleteLesson(for studentId: String, month: Month, lessonId: String, completion: @escaping (Result<Void, Error>) -> Void) {
-           db.collection("students").document(studentId).getDocument { (document, error) in
-               if let error = error {
-                   completion(.failure(error))
-                   return
-               }
-               
-               guard var studentData = document?.data() else {
-                   completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Student not found"])))
-                   return
-               }
-               
-               var months = studentData["months"] as? [[String: Any]] ?? []
-               if let monthIndex = months.firstIndex(where: { ($0["id"] as? String) == month.id }) {
-                   var monthData = months[monthIndex]
-                   var lessons = monthData["lessons"] as? [[String: Any]] ?? []
-                   lessons.removeAll { ($0["id"] as? String) == lessonId }
-                   monthData["lessons"] = lessons
-                   months[monthIndex] = monthData
-                   studentData["months"] = months
-                   
-                   self.db.collection("students").document(studentId).setData(studentData, merge: true) { error in
-                       if let error = error {
-                           completion(.failure(error))
-                       } else {
-                           completion(.success(()))
-                       }
-                   }
-               } else {
-                   completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Month not found"])))
-               }
-           }
-       }
-    
-    // Удаление всех уроков для месяца
-       func deleteAllLessons(for studentId: String, month: Month, completion: @escaping (Result<Void, Error>) -> Void) {
-           db.collection("students").document(studentId).getDocument { (document, error) in
-               if let error = error {
-                   completion(.failure(error))
-                   return
-               }
-               
-               guard var studentData = document?.data() else {
-                   completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Student not found"])))
-                   return
-               }
-               
-               var months = studentData["months"] as? [[String: Any]] ?? []
-               if let monthIndex = months.firstIndex(where: { ($0["id"] as? String) == month.id }) {
-                   var monthData = months[monthIndex]
-                   monthData["lessons"] = [] // Очистка всех уроков
-                   months[monthIndex] = monthData
-                   studentData["months"] = months
-                   
-                   self.db.collection("students").document(studentId).setData(studentData, merge: true) { error in
-                       if let error = error {
-                           completion(.failure(error))
-                       } else {
-                           completion(.success(()))
-                       }
-                   }
-               } else {
-                   completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Month not found"])))
-               }
-           }
-       }
-    
-    // MARK: - Managing LessonDetailsVC saving methods
-    
-    func saveLessonDetails(studentId: String, monthId: String, lesson: Lesson, completion: @escaping (Result<Void, Error>) -> Void) {
-        db.collection("students").document(studentId).getDocument { document, error in
+    func deleteLesson(for studentId: String, month: Month, lessonId: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
+        }
+        
+        db.collection("users").document(userId).collection("students").document(studentId).getDocument { (document, error) in
             if let error = error {
                 completion(.failure(error))
                 return
             }
             
             guard var studentData = document?.data() else {
-                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Студент не найден"])))
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Student not found"])))
+                return
+            }
+            
+            var months = studentData["months"] as? [[String: Any]] ?? []
+            if let monthIndex = months.firstIndex(where: { ($0["id"] as? String) == month.id }) {
+                var monthData = months[monthIndex]
+                var lessons = monthData["lessons"] as? [[String: Any]] ?? []
+                
+                if let lessonIndex = lessons.firstIndex(where: { ($0["id"] as? String) == lessonId }) {
+                    lessons.remove(at: lessonIndex)
+                    monthData["lessons"] = lessons
+                    months[monthIndex] = monthData
+                    studentData["months"] = months
+                    
+                    self.db.collection("users").document(userId).collection("students").document(studentId).setData(studentData, merge: true) { error in
+                        if let error = error {
+                            completion(.failure(error))
+                        } else {
+                            completion(.success(()))
+                        }
+                    }
+                } else {
+                    completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Lesson not found"])))
+                }
+            } else {
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Month not found"])))
+            }
+        }
+    }
+
+    
+    func deleteAllLessons(for studentId: String, month: Month, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
+        }
+        
+        db.collection("users").document(userId).collection("students").document(studentId).getDocument { (document, error) in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard var studentData = document?.data() else {
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Student not found"])))
+                return
+            }
+            
+            var months = studentData["months"] as? [[String: Any]] ?? []
+            if let monthIndex = months.firstIndex(where: { ($0["id"] as? String) == month.id }) {
+                var monthData = months[monthIndex]
+                monthData["lessons"] = [] // Очистка всех уроков
+                months[monthIndex] = monthData
+                studentData["months"] = months
+                
+                self.db.collection("users").document(userId).collection("students").document(studentId).setData(studentData, merge: true) { error in
+                    if let error = error {
+                        completion(.failure(error))
+                    } else {
+                        completion(.success(()))
+                    }
+                }
+            } else {
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Month not found"])))
+            }
+        }
+    }
+    
+    // MARK: - Managing LessonDetailsVC saving methods
+       
+    func saveLessonDetails(studentId: String, monthId: String, lesson: Lesson, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
+        }
+        
+        db.collection("users").document(userId).collection("students").document(studentId).getDocument { document, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard var studentData = document?.data() else {
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Student not found"])))
                 return
             }
             
@@ -297,7 +332,7 @@ class FirebaseManager {
                 months[monthIndex] = monthData
                 studentData["months"] = months
                 
-                self.db.collection("students").document(studentId).setData(studentData, merge: true) { error in
+                self.db.collection("users").document(userId).collection("students").document(studentId).setData(studentData, merge: true) { error in
                     if let error = error {
                         completion(.failure(error))
                     } else {
@@ -305,14 +340,19 @@ class FirebaseManager {
                     }
                 }
             } else {
-                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Месяц не найден"])))
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Month not found"])))
             }
         }
     }
 
     // Загрузка деталей урока из указанного месяца
     func loadLessonDetails(studentId: String, monthId: String, lessonId: String, completion: @escaping (Result<Lesson, Error>) -> Void) {
-        db.collection("students").document(studentId).getDocument { document, error in
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
+        }
+        
+        db.collection("users").document(userId).collection("students").document(studentId).getDocument { document, error in
             if let error = error {
                 completion(.failure(error))
                 return
@@ -339,36 +379,112 @@ class FirebaseManager {
         }
     }
     
-    // MARK: - Managing SearchHistoryVC saving methods
-    
+    // MARK: - Managing Search History
+
     func fetchSearchHistory(completion: @escaping (Result<[SearchHistoryItem], Error>) -> Void) {
-        db.collection("searchHistory").order(by: "timestamp", descending: true).getDocuments { (querySnapshot, error) in
-            if let error = error {
-                completion(.failure(error))
-            } else {
-                let searchHistory = querySnapshot?.documents.compactMap { queryDocumentSnapshot in
-                    try? queryDocumentSnapshot.data(as: SearchHistoryItem.self)
-                } ?? []
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
+        }
+        
+        db.collection("users").document(userId).collection("searchHistory")
+            .order(by: "timestamp", descending: true)
+            .getDocuments { querySnapshot, error in
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                
+                guard let documents = querySnapshot?.documents else {
+                    completion(.success([]))
+                    return
+                }
+                
+                // Convert documents to SearchHistoryItem
+                let searchHistory: [SearchHistoryItem] = documents.compactMap { document in
+                    let data = document.data()
+                    
+                    // Convert Firestore Timestamp to Date
+                    guard let timestamp = data["timestamp"] as? Timestamp else { return nil }
+                    let date = timestamp.dateValue()
+                    
+                    // Create SearchHistoryItem
+                    return SearchHistoryItem(
+                        id: data["id"] as? String ?? UUID().uuidString,
+                        studentId: data["studentId"] as? String ?? "",
+                        timestamp: date
+                    )
+                }
+                
                 completion(.success(searchHistory))
             }
-        }
     }
-    
-    func addSearchHistoryItem(_ searchHistoryItem: SearchHistoryItem, completion: @escaping (Error?) -> Void) {
-        db.collection("searchHistory").addDocument(data: searchHistoryItem.toFirestoreData()) { error in
-            completion(error)
+
+        
+    func addSearchHistoryItem(for student: Student, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
         }
-    }
-    
-    func clearSearchHistory(completion: @escaping (Error?) -> Void) {
-        db.collection("searchHistory").getDocuments { (querySnapshot, error) in
-            if let error = error {
-                completion(error)
-            } else {
-                let batch = self.db.batch()
-                querySnapshot?.documents.forEach { batch.deleteDocument($0.reference) }
-                batch.commit(completion: completion)
+        
+        let searchHistoryItem = SearchHistoryItem(studentId: student.id ?? "", timestamp: Date())
+        
+        // Check for duplicates
+        fetchSearchHistory { result in
+            switch result {
+            case .success(let historyItems):
+                if historyItems.contains(where: { $0.studentId == student.id }) {
+                    print("Student is already in search history.")
+                    completion(.success(())) // or completion(.failure(someError)) if you want to indicate a duplicate
+                    return
+                }
+                
+                // Add new item
+                self.db.collection("users").document(userId).collection("searchHistory")
+                    .addDocument(data: searchHistoryItem.toFirestoreData()) { error in
+                        if let error = error {
+                            completion(.failure(error))
+                        } else {
+                            completion(.success(()))
+                        }
+                    }
+                
+            case .failure(let error):
+                completion(.failure(error))
             }
         }
     }
+
+        
+        func clearSearchHistory(completion: @escaping (Result<Void, Error>) -> Void) {
+            guard let userId = Auth.auth().currentUser?.uid else {
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+                return
+            }
+            
+            db.collection("users").document(userId).collection("searchHistory")
+                .getDocuments { querySnapshot, error in
+                    if let error = error {
+                        completion(.failure(error))
+                        return
+                    }
+                    
+                    guard let documents = querySnapshot?.documents else {
+                        completion(.success(()))
+                        return
+                    }
+                    
+                    let batch = self.db.batch()
+                    for document in documents {
+                        batch.deleteDocument(document.reference)
+                    }
+                    batch.commit { error in
+                        if let error = error {
+                            completion(.failure(error))
+                        } else {
+                            completion(.success(()))
+                        }
+                    }
+                }
+        }
 }

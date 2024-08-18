@@ -100,8 +100,6 @@ class ScheduleBottomSheetViewController: UIViewController {
             }
         }
 
-        
-
         view.addSubview(saveButton)
 
         stackView.snp.makeConstraints { make in

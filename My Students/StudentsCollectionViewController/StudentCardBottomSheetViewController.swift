@@ -1,5 +1,5 @@
 //
-//  EditStudentSheetViewController.swift
+//  StudentCardBottomSheetViewController.swift
 //  My Students
 //
 //  Created by Марк Кулик on 14.07.2024.
@@ -13,14 +13,10 @@ protocol StudentBottomSheetDelegate: AnyObject {
     func didTapDeleteButton(for student: Student)
 }
 
-class StudentBottomSheetViewController: UIViewController {
+class StudentCardBottomSheetViewController: UIViewController {
     
-    //    @ObservedObject var viewModel: StudentViewModel
     weak var delegate: StudentBottomSheetDelegate?
     let student: Student
-    
-//    var editAction: (() -> Void)?
-//    var showDeleteConfirmation: (() -> Void)?
     
     let editButton: UIButton = {
         
@@ -78,13 +74,11 @@ class StudentBottomSheetViewController: UIViewController {
         view.addSubview(editButton)
         view.addSubview(deleteButton)
         
-        // Set constraints for editButton
         editButton.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(20)
             make.top.equalTo(nameLabel.snp.bottom).offset(20)
         }
         
-        // Set constraints for deleteButton
         deleteButton.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(20)
             make.top.equalTo(editButton.snp.bottom).offset(20)

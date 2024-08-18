@@ -7,7 +7,6 @@
 
 import FirebaseAuth
 import Combine
-
 import Foundation
 
 enum LoginViewModelState {
@@ -16,7 +15,6 @@ enum LoginViewModelState {
     case success
     case failed(error: String)
 }
-
 
 class LoginScreenViewModel {
     // State to which the VC will subscribe
@@ -30,14 +28,12 @@ class LoginScreenViewModel {
     }
 
     func start() {
-        // Initial setup if needed, setting state to idle
         state.send(.idle)
     }
-
+    
     func login(email: String, password: String) {
         state.send(.loading)
         
-        // Example of async work, like network request
         Auth.auth().signIn(withEmail: email, password: password) { [weak self] authResult, error in
             guard let self = self else { return }
             if let error = error {
@@ -45,9 +41,16 @@ class LoginScreenViewModel {
                 self.state.send(.failed(error: errorMessage))
                 return
             }
+            
+            // Successfully logged in
+            if let user = Auth.auth().currentUser {
+                print("User logged in with uid: \(user.uid)")
+            }
+            
             self.state.send(.success)
         }
     }
+
 
     func register(email: String, password: String) {
         state.send(.loading)

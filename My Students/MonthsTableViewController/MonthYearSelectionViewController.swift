@@ -37,7 +37,7 @@ class MonthYearSelectionViewController: UIViewController, UICollectionViewDataSo
         decrementButton = UIButton(type: .system)
         incrementButton = UIButton(type: .system)
         yearLabel = UILabel()
-        closeButton = UIButton(type: .custom) // Button for closing
+        closeButton = UIButton(type: .custom)
         
         super.init(nibName: nil, bundle: nil)
         
@@ -67,7 +67,7 @@ class MonthYearSelectionViewController: UIViewController, UICollectionViewDataSo
         collectionView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(200)
             make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-100) // Leave space for stepper
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-100)
         }
         
         collectionView.backgroundColor = .white
@@ -81,7 +81,7 @@ class MonthYearSelectionViewController: UIViewController, UICollectionViewDataSo
         view.addSubview(containerView)
         containerView.snp.makeConstraints { make in
             make.leading.trailing.bottom.equalToSuperview()
-            make.height.equalTo(80) // Adjust the height as needed
+            make.height.equalTo(80)
             make.bottom.equalToSuperview().offset(-60)
         }
         
@@ -90,8 +90,8 @@ class MonthYearSelectionViewController: UIViewController, UICollectionViewDataSo
         customStepper.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.centerY.equalToSuperview()
-            make.width.equalTo(230) // Width for stepper container
-            make.height.equalTo(60) // Height for stepper container
+            make.width.equalTo(230)
+            make.height.equalTo(60)
             
         }
         
@@ -221,12 +221,12 @@ class MonthYearSelectionViewController: UIViewController, UICollectionViewDataSo
         }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = (collectionView.bounds.width / 2) - 20 // Adjusted for 10pt padding on each side
+        let width = (collectionView.bounds.width / 2) - 20
         return CGSize(width: width, height: 50)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 0, left: 15, bottom: 0, right: 15) // Устанавливаем отступы
+        return UIEdgeInsets(top: 0, left: 15, bottom: 0, right: 15)
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {

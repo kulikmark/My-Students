@@ -7,22 +7,14 @@
 
 
 import UIKit
-import SwiftUI
 import Combine
 import SnapKit
 
 class StudentsCollectionViewController: UICollectionViewController {
     
-    //TODO: Donts mess SWiftUI and UIKit
-    
-    /**
-     Никто не пишет SwiftUI и UIKit в такой солянке. Если проекто позволяет таргет swiftUi то обычно проект сразу весь на свифт юай. Исключение только может быть навигация так как она немного конченная нативная в свифтЮаЙ и используют прокладки в виде UiHostingViewController но то частности.
-     */
-    
-    
-    @ObservedObject var viewModel: StudentViewModel
+    private var studentViewModel: StudentViewModel
     private var cancellables = Set<AnyCancellable>()
-    var studentId: String // why not private ?
+    private var studentId: String // why not private ?
     
     let searchController = UISearchController(searchResultsController: nil)
     
@@ -45,7 +37,7 @@ class StudentsCollectionViewController: UICollectionViewController {
     }()
     
     init(viewModel: StudentViewModel, studentId: String) {
-        self.viewModel = viewModel
+        self.studentViewModel = viewModel
         self.studentId = studentId
         super.init(collectionViewLayout: UICollectionViewFlowLayout())
     }
@@ -69,54 +61,29 @@ class StudentsCollectionViewController: UICollectionViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        viewModel.fetchStudents()
-        self.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: self.viewModel.students.isEmpty, collectionView: self.collectionView ?? UICollectionView())
+        studentViewModel.fetchStudents()
+        self.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: self.studentViewModel.students.isEmpty, collectionView: self.collectionView ?? UICollectionView())
     }
     
-//    override func viewDidLoad() {
-//        super.viewDidLoad()
-//        
-//        viewModel.$students
-//            .receive(on: RunLoop.main)
-//            .sink { [weak self] students in
-//                self?.collectionView.reloadData()
-//                self?.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: students.isEmpty, collectionView: self?.collectionView ?? UICollectionView())
-//            }
-//            .store(in: &cancellables)
-//        
-//        view.backgroundColor = UIColor.systemGroupedBackground
-//        self.title = "Students List"
-//        
-//        setupSearchController()
-//        setupCollectionView()
-//        setupAddButton()
-//        setupStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen")
-//    }
-    
     override func viewDidLoad() {
-           super.viewDidLoad()
-           viewModel.start()
-           setupCollectionView()
-           setupSearchController()
-           setupAddButton()
-           
-           // Subscribe to students updates
-           viewModel.studentsSubject
-               .receive(on: RunLoop.main)
-               .sink { [weak self] students in
-                   self?.collectionView.reloadData()
-                   self?.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: students.isEmpty, collectionView: self?.collectionView ?? UICollectionView())
-               }
-               .store(in: &cancellables)
-
-           // Subscribe to search history updates
-           viewModel.searchHistorySubject
-               .receive(on: RunLoop.main)
-               .sink { [weak self] searchHistory in
-                   // Handle search history updates if needed
-               }
-               .store(in: &cancellables)
-       }
+        super.viewDidLoad()
+        studentViewModel.start()
+        setupCollectionView()
+        setupSearchController()
+        setupAddButton()
+        
+        view.backgroundColor = UIColor.systemGroupedBackground
+        self.title = "Students List"
+        
+        // Subscribe to students updates
+        studentViewModel.studentsSubject
+            .receive(on: RunLoop.main)
+            .sink { [weak self] students in
+                self?.collectionView.reloadData()
+                self?.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: students.isEmpty, collectionView: self?.collectionView ?? UICollectionView())
+            }
+            .store(in: &cancellables)
+    }
     
     // MARK: - Student Add / Edit Methods
     
@@ -131,7 +98,7 @@ class StudentsCollectionViewController: UICollectionViewController {
     }
     
     @objc func addNewStudent() {
-        let studentCardVC = StudentCardViewController(viewModel: viewModel, editMode: .add)
+        let studentCardVC = StudentCardViewController(viewModel: studentViewModel, editMode: .add)
         navigationController?.pushViewController(studentCardVC, animated: true)
     }
     
@@ -181,7 +148,7 @@ extension StudentsCollectionViewController: UISearchResultsUpdating {
 
 extension StudentsCollectionViewController: UISearchBarDelegate {
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-        let studentsSearchVC = StudentsSearchViewController(viewModel: self.viewModel)
+        let studentsSearchVC = StudentsSearchViewController(viewModel: self.studentViewModel)
         self.navigationController?.pushViewController(studentsSearchVC, animated: true)
     }
     
@@ -194,29 +161,25 @@ extension StudentsCollectionViewController: UISearchBarDelegate {
 
 extension StudentsCollectionViewController {
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return viewModel.students.count
+        return studentViewModel.students.count
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StudentCell", for: indexPath) as! StudentCollectionViewCell
-        let student = viewModel.students[indexPath.item]
+        let student = studentViewModel.students[indexPath.item]
         cell.configure(with: student)
         cell.delegate = self
         
-        let studentBottomSheetVC = StudentBottomSheetViewController(student: student)
+        let studentBottomSheetVC = StudentCardBottomSheetViewController(student: student)
         studentBottomSheetVC.delegate = self
         return cell
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let student = viewModel.students[indexPath.item]
-        let studentLessonPrice = student.lessonPrice.price
+        let student = studentViewModel.students[indexPath.item]
         
-        let monthsTableVC = MonthsTableViewController(viewModel: self.viewModel, studentId: student.id ?? "")
+        let monthsTableVC = MonthsTableViewController(viewModel: self.studentViewModel, studentID: student.id ?? "")
         self.navigationController?.pushViewController(monthsTableVC, animated: true)
-        
-        
-        
     }
     
     // Deleting student with the long tap
@@ -236,7 +199,7 @@ extension StudentsCollectionViewController {
 extension StudentsCollectionViewController: UICollectionViewDragDelegate {
     
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        let student = viewModel.students[indexPath.item]
+        let student = studentViewModel.students[indexPath.item]
         let itemProvider = NSItemProvider(object: student.name as NSString)
         let dragItem = UIDragItem(itemProvider: itemProvider)
         dragItem.localObject = student
@@ -254,8 +217,8 @@ extension StudentsCollectionViewController: UICollectionViewDropDelegate {
             guard let sourceIndexPath = dropItem.sourceIndexPath else { return }
             
             collectionView.performBatchUpdates {
-                let student = viewModel.students.remove(at: sourceIndexPath.item)
-                viewModel.students.insert(student, at: destinationIndexPath.item)
+                let student = studentViewModel.students.remove(at: sourceIndexPath.item)
+                studentViewModel.students.insert(student, at: destinationIndexPath.item)
                 collectionView.deleteItems(at: [sourceIndexPath])
                 collectionView.insertItems(at: [destinationIndexPath])
             }
@@ -264,7 +227,7 @@ extension StudentsCollectionViewController: UICollectionViewDropDelegate {
         collectionView.reloadData()
         
         // Save the new order to the backend
-        FirebaseManager.shared.saveStudentsOrder(viewModel.students) { error in
+        FirebaseManager.shared.saveStudentsOrder(studentViewModel.students) { error in
             if let error = error {
                 print("Failed to save students order: \(error.localizedDescription)")
             } else {
@@ -299,13 +262,13 @@ extension StudentsCollectionViewController {
     }
     
     func deleteStudent(at indexPath: IndexPath) {
-        guard indexPath.item < viewModel.students.count else {
+        guard indexPath.item < studentViewModel.students.count else {
             print("Invalid index path")
             return
         }
         
         // Remove the student from the local array and update collection view
-        let studentToDelete = viewModel.students.remove(at: indexPath.item)
+        let studentToDelete = studentViewModel.students.remove(at: indexPath.item)
         collectionView.deleteItems(at: [indexPath])
         
         // Delete from Firebase
@@ -330,8 +293,8 @@ extension StudentsCollectionViewController {
 
 extension StudentsCollectionViewController: StudentCollectionViewCellDelegate {
     
-    func presentStudentBottomSheet(for student: Student) {
-        let studentBottomSheetVC = StudentBottomSheetViewController(student: student)
+    func presentStudentCardBottomSheet(for student: Student) {
+        let studentBottomSheetVC = StudentCardBottomSheetViewController(student: student)
         studentBottomSheetVC.delegate = self
         studentBottomSheetVC.modalPresentationStyle = .pageSheet
         if #available(iOS 15.0, *) {
@@ -343,7 +306,7 @@ extension StudentsCollectionViewController: StudentCollectionViewCellDelegate {
                 } else {
                     // Fallback on earlier versions
                 }
-                //                sheet.prefersGrabberVisible = true
+                                sheet.prefersGrabberVisible = true
             }
         }
         present(studentBottomSheetVC, animated: true, completion: nil)
@@ -354,7 +317,7 @@ extension StudentsCollectionViewController: StudentBottomSheetDelegate {
     
     func didTapEditButton(for student: Student) {
         dismiss(animated: true) {
-            let studentCardVC = StudentCardViewController(viewModel: self.viewModel, editMode: .edit)
+            let studentCardVC = StudentCardViewController(viewModel: self.studentViewModel, editMode: .edit)
             studentCardVC.student = student
             self.navigationController?.pushViewController(studentCardVC, animated: true)
         }
@@ -363,7 +326,7 @@ extension StudentsCollectionViewController: StudentBottomSheetDelegate {
     
     func didTapDeleteButton(for student: Student) {
         dismiss(animated: true) {
-            if let indexPath = self.viewModel.students.firstIndex(where: { $0.id == student.id }) {
+            if let indexPath = self.studentViewModel.students.firstIndex(where: { $0.id == student.id }) {
                 self.showDeleteConfirmation(at: IndexPath(item: indexPath, section: 0))
                 print("didTapDeleteButton")
                 

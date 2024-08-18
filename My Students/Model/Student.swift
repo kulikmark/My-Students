@@ -1,5 +1,5 @@
 //
-//  StudentModel.swift
+//  Student.swift
 //  My Students
 //
 //  Created by Марк Кулик on 24.06.2024.
@@ -8,15 +8,12 @@
 import Foundation
 import FirebaseFirestore
 
-// TODO: 1 File = 1 Enitity
-// В одном файле может быть описан только один тип. Максимум тип и протокол и или тип и экстеншен к нему
-
 enum StudentType: String, Codable {
     case schoolchild = "Schoolchild"
     case adult = "Adult"
 }
 
-struct Student: Codable {
+struct Student:  Decodable {
     @DocumentID var id: String?
     var order: Int?
     var studentImageURL: String? = nil
@@ -30,9 +27,7 @@ struct Student: Codable {
     var months: [Month] = []
     
     init(
-        order: Int = .zero, // why optional if u initialize with default 0
-                         // use '.zero' over '0'
-                         //
+        order: Int = .zero,
         studentImageURL: String? = nil,
         type: StudentType = .schoolchild,
         name: String = "",
@@ -66,7 +61,6 @@ struct Student: Codable {
             "months": months.map { $0.toFirestoreData() }
         ]
         
-        // Добавление URL изображения, если он доступен
         if let imageUrl = studentImageURL {
             data["studentImageURL"] = imageUrl
         }

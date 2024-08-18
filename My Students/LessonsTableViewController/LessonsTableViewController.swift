@@ -20,7 +20,6 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
     var selectedMonth: Month
     var lessonsForStudent: [Lesson] = []
     
-    // Initialize with studentId and selectedMonth
     init(viewModel: StudentViewModel, studentId: String, selectedMonth: Month, lessonsForStudent: [Lesson]) {
         self.viewModel = viewModel
         self.studentId = studentId
@@ -44,20 +43,20 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
         
         setupUI()
         
-        viewModel.$students
+        viewModel.studentsSubject
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 self?.loadLessons()
-                self?.checkIfScheduledLessonsAdded()
             }
             .store(in: &cancellables)
+        
         tableView?.reloadData()
         
-        // Register cell
         tableView?.register(UITableViewCell.self, forCellReuseIdentifier: "LessonCell")
         
-        // Navigation items
         setupNavigationItems()
+        
+        checkIfScheduledLessonsAdded()
     }
     
     // Load lessons from Firebase
@@ -66,6 +65,7 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
             switch result {
             case .success(let lessons):
                 self.lessonsForStudent = lessons
+                print(lessons)
                 self.tableView?.reloadData()
                 self.checkIfScheduledLessonsAdded()
             case .failure(let error):
@@ -73,7 +73,6 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
             }
         }
     }
-    
     
     func saveLessons() {
         viewModel.saveLessons(for: studentId, lessons: lessonsForStudent, month: selectedMonth) { result in
@@ -103,7 +102,7 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
         }
     
     @objc func addScheduledLessonsButtonTapped() {
-        print("Кнопка добавления расписания нажата") // Отладочное сообщение
+        print("Кнопка добавления расписания нажата")
         generateLessonsForMonth()
         checkIfScheduledLessonsAdded()
         tableView?.reloadData()
@@ -205,10 +204,7 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
         
         // Обновление состояния кнопок
         checkIfScheduledLessonsAdded()
-        
-//        // Пересчет суммы
-//        updateMonthSum()
-//        
+       
         // Сохранение изменений в Firebase
             viewModel.deleteLesson(for: studentId, month: selectedMonth, lessonId: lessonToDelete.id) { [weak self] result in
                 switch result {
@@ -226,15 +222,15 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
         }
     
     @objc func deleteAllLessons() {
+        
+        print("Delete all lessons button tapped")
+        
         // Очистка массива уроков
         lessonsForStudent.removeAll()
         // Обновление состояния таблицы
         tableView?.reloadData()
         // Обновление состояния кнопок
         checkIfScheduledLessonsAdded()
-        
-//        // Пересчет суммы
-//        updateMonthSum()
         
         // Сохранение изменений в Firebase
         viewModel.deleteAllLessons(for: studentId, month: selectedMonth) { result in
@@ -271,7 +267,7 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
         
         // Получение номера месяца
         guard let monthNumber = monthDictionary[selectedMonth.monthName] else {
-            print("Не удалось найти номер месяца для: \(selectedMonth.monthName)") // Отладочное сообщение
+            print("Не удалось найти номер месяца для: \(selectedMonth.monthName)")
             return
         }
         
@@ -282,7 +278,7 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
         
         // Преобразование строки в дату
         guard let date = dateFormatter.date(from: dateString) else {
-            print("Не удалось преобразовать строку в дату: \(dateString)") // Отладочное сообщение
+            print("Не удалось преобразовать строку в дату: \(dateString)")
             return
         }
         
@@ -314,7 +310,7 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
                     }
                 }
             } else {
-                print("Не удалось преобразовать текущую строку в дату: \(currentDateString)") // Отладочное сообщение
+                print("Не удалось преобразовать текущую строку в дату: \(currentDateString)")
             }
         }
     }
@@ -378,6 +374,8 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
     }
     
     func checkIfScheduledLessonsAdded() {
+        print("Checking if scheduled lessons are added. Current lessons count: \(lessonsForStudent.count)")  // Добавьте отладочный вывод
+
         if !lessonsForStudent.isEmpty {
             addScheduledLessonsButton.setTitle("Delete all lessons", for: .normal)
             addScheduledLessonsButton.removeTarget(self, action: #selector(addScheduledLessonsButtonTapped), for: .touchUpInside)
@@ -388,6 +386,7 @@ class LessonsTableViewController: UIViewController, UITableViewDelegate {
             addLessonButton.isHidden = false
         }
     }
+
 }
 
 // MARK: - UITableViewDataSource
@@ -483,7 +482,7 @@ extension LessonsTableViewController {
         // Настройка для iPad
         if let popoverController = activityViewController.popoverPresentationController {
             popoverController.barButtonItem = self.navigationItem.rightBarButtonItems?.last
-            popoverController.sourceView = self.view // для безопасности, хотя barButtonItem должно быть достаточно
+            popoverController.sourceView = self.view
         }
         present(activityViewController, animated: true, completion: nil)
     }

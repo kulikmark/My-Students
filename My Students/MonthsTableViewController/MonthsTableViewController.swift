@@ -12,17 +12,16 @@ import SnapKit
 
 class MonthsTableViewController: UITableViewController {
     
-    @ObservedObject var viewModel: StudentViewModel
+    @ObservedObject var studentViewModel: StudentViewModel
     private var cancellables = Set<AnyCancellable>()
    
-    var studentId: String
+    var studentID: String
 
-    init(viewModel: StudentViewModel, studentId: String) {
-           self.viewModel = viewModel
-           self.studentId = studentId
+    init(viewModel: StudentViewModel, studentID: String) {
+           self.studentViewModel = viewModel
+           self.studentID = studentID
            super.init(style: .plain)
            
-           // Reload table view with preloaded lessons
            self.tableView.reloadData()
        }
 
@@ -32,15 +31,15 @@ class MonthsTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        viewModel.$students
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                self?.tableView.reloadData()
-            }
-            .store(in: &cancellables)
-        
-        if let selectedStudent = viewModel.getStudentById(studentId) {
+
+            studentViewModel.studentsSubject
+                .receive(on: RunLoop.main)
+                .sink { [weak self] students in
+                    self?.tableView.reloadData()
+                }
+                .store(in: &cancellables)
+    
+        if let selectedStudent = studentViewModel.getStudentById(studentID) {
                 title = "Months list of \(selectedStudent.name)"
             }
         
@@ -56,8 +55,8 @@ class MonthsTableViewController: UITableViewController {
     
     private func setupTableView() {
             tableView.separatorStyle = .singleLine
-            tableView.separatorColor = UIColor.lightGray // Custom color for separators
-            tableView.separatorInset = UIEdgeInsets.zero // Remove any inset if needed
+            tableView.separatorColor = UIColor.lightGray
+            tableView.separatorInset = UIEdgeInsets.zero
             tableView.reloadData()
     }
     
@@ -67,7 +66,7 @@ class MonthsTableViewController: UITableViewController {
     }
     
     @objc private func backButtonTapped() {
-        if let selectedStudent = viewModel.getStudentById(studentId) {
+        if let selectedStudent = studentViewModel.getStudentById(studentID) {
             FirebaseManager.shared.addOrUpdateStudent(selectedStudent) { result in
                 switch result {
                 case .success:
@@ -95,7 +94,7 @@ class MonthsTableViewController: UITableViewController {
             let monthYearVC = MonthYearSelectionViewController()
             
             // Pass existing months to the selection controller
-            if let selectedStudent = viewModel.getStudentById(studentId) {
+            if let selectedStudent = studentViewModel.getStudentById(studentID) {
                 monthYearVC.existingMonths = selectedStudent.months
             }
             
@@ -107,7 +106,7 @@ class MonthsTableViewController: UITableViewController {
         }
     
     private func addMonth(_ monthYear: String, monthName: String) {
-         guard let selectedStudent = viewModel.getStudentById(studentId) else { return }
+         guard let selectedStudent = studentViewModel.getStudentById(studentID) else { return }
 
          let dateFormatter = DateFormatter()
          dateFormatter.dateFormat = "MMMM yyyy"
@@ -119,53 +118,49 @@ class MonthsTableViewController: UITableViewController {
          let moneySum = 0
          let lessonPrice = selectedStudent.lessonPrice
 
-         viewModel.addMonth(to: selectedStudent, monthName: monthName, monthYear: monthYear, lessonPrice: lessonPrice, moneySum: moneySum, timestamp: timestamp)
+         studentViewModel.addMonth(to: selectedStudent, monthName: monthName, monthYear: monthYear, lessonPrice: lessonPrice, moneySum: moneySum, timestamp: timestamp)
 
          tableView.reloadData()
      }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-            guard let selectedStudent = viewModel.getStudentById(studentId) else { return 0 }
+            guard let selectedStudent = studentViewModel.getStudentById(studentID) else { return 0 }
             let groupedMonths = Dictionary(grouping: selectedStudent.months, by: { $0.monthYear })
             return groupedMonths.keys.count
         }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        guard let selectedStudent = viewModel.getStudentById(studentId) else { return nil }
+        guard let selectedStudent = studentViewModel.getStudentById(studentID) else { return nil }
         let groupedMonths = Dictionary(grouping: selectedStudent.months, by: { $0.monthYear })
         let sortedKeys = groupedMonths.keys.sorted()
         let title = sortedKeys[section]
 
-        // Создаем UIView для заголовка
         let headerView = UIView()
         headerView.backgroundColor = .clear
 
-        // Создаем UILabel для заголовка
         let label = UILabel()
         label.text = title
-        label.font = UIFont.boldSystemFont(ofSize: 25) // Измените размер шрифта здесь
+        label.font = UIFont.boldSystemFont(ofSize: 25)
         label.textColor = .darkGray
 
-        // Добавляем UILabel в headerView
         headerView.addSubview(label)
 
-        // Настраиваем отступы с помощью SnapKit
         label.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(16) // Отступ слева
-            make.trailing.equalToSuperview().offset(-16) // Отступ справа
-            make.top.equalToSuperview().offset(8) // Отступ сверху
-            make.bottom.equalToSuperview().offset(-8) // Отступ снизу
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+            make.top.equalToSuperview().offset(8)
+            make.bottom.equalToSuperview().offset(-8)
         }
 
         return headerView
     }
     
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 40 // Установите нужную высоту заголовка секции
+        return 40
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-           guard let selectedStudent = viewModel.getStudentById(studentId) else { return 0 }
+           guard let selectedStudent = studentViewModel.getStudentById(studentID) else { return 0 }
            let groupedMonths = Dictionary(grouping: selectedStudent.months, by: { $0.monthYear })
            let sortedKeys = groupedMonths.keys.sorted()
            return groupedMonths[sortedKeys[section]]?.count ?? 0
@@ -175,27 +170,9 @@ class MonthsTableViewController: UITableViewController {
         return 70
     }
     
-//    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//            let cell = tableView.dequeueReusableCell(withIdentifier: "MonthCell", for: indexPath) as! MonthsTableViewControllerCell
-//
-//            guard let selectedStudent = viewModel.getStudentById(studentId) else { return cell }
-//            let groupedMonths = Dictionary(grouping: selectedStudent.months, by: { $0.monthYear })
-//            let sortedKeys = groupedMonths.keys.sorted()
-//            let monthsForYear = groupedMonths[sortedKeys[indexPath.section]] ?? []
-//            let month = monthsForYear[indexPath.row]
-//
-//            cell.configure(with: selectedStudent, month: month, index: indexPath.row, target: self, action: #selector(switchValueChanged(_:)))
-//
-//            cell.selectionStyle = .none
-//            return cell
-//        }
-    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MonthCell", for: indexPath) as! MonthsTableViewControllerCell
-        // TODO: Say NO to force unwrap '!'  guard let... else { return UITableViewCell() }
-        guard let selectedStudent = viewModel.getStudentById(studentId) else { return cell }
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "MonthCell", for: indexPath) as? MonthsTableViewControllerCell else { return UITableViewCell() }
+        guard let selectedStudent = studentViewModel.getStudentById(studentID) else { return cell }
         let groupedMonths = Dictionary(grouping: selectedStudent.months, by: { $0.monthYear })
         let sortedKeys = groupedMonths.keys.sorted()
         let monthsForYear = groupedMonths[sortedKeys[indexPath.section]] ?? []
@@ -209,7 +186,7 @@ class MonthsTableViewController: UITableViewController {
 
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-            guard let selectedStudent = viewModel.getStudentById(studentId) else { return }
+            guard let selectedStudent = studentViewModel.getStudentById(studentID) else { return }
 
             let groupedMonths = Dictionary(grouping: selectedStudent.months, by: { $0.monthYear })
             let sortedKeys = groupedMonths.keys.sorted()
@@ -219,15 +196,16 @@ class MonthsTableViewController: UITableViewController {
 
             Task {
                 do {
-                    let lessons = try await viewModel.loadLessons(for: studentId, month: selectedMonth)
+                    let lessons = try await studentViewModel.loadLessons(for: studentID, month: selectedMonth)
                     DispatchQueue.main.async {
                         let lessonsTableVC = LessonsTableViewController(
-                            viewModel: self.viewModel,
-                            studentId: self.studentId,
+                            viewModel: self.studentViewModel,
+                            studentId: self.studentID,
                             selectedMonth: selectedMonth,
                             lessonsForStudent: lessons
                         )
                         self.navigationController?.pushViewController(lessonsTableVC, animated: true)
+                        print("tableView \(lessons)")
                     }
                 } catch {
                     print("Failed to load lessons: \(error)")
@@ -235,29 +213,8 @@ class MonthsTableViewController: UITableViewController {
             }
         }
     
-    // TODO: - Such logic should be handled in viewModel. It's a business logic it has nothing to do with UIViewController 
-    func updatePaidStatus(for month: Month, isPaid: Bool) {
-        guard var selectedStudent = viewModel.getStudentById(studentId) else { return }
-        
-        if let index = selectedStudent.months.firstIndex(where: { $0.id == month.id }) {
-            selectedStudent.months[index].isPaid = isPaid
-            selectedStudent.months[index].paymentDate = month.paymentDate
-            
-            // Обновление в Firebase
-            FirebaseManager.shared.addOrUpdateStudent(selectedStudent) { [weak self] result in
-                switch result {
-                case .success:
-                    self?.viewModel.fetchStudents() // Обновление списка студентов
-                case .failure(let error):
-                    print("Error updating paid status: \(error)")
-                }
-            }
-        }
-    }
-
-    
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-           guard let selectedStudent = viewModel.getStudentById(studentId) else { return nil }
+           guard let selectedStudent = studentViewModel.getStudentById(studentID) else { return nil }
            let groupedMonths = Dictionary(grouping: selectedStudent.months, by: { $0.monthYear })
            let sortedKeys = groupedMonths.keys.sorted()
            return sortedKeys[section]
@@ -292,15 +249,15 @@ class MonthsTableViewController: UITableViewController {
     }
     
     private func deleteMonth(at indexPath: IndexPath) {
-        guard let selectedStudent = viewModel.getStudentById(studentId) else { return }
+        guard let selectedStudent = studentViewModel.getStudentById(studentID) else { return }
         let groupedMonths = Dictionary(grouping: selectedStudent.months, by: { $0.monthYear })
         let sortedKeys = groupedMonths.keys.sorted()
         let monthToDelete = groupedMonths[sortedKeys[indexPath.section]]?[indexPath.row]
         
         guard let monthToDelete = monthToDelete else { return }
         
-        viewModel.deleteMonth(for: studentId, month: monthToDelete)
-        tableView.reloadData() // Reload data to reflect changes in sections
+        studentViewModel.deleteMonth(for: studentID, month: monthToDelete)
+        tableView.reloadData()
     }
 
     // MARK: - Sorting months
@@ -344,7 +301,6 @@ class MonthsTableViewController: UITableViewController {
             make.height.equalTo(44)
         }
         
-        // Adjust table view content inset to account for the button
             let buttonHeight: CGFloat = 44
             let buttonBottomInset: CGFloat = 40
             let totalInset = buttonHeight + buttonBottomInset
@@ -352,7 +308,6 @@ class MonthsTableViewController: UITableViewController {
             tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: totalInset, right: 0)
             tableView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: totalInset, right: 0)
 
-        // Настройка таблицы оплаченных месяцев
         tableView.register(MonthsTableViewControllerCell.self, forCellReuseIdentifier: "MonthCell")
         tableView.dataSource = self
         tableView.delegate = self

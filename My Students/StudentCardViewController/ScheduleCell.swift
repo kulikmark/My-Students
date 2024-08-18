@@ -9,8 +9,7 @@ import UIKit
 import SnapKit
 
 class ScheduleCell: UICollectionViewCell {
-    
-    // Label to display schedule information
+
     var scheduleLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
@@ -23,15 +22,12 @@ class ScheduleCell: UICollectionViewCell {
         super.init(frame: frame)
         self.backgroundColor = .clear
         
-        // Configure contentView
         contentView.backgroundColor = .systemBlue
         contentView.layer.cornerRadius = 10
         contentView.layer.masksToBounds = true
         
-        // Add scheduleLabel to contentView
         contentView.addSubview(scheduleLabel)
         
-        // Configure constraints using SnapKit
         scheduleLabel.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(5)
         }

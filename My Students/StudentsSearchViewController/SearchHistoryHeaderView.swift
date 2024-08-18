@@ -11,7 +11,7 @@ class SearchHistoryHeaderView: UITableViewHeaderFooterView, UICollectionViewDele
     var collectionView: UICollectionView!
     var students = [Student]()
     weak var delegate: StudentsTableViewHeaderDelegate?
-    var viewModel: StudentViewModel  // Добавлено свойство viewModel
+    var viewModel: StudentViewModel
     
     let clearButton: UIButton = {
         let button = UIButton(type: .system)
@@ -23,7 +23,6 @@ class SearchHistoryHeaderView: UITableViewHeaderFooterView, UICollectionViewDele
         return button
     }()
     
-    // Конструктор, принимающий viewModel
     init(viewModel: StudentViewModel) {
         self.viewModel = viewModel
         super.init(reuseIdentifier: "SearchHistoryHeaderView")
