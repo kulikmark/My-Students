@@ -337,33 +337,49 @@ extension StudentCardViewController: UICollectionViewDataSource, UICollectionVie
 }
 
 extension StudentCardViewController {
-    
+
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        // Получаем текущий текст в поле и создаём новый текст с учётом изменений
+        let currentText = textField.text ?? ""
+        guard let stringRange = Range(range, in: currentText) else { return false }
+        let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
         
         switch textField {
+        case studentNameTextField, parentNameTextField:
+            // Разрешаем только буквы и пробелы
+            let allowedCharacters = CharacterSet.letters.union(.whitespaces)
+            let characterSet = CharacterSet(charactersIn: string)
+            return allowedCharacters.isSuperset(of: characterSet)
+
+        case phoneTextField:
+            // Разрешаем только цифры и знаки + и -
+            let allowedCharacters = CharacterSet(charactersIn: "+0123456789")
+            let characterSet = CharacterSet(charactersIn: string)
+            return allowedCharacters.isSuperset(of: characterSet)
+            
         case lessonPriceTextField:
-            let currentText = textField.text ?? ""
+            // Разрешаем только цифры и запятую
+            let allowedCharacters = CharacterSet(charactersIn: "0123456789,")
+            let characterSet = CharacterSet(charactersIn: string)
+            
+            // Проверяем, чтобы не было больше одной запятой
             if currentText.contains(",") && string.contains(",") {
                 return false
             }
-            let allowedCharacters = CharacterSet(charactersIn: "0123456789,")
-            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
-                return false
-            }
-
-        case phoneTextField:
-            let allowedCharacters = CharacterSet(charactersIn: "+0123456789")
-            if string.rangeOfCharacter(from: allowedCharacters.inverted) != nil {
-                return false
-            }
-
+            return allowedCharacters.isSuperset(of: characterSet)
+            
+        case currencyTextField:
+            // Разрешаем только буквы и пробелы
+            let allowedCharacters = CharacterSet.letters.union(.whitespaces)
+            let characterSet = CharacterSet(charactersIn: string)
+            return allowedCharacters.isSuperset(of: characterSet)
+            
         default:
-            break
+            return true
         }
-        
-        return true
     }
 }
+
 
 extension StudentCardViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
