@@ -19,6 +19,7 @@ class StudentViewModel: ObservableObject {
     // Properties for storing data
     var students: [Student] = []
     var searchHistory: [SearchHistoryItem] = []
+    var filteredStudents: [Student] = []
     
     private var db = Firestore.firestore()
     private var listener: ListenerRegistration?
@@ -56,8 +57,24 @@ class StudentViewModel: ObservableObject {
             
             self?.students = students
             self?.studentsSubject.send(students)
+            self?.filteredStudents = self?.students ?? []
         }
     }
+    
+    func unpaidStudents(forMonth month: String) -> [Student] {
+        return students.filter { student in
+            student.months.contains { $0.monthName == month && !$0.isPaid }
+        }
+    }
+
+
+//    // В методе `fetchStudents` обновите filteredStudents
+//    func fetchUnpaidStudents() {
+//        // Получите студентов как обычно
+//        // После получения данных
+//        self.filteredStudents = self.students
+//    }
+
     
     
     // MARK: - Managing MonthsTableVC saving methods
@@ -148,6 +165,13 @@ class StudentViewModel: ObservableObject {
         
         return lessonsByMonth
     }
+    
+    func unpaidStudentsCount(forMonth month: String) -> Int {
+        return students.filter { student in
+            student.months.contains { $0.monthName == month && !$0.isPaid }
+        }.count
+    }
+
     
     // MARK: - Managing LessonsTablesVC saving methods
     

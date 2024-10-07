@@ -28,27 +28,56 @@ class StudentCollectionViewCell: UICollectionViewCell {
         return imageView
     }()
     
+//    lazy var studentNameLabel: UILabel = {
+//        let label = UILabel()
+//        label.font = UIFont.boldSystemFont(ofSize: 16)
+//        label.textColor = .black
+//        label.adjustsFontSizeToFitWidth = true
+//        label.lineBreakMode = .byWordWrapping
+//        label.numberOfLines = 0
+//        label.textAlignment = .center
+//        return label
+//    }()
+//    
+//    lazy var scheduleLabel: UILabel = {
+//        let label = UILabel()
+//        label.font = UIFont.systemFont(ofSize: 12)
+//        label.textColor = .darkGray
+//        label.adjustsFontSizeToFitWidth = true
+//        label.lineBreakMode = .byWordWrapping
+//        label.numberOfLines = 0
+//        label.textAlignment = .center
+//        return label
+//    }()
+    
     lazy var studentNameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.boldSystemFont(ofSize: 16)
-        label.textColor = .black
+        
+        // Используем цвет для текста из Assets
+        label.textColor = UIColor(named: "StudentNameColor")
+        
         label.adjustsFontSizeToFitWidth = true
         label.lineBreakMode = .byWordWrapping
         label.numberOfLines = 0
         label.textAlignment = .center
         return label
     }()
-    
+
     lazy var scheduleLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12)
-        label.textColor = .darkGray
+        
+        // Используем цвет для текста из Assets
+        label.textColor = UIColor(named: "ScheduleLabelColor")
+        
         label.adjustsFontSizeToFitWidth = true
         label.lineBreakMode = .byWordWrapping
         label.numberOfLines = 0
         label.textAlignment = .center
         return label
     }()
+
     
     lazy var studentCellManageButton: UIButton = {
         let button = UIButton(type: .custom)
@@ -104,7 +133,7 @@ class StudentCollectionViewCell: UICollectionViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        contentView.backgroundColor = .white
+        contentView.backgroundColor = UIColor(named: "ViewColor")
         contentView.layer.cornerRadius = 10
         
         // Установка круглой формы изображения

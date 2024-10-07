@@ -14,7 +14,11 @@ class StudentsCollectionViewController: UICollectionViewController {
     
     private var studentViewModel: StudentViewModel
     private var cancellables = Set<AnyCancellable>()
-    private var studentId: String // why not private ?
+    private var studentId: String
+    
+    private var allStudents: [Student] = []
+    private var filteredStudents: [Student] = []
+    private var isFilteringUnpaid: Bool = false
     
     let searchController = UISearchController(searchResultsController: nil)
     
@@ -32,7 +36,19 @@ class StudentsCollectionViewController: UICollectionViewController {
         button.setImage(UIImage(systemName: "plus"), for: .normal)
         button.tintColor = .white
         button.backgroundColor = .systemBlue
-        button.layer.cornerRadius = 25 // половина ширины
+        button.layer.cornerRadius = 25
+        return button
+    }()
+    
+    private lazy var whoPaidButton:  UIButton = {
+        let button = UIButton(type: .system)
+        //        button.tintColor = .white
+        //        button.backgroundColor = .systemBlue
+        button.layer.cornerRadius = 5
+        button.contentEdgeInsets = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+        button.titleLabel?.numberOfLines = 1 // Ограничение на одну строку
+        button.titleLabel?.lineBreakMode = .byTruncatingTail // Установка обрезки текста
+        button.sizeToFit() // Установка размера кнопки в соответствии с её содержимым
         return button
     }()
     
@@ -63,6 +79,17 @@ class StudentsCollectionViewController: UICollectionViewController {
         super.viewWillAppear(animated)
         studentViewModel.fetchStudents()
         self.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: self.studentViewModel.students.isEmpty, collectionView: self.collectionView ?? UICollectionView())
+        
+        let currentMonth = getCurrentMonth()
+        let unpaidCount = studentViewModel.unpaidStudentsCount(forMonth: currentMonth)
+        
+        if unpaidCount == 0 {
+            isFilteringUnpaid = false
+            filteredStudents = [] // Сброс фильтрации
+        } else {
+            filteredStudents = []
+            collectionView.reloadData()
+        }
     }
     
     override func viewDidLoad() {
@@ -71,16 +98,23 @@ class StudentsCollectionViewController: UICollectionViewController {
         setupCollectionView()
         setupSearchController()
         setupAddButton()
+        setupWhoPaidButton()
         
         view.backgroundColor = UIColor.systemGroupedBackground
         self.title = "Students List"
+        
+        // Инициализация данных всех студентов
+        allStudents = studentViewModel.students
+        setupWhoPaidButton()
         
         // Subscribe to students updates
         studentViewModel.studentsSubject
             .receive(on: RunLoop.main)
             .sink { [weak self] students in
+                self?.allStudents = students
                 self?.collectionView.reloadData()
                 self?.updateStartScreenLabel(with: "Add first student \n\n Tap + in the right corner of the screen", isEmpty: students.isEmpty, collectionView: self?.collectionView ?? UICollectionView())
+                self?.updateWhoPaidButton()
             }
             .store(in: &cancellables)
     }
@@ -100,6 +134,53 @@ class StudentsCollectionViewController: UICollectionViewController {
     @objc func addNewStudent() {
         let studentCardVC = StudentCardViewController(viewModel: studentViewModel, editMode: .add)
         navigationController?.pushViewController(studentCardVC, animated: true)
+    }
+    
+    func setupWhoPaidButton() {
+        updateWhoPaidButton()
+        
+        whoPaidButton.addTarget(self, action: #selector(whoPaidButtonTapped), for: .touchUpInside)
+        
+        let barButtonItem = UIBarButtonItem(customView: whoPaidButton)
+        navigationItem.rightBarButtonItem = barButtonItem
+    }
+    
+    // Метод для обновления кнопки и фильтрации учеников
+    @objc func whoPaidButtonTapped() {
+        isFilteringUnpaid.toggle()
+        if isFilteringUnpaid {
+            let currentMonth = getCurrentMonth()
+            filteredStudents = studentViewModel.unpaidStudents(forMonth: currentMonth)
+            collectionView.reloadData()
+        } else {
+            filteredStudents = []
+            collectionView.reloadData()
+        }
+    }
+    
+    func updateWhoPaidButton() {
+        let currentMonth = getCurrentMonth()
+        let unpaidCount = studentViewModel.unpaidStudentsCount(forMonth: currentMonth)
+        
+        if unpaidCount == 0 {
+            whoPaidButton.setTitle("All paid in \(currentMonth)", for: .normal)
+            whoPaidButton.backgroundColor = .clear
+            whoPaidButton.setTitleColor(.darkGray, for: .normal)
+            whoPaidButton.isEnabled = false
+        } else {
+            whoPaidButton.setTitle("Unpaid: \(unpaidCount)", for: .normal)
+            whoPaidButton.backgroundColor = .systemBlue
+            whoPaidButton.setTitleColor(.white, for: .normal)
+            whoPaidButton.isEnabled = true
+        }
+        
+        whoPaidButton.sizeToFit()
+    }
+    
+    func getCurrentMonth() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMMM"
+        return dateFormatter.string(from: Date())
     }
     
     func setupSearchController() {
@@ -160,13 +241,15 @@ extension StudentsCollectionViewController: UISearchBarDelegate {
 // MARK: - UICollectionViewDataSource
 
 extension StudentsCollectionViewController {
+    
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return studentViewModel.students.count
+        return isFilteringUnpaid ? filteredStudents.count : allStudents.count
     }
     
+    // Настраиваем ячейку в зависимости от фильтрации
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "StudentCell", for: indexPath) as! StudentCollectionViewCell
-        let student = studentViewModel.students[indexPath.item]
+        let student = isFilteringUnpaid ? filteredStudents[indexPath.item] : allStudents[indexPath.item]
         cell.configure(with: student)
         cell.delegate = self
         
@@ -176,8 +259,10 @@ extension StudentsCollectionViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let student = studentViewModel.students[indexPath.item]
+        // Получаем выбранного студента в зависимости от состояния фильтрации
+        let student = isFilteringUnpaid ? filteredStudents[indexPath.item] : allStudents[indexPath.item]
         
+        // Создаем и отображаем контроллер для отображения месяцев
         let monthsTableVC = MonthsTableViewController(viewModel: self.studentViewModel, studentID: student.id ?? "")
         self.navigationController?.pushViewController(monthsTableVC, animated: true)
     }
@@ -306,7 +391,7 @@ extension StudentsCollectionViewController: StudentCollectionViewCellDelegate {
                 } else {
                     // Fallback on earlier versions
                 }
-                                sheet.prefersGrabberVisible = true
+                sheet.prefersGrabberVisible = true
             }
         }
         present(studentBottomSheetVC, animated: true, completion: nil)

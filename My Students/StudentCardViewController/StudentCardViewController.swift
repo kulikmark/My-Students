@@ -268,7 +268,6 @@ class StudentCardViewController: UIViewController {
             }
             existingStudent.id = studentId
             existingStudent.studentImageURL = studentDetails.studentImageURL
-            
             existingStudent.type = studentDetails.type
             existingStudent.name = studentDetails.name
             existingStudent.parentName = studentDetails.parentName

@@ -457,14 +457,42 @@ extension Date {
 
 extension LessonsTableViewController {
     
-    func createShareMessage() -> String {
-        guard let student = viewModel.students.first else { return "" }
+    func isRussianLanguage(for student: Student) -> Bool {
+        let name = student.type == .schoolchild ? student.parentName : student.name
+        // Проверка, содержит ли имя кириллические символы
+        return name.range(of: "\\p{Cyrillic}", options: .regularExpression) != nil
+    }
+    
+    // Функция для перевода названий месяцев
+        func translateMonth(_ month: String, isRussian: Bool) -> String {
+            let monthsEnglishToRussian = [
+                "January": "Январе", "February": "Феврале", "March": "Марте",
+                "April": "Апреле", "May": "Мае", "June": "Июне",
+                "July": "Июле", "August": "Августе", "September": "Сентябре",
+                "October": "Октябре", "November": "Ноябре", "December": "Декабре"
+            ]
+            return isRussian ? (monthsEnglishToRussian[month] ?? month) : month
+        }
+
+        // Функция для перевода дней недели
+        func translateWeekday(_ weekday: String, isRussian: Bool) -> String {
+            let weekdaysEnglishToRussian = [
+                "MON": "ПН", "TUE": "ВТ", "WED": "СР",
+                "THU": "ЧТ", "FRI": "ПТ", "SAT": "СБ", "SUN": "ВС"
+            ]
+            return isRussian ? (weekdaysEnglishToRussian[weekday] ?? weekday) : weekday
+        }
+    
+    func createShareMessage(for student: Student) -> String {
+        let isRussian = isRussianLanguage(for: student)
+        
         let studentType = student.type
         let name = studentType == .schoolchild ? student.parentName : student.name
         let lessonsForSelectedMonth = lessonsForStudent
         let lessonCount = lessonsForSelectedMonth.count
         let lessonPrice: Int
         let currency: String
+        
         if let month = student.months.first(where: { $0.monthName == selectedMonth.monthName && $0.monthYear == selectedMonth.monthYear }) {
             lessonPrice = month.lessonPrice?.price ?? 0
             currency = month.lessonPrice?.currency ?? ""
@@ -473,13 +501,42 @@ extension LessonsTableViewController {
             currency = student.lessonPrice.currency
         }
         let totalSum = lessonPrice * Int(lessonCount)
-        return "Hello, \(name)! There are \(lessonCount) lessons in \(selectedMonth.monthName) \(selectedMonth.monthYear) = \(totalSum) \(currency)."
+        
+        // Перевод названия месяца
+        let translatedMonth = translateMonth(selectedMonth.monthName, isRussian: isRussian)
+        
+        // Формирование сообщения
+        let message: String
+        if isRussian {
+            message = "Здравствуйте, \(name)! В \(translatedMonth) \(selectedMonth.monthYear) у вас \(lessonCount) уроков, что составляет \(totalSum) \(currency). Переводом на Тинькофф."
+        } else {
+            message = "Hello, \(name)! There are \(lessonCount) lessons in \(translatedMonth) \(selectedMonth.monthYear) = \(totalSum) \(currency). Transfer to Tinkoff."
+        }
+        
+        // Добавление текста о расписании
+        let scheduleText = createScheduleText(for: student, isRussian: isRussian)
+        
+        return "\(message)\n\(scheduleText)"
     }
     
+    func createScheduleText(for student: Student, isRussian: Bool) -> String {
+        let schedule = student.schedule
+        let scheduleDetails: String
+        
+        if isRussian {
+            scheduleDetails = schedule.map { "\(translateWeekday($0.weekday, isRussian: true)) в \($0.time)" }.joined(separator: "\n")
+            return "Ваше расписание:\n\(scheduleDetails)"
+        } else {
+            scheduleDetails = schedule.map { "\(translateWeekday($0.weekday, isRussian: false)) at \($0.time)" }.joined(separator: "\n")
+            return "Your schedule:\n\(scheduleDetails)"
+        }
+    }
+    
+    
     @objc func shareButtonTapped() {
-        let message = createShareMessage()
+        guard let selectedStudent = viewModel.getStudentById(studentId) else { return }
+        let message = createShareMessage(for: selectedStudent)
         let activityViewController = UIActivityViewController(activityItems: [message], applicationActivities: nil)
-        // Настройка для iPad
         if let popoverController = activityViewController.popoverPresentationController {
             popoverController.barButtonItem = self.navigationItem.rightBarButtonItems?.last
             popoverController.sourceView = self.view

@@ -84,7 +84,7 @@ class ContainerViewController: UIViewController {
     }
     
     private func setupMenuBarButton() {
-        let config = UIImage.SymbolConfiguration(pointSize: 25) // Установите нужный размер
+        let config = UIImage.SymbolConfiguration(pointSize: 25)
         let menuImage = UIImage(systemName: "line.horizontal.3", withConfiguration: config)
         
         let menuButton = UIButton(type: .system)

@@ -67,7 +67,7 @@ class MonthsTableViewControllerCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        self.backgroundColor = .white
+        self.backgroundColor = UIColor(named: "ViewColor")
         
         contentView.addSubview(monthLabel)
         monthLabel.addArrangedSubview(monthYearLabel)

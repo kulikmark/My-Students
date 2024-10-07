@@ -365,10 +365,10 @@ extension LessonDetailsViewController {
     func setupUI() {
         
         let statusStackView = UIStackView()
-               statusStackView.axis = .horizontal
-               statusStackView.spacing = 10
-               statusStackView.alignment = .fill
-               statusStackView.distribution = .fill
+        statusStackView.axis = .horizontal
+        statusStackView.spacing = 10
+        statusStackView.alignment = .fill
+        statusStackView.distribution = .fill
         
         enterHWLabel = UILabel()
         enterHWLabel.font = UIFont.systemFont(ofSize: 14)
@@ -401,7 +401,7 @@ extension LessonDetailsViewController {
         photoCollectionView.register(HWPhotoCollectionViewCell.self, forCellWithReuseIdentifier: "HWPhotoCell")
         photoCollectionView.backgroundColor = .systemGroupedBackground
         photoCollectionView.layer.cornerRadius = 10
-                
+        
         view.addSubview(enterHWLabel)
         view.addSubview(homeworkTextView)
         view.addSubview(clippedPhotosLabel)
@@ -409,7 +409,7 @@ extension LessonDetailsViewController {
         view.addSubview(statusStackView)
         statusStackView.addArrangedSubview(statusLabel)
         statusStackView.addArrangedSubview(attendanceSwitch)
-    
+        
         // Constraints:
         enterHWLabel.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
@@ -430,7 +430,7 @@ extension LessonDetailsViewController {
         photoCollectionView.snp.makeConstraints { make in
             make.top.equalTo(clippedPhotosLabel.snp.bottom).offset(8)
             make.leading.trailing.equalToSuperview().inset(16)
-//            make.height.equalTo(80)
+            //            make.height.equalTo(80)
             make.bottom.equalTo(statusStackView.snp.top).offset(-20)
         }
         photoCollectionView.layer.cornerRadius = 10
@@ -465,7 +465,7 @@ extension LessonDetailsViewController {
             view.frame.origin.y = -overlap
         }
     }
-
+    
     @objc func handleKeyboardWillHide(notification: Notification) {
         view.frame.origin.y = 0
     }
@@ -477,25 +477,23 @@ extension LessonDetailsViewController {
     @objc func shareHomework() {
         print("shareHomework вызван")
         
-        print("Загружено студентов: \(viewModel.students.count)")
-        
-        guard let student = viewModel.students.first else {
+        // Получение информации о студенте и уроке
+        guard let student = viewModel.students.first(where: { $0.id == studentId }) else {
             print("Ошибка: студент не найден")
             return
         }
         
         let studentType = student.type
-        let name = studentType == .schoolchild ? student.parentName : student.name
-        let lessonDate = student.months.first?.lessons.first?.date ?? "Unknown date"
+        let name = student.name
+        let lessonDate = selectedLesson.date
         
         guard let homeworkText = homeworkTextView.text, !homeworkText.isEmpty else {
             print("Ошибка: текст домашнего задания пустой")
             return
         }
         
-        print("Студент: \(name), Дата урока: \(lessonDate), Домашнее задание: \(homeworkText)")
-        
-        let message = "Hello, \(name)! Homework for \(lessonDate) is \(homeworkText)"
+        // Подготовка сообщения
+        let message = "Hi, \(name)! Homework for \(lessonDate) is\n\n\(homeworkText)"
         
         // Собираем фотографии из коллекции
         var activityItems: [Any] = [message]
@@ -512,6 +510,7 @@ extension LessonDetailsViewController {
             return
         }
         
+        // Создание и представление UIActivityViewController
         let activityVC = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
         
         // Для iPad

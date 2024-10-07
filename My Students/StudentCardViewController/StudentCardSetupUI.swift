@@ -94,6 +94,12 @@ extension StudentCardViewController {
         labelsTextFieldsStackView.distribution = .fill
         mainStackView.addArrangedSubview(labelsTextFieldsStackView)
         
+        func configureTextField(_ textField: UITextField) {
+            textField.backgroundColor = UIColor(named: "ViewColor")
+            textField.borderStyle = .roundedRect
+            textField.clearButtonMode = .whileEditing
+        }
+        
         labelsTextFieldsStackView.addArrangedSubview(studentNameLabel)
         studentNameLabel.text = "Student's Name"
         studentNameLabel.font = UIFont.systemFont(ofSize: 10, weight: .bold)
@@ -104,10 +110,9 @@ extension StudentCardViewController {
         studentNameTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
-        studentNameTextField.borderStyle = .roundedRect
         studentNameTextField.placeholder = "Enter student's name"
         studentNameTextField.text = student?.name ?? ""
-        studentNameTextField.clearButtonMode = .whileEditing
+        configureTextField(studentNameTextField)
         
         labelsTextFieldsStackView.addArrangedSubview(parentNameLabel)
         parentNameLabel.text = "Parent's Name"
@@ -119,10 +124,9 @@ extension StudentCardViewController {
         parentNameTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
-        parentNameTextField.borderStyle = .roundedRect
         parentNameTextField.placeholder = "Enter parent's name"
         parentNameTextField.text = student?.parentName ?? ""
-        parentNameTextField.clearButtonMode = .whileEditing
+        configureTextField(parentNameTextField)
         
         labelsTextFieldsStackView.addArrangedSubview(phoneLabel)
         phoneLabel.text = "Phone Number"
@@ -134,11 +138,10 @@ extension StudentCardViewController {
         phoneTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
-        phoneTextField.borderStyle = .roundedRect
         phoneTextField.placeholder = "Enter phone number"
         phoneTextField.keyboardType = .phonePad
         phoneTextField.text = student?.phoneNumber ?? ""
-        phoneTextField.clearButtonMode = .whileEditing
+        configureTextField(phoneTextField)
         
         labelsTextFieldsStackView.addArrangedSubview(lessonPriceLabel)
         lessonPriceLabel.text = "Lesson Price"
@@ -150,11 +153,10 @@ extension StudentCardViewController {
         lessonPriceTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
-        lessonPriceTextField.borderStyle = .roundedRect
         lessonPriceTextField.placeholder = "Enter Price"
         lessonPriceTextField.keyboardType = .decimalPad
         lessonPriceTextField.text = student != nil ? "\(student!.lessonPrice.price)" : ""
-        lessonPriceTextField.clearButtonMode = .whileEditing
+        configureTextField(lessonPriceTextField)
         
         labelsTextFieldsStackView.addArrangedSubview(currencyLabel)
         currencyLabel.text = "Currency"
@@ -166,10 +168,9 @@ extension StudentCardViewController {
         currencyTextField.snp.makeConstraints { make in
             make.height.equalTo(50)
         }
-        currencyTextField.borderStyle = .roundedRect
         currencyTextField.placeholder = "Enter Currency name"
         currencyTextField.text = student != nil ? "\(student!.lessonPrice.currency)" : ""
-        currencyTextField.clearButtonMode = .whileEditing
+        configureTextField(currencyTextField)
         
         labelsTextFieldsStackView.addArrangedSubview(scheduleLabel)
         scheduleLabel.text = "Schedule"
@@ -180,7 +181,7 @@ extension StudentCardViewController {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         scheduleCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        scheduleCollectionView.backgroundColor = .white
+        scheduleCollectionView.backgroundColor = UIColor(named: "ViewColor")
         scheduleCollectionView.layer.cornerRadius = 10
         scheduleCollectionView.layer.shadowColor = UIColor.black.cgColor
         scheduleCollectionView.layer.shadowOpacity = 0.2
@@ -213,6 +214,7 @@ extension StudentCardViewController {
         lessonPriceTextField.delegate = self
         currencyTextField.delegate = self
     }
+
     
     func setupProfileImageView() {
            let placeholderImage = UIImage(named: "defaultImage")
@@ -345,17 +347,17 @@ extension StudentCardViewController {
         let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
         
         switch textField {
-        case studentNameTextField, parentNameTextField:
-            // Разрешаем только буквы и пробелы
-            let allowedCharacters = CharacterSet.letters.union(.whitespaces)
-            let characterSet = CharacterSet(charactersIn: string)
-            return allowedCharacters.isSuperset(of: characterSet)
-
-        case phoneTextField:
-            // Разрешаем только цифры и знаки + и -
-            let allowedCharacters = CharacterSet(charactersIn: "+0123456789")
-            let characterSet = CharacterSet(charactersIn: string)
-            return allowedCharacters.isSuperset(of: characterSet)
+//        case studentNameTextField, parentNameTextField:
+//            // Разрешаем только буквы и пробелы
+//            let allowedCharacters = CharacterSet.letters.union(.whitespaces)
+//            let characterSet = CharacterSet(charactersIn: string)
+//            return allowedCharacters.isSuperset(of: characterSet)
+//
+//        case phoneTextField:
+//            // Разрешаем только цифры и знаки + и -
+//            let allowedCharacters = CharacterSet(charactersIn: "+0123456789")
+//            let characterSet = CharacterSet(charactersIn: string)
+//            return allowedCharacters.isSuperset(of: characterSet)
             
         case lessonPriceTextField:
             // Разрешаем только цифры и запятую
